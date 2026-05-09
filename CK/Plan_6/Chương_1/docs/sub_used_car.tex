@@ -1,0 +1,22 @@
+\paragraph{Phân tích bộ dữ liệu Used Car Price} \hfill \\
+Bài toán dự báo giá xe cũ (Regression) dựa trên các thuộc tính như năm sản xuất, quãng đường đã đi, nhiên liệu, v.v.
+
+\paragraph{Kỹ thuật xử lý: Feature Derivation và Robust Scaling} \hfill \\
+Chúng ta tạo ra biến mới "Car Age" để phản ánh trực tiếp độ cũ của xe thay vì chỉ dùng năm sản xuất. Đồng thời, áp dụng RobustScaler để chuẩn hóa dữ liệu vì giá xe và quãng đường đi được thường có phân phối lệch (skewed) và chứa nhiều giá trị ngoại lai.
+
+\paragraph{Kết quả thực nghiệm} \hfill \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Chương_1/results/used_car/price_boxplot_before.png}
+    \caption{Phân phối giá bán với nhiều giá trị ngoại lai (Outliers)}
+    \label{fig:car_outliers}
+\end{figure}
+
+Việc sử dụng RobustScaler giúp mô hình hồi quy tuyến tính hoạt động ổn định hơn, không bị chệch hướng bởi các dòng xe hạng sang có giá cực cao.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Chương_1/results/used_car/actual_vs_pred.png}
+    \caption{So sánh giữa giá thực tế và giá dự báo}
+    \label{fig:car_regression}
+\end{figure}

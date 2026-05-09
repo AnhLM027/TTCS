@@ -1,0 +1,22 @@
+\paragraph{Phân tích bộ dữ liệu Credit Card Fraud} \hfill \\
+Đây là bài toán phát hiện bất thường (Anomaly Detection). Dữ liệu chứa các giao dịch thẻ tín dụng trong 2 ngày, trong đó chỉ có 492 vụ gian lận trên tổng số 284,807 giao dịch (chiếm 0.172%).
+
+\paragraph{Kỹ thuật xử lý: Robust Scaling và Precision-Recall Focus} \hfill \\
+Do dữ liệu đã được xử lý PCA (ngoại trừ Time và Amount), chúng ta tập trung chuẩn hóa hai biến này bằng RobustScaler để hạn chế ảnh hưởng của các giao dịch có giá trị cực lớn. Khi đánh giá, chúng ta ưu tiên Precision-Recall Curve thay vì ROC-AUC do sự mất cân bằng cực đoan.
+
+\paragraph{Kết quả thực nghiệm} \hfill \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Chương_1/results/credit_fraud/pr_curve.png}
+    \caption{Đường cong Precision-Recall cho bài toán phát hiện gian lận}
+    \label{fig:pr_curve}
+\end{figure}
+
+Chỉ số AUPRC (Area Under Precision-Recall Curve) đạt mức cao cho thấy mô hình có khả năng phân loại chính xác các vụ gian lận mà không gây ra quá nhiều cảnh báo giả (False Positives).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Chương_1/results/credit_fraud/confusion_matrix.png}
+    \caption{Ma trận nhầm lẫn với trọng số lớp cân bằng (Balanced Class Weights)}
+    \label{fig:fraud_cm}
+\end{figure}

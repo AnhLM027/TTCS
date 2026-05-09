@@ -1,0 +1,16 @@
+tensorflow
+torch
+torchvision
+scikit-learn
+pandas
+numpy
+matplotlib
+seaborn
+optuna
+shap
+streamlit
+imbalanced-learn
+kagglehub
+tqdm
+plotly
+ipykernel

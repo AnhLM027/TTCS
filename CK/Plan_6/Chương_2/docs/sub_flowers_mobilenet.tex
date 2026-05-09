@@ -1,0 +1,15 @@
+\paragraph{Thực nghiệm với Flowers-102} \hfill \\
+Bộ dữ liệu chứa hình ảnh của các loài hoa phổ biến. Bài toán này đòi hỏi mô hình phải nhận diện được các chi tiết màu sắc và hình dáng cánh hoa tinh vi.
+
+\paragraph{MobileNetV2 và Transfer Learning} \hfill \\
+Chúng ta sử dụng MobileNetV2 - một kiến trúc sử dụng tích chập tách biệt theo chiều sâu (Depthwise Separable Convolutions) giúp mô hình cực kỳ nhẹ nhưng vẫn mạnh mẽ. Bằng cách đóng băng các lớp nền và chỉ huấn luyện lớp phân loại cuối cùng, chúng ta tận dụng được các bộ lọc đặc trưng đã học từ hàng triệu ảnh ImageNet.
+
+\paragraph{Kết quả huấn luyện} \hfill \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_2/results/flowers/training_history.png}
+    \caption{Kết quả huấn luyện MobileNetV2 trên tập dữ liệu Flowers}
+    \label{fig:flowers_history}
+\end{figure}
+
+Sử dụng Transfer Learning giúp mô hình hội tụ nhanh chóng chỉ sau vài epoch huấn luyện.

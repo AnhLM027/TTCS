@@ -1,0 +1,15 @@
+\paragraph{Phân tích bộ dữ liệu Adult Census} \hfill \\
+Dữ liệu điều tra dân số năm 1994 với mục tiêu dự đoán thu nhập (>50K hay <=50K). Đặc điểm nổi bật là chứa nhiều biến định danh (Categorical) có số lượng nhãn rất lớn như "native-country" hay "occupation".
+
+\paragraph{Kỹ thuật xử lý: Target Encoding} \hfill \\
+Thay vì sử dụng One-hot Encoding (gây bùng nổ số chiều), chúng ta sử dụng Target Encoding. Kỹ thuật này thay thế mỗi nhãn bằng giá trị trung bình của biến mục tiêu tương ứng với nhãn đó. Điều này giúp mô hình nắm bắt được mối quan hệ trực tiếp giữa đặc trưng và mục tiêu mà không làm tăng độ phức tạp của dữ liệu.
+
+\paragraph{Kết quả thực nghiệm} \hfill \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/adult_census/occupation_encoding.png}
+    \caption{Xác suất thu nhập cao theo từng nhóm ngành nghề (Cơ sở của Target Encoding)}
+    \label{fig:target_encoding}
+\end{figure}
+
+Việc mã hóa theo mục tiêu giúp mô hình Logistic Regression đạt được độ chính xác ổn định đồng thời giữ cho số lượng đặc trưng ở mức tối giản, giúp tăng tốc độ huấn luyện và giảm thiểu Overfitting.

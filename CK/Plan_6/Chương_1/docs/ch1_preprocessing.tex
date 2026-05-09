@@ -1,0 +1,41 @@
+\section{CHƯƠNG 1: AI VÀ TIỀN XỬ LÝ DỮ LIỆU - NỀN TẢNG CỦA TRÍ TUỆ}
+
+\subsection{Tổng quan về Trí tuệ nhân tạo (AI)}
+Trí tuệ nhân tạo (Artificial Intelligence - AI) là lĩnh vực khoa học máy tính tập trung vào việc tạo ra các hệ thống có khả năng thực hiện các nhiệm vụ đòi hỏi trí thông minh của con người. Trong chương này, chúng ta khám phá vai trò sống còn của dữ liệu đối với AI thông qua nguyên lý "Garbage In, Garbage Out".
+
+\subsection{Vai trò của Tiền xử lý dữ liệu trong ML/DL}
+Tiền xử lý dữ liệu (Data Preprocessing) là bước chiếm tới 80% thời gian trong một dự án khoa học dữ liệu. Nó bao gồm làm sạch, biến đổi và chuẩn hóa dữ liệu để các thuật toán học máy có thể tối ưu hóa các trọng số một cách hiệu quả nhất.
+
+\subsection{Lý thuyết các kỹ thuật Tiền xử lý Nâng cao}
+Bên cạnh các kỹ thuật cơ bản (Mean/Median Imputation, Scaling), chương này đi sâu vào các kỹ thuật đối phó với thách thức thực tế:
+\begin{itemize}
+    \item \textbf{Robust Scaling:} Sử dụng Median và IQR để chuẩn hóa dữ liệu có nhiều ngoại lai.
+    \item \textbf{SMOTE (Synthetic Minority Over-sampling Technique):} Tạo dữ liệu giả lập cho lớp thiểu số để xử lý mất cân bằng.
+    \item \textbf{Target Encoding:} Mã hóa các biến phân loại có số lượng nhãn lớn (high cardinality).
+    \item \textbf{Feature Derivation:} Tạo các đặc trưng mới từ tri thức lĩnh vực (domain knowledge).
+\end{itemize}
+
+\subsection{Thực nghiệm chuyên sâu trên 4 Datasets}
+
+\subsubsection{Dataset 1: Used Car Price (Numerical - Outliers & Feature Derivation)}
+\textbf{Thách thức:} Dữ liệu giá xe cũ thường chứa các giá trị ngoại lai cực lớn và các cột dữ liệu thô (năm sản xuất, số dặm).
+\textbf{Giải pháp:} Áp dụng RobustScaler và tính toán các đặc trưng mới như "Car Age", "Mileage per Year".
+\input{Chương_1/docs/sub_used_car.tex}
+
+\subsubsection{Dataset 2: Telco Churn (Tabular - Class Imbalance & SMOTE)}
+\textbf{Thách thức:} Tỷ lệ khách hàng rời bỏ (Churn) thường thấp hơn nhiều so với khách hàng ở lại, gây ra sai lệch cho mô hình.
+\textbf{Giải pháp:} Sử dụng SMOTE để cân bằng dữ liệu và mã hóa One-hot cho các dịch vụ viễn thông.
+\input{Chương_1/docs/sub_telco_churn.tex}
+
+\subsubsection{Dataset 3: Credit Card Fraud (Anomaly - Precision-Recall Focus)}
+\textbf{Thách thức:} Dữ liệu giao dịch gian lận cực kỳ hiếm (dưới 0.1%). Accuracy không còn ý nghĩa.
+\textbf{Giải pháp:} Tập trung tối ưu Precision-Recall và sử dụng PCA để trực quan hóa cụm gian lận.
+\input{Chương_1/docs/sub_credit_fraud.tex}
+
+\subsubsection{Dataset 4: Adult Census (Categorical - Target Encoding)}
+\textbf{Thách thức:} Các biến như "Workclass", "Occupation" có quá nhiều nhãn, One-hot encoding sẽ làm bùng nổ số lượng cột.
+\textbf{Giải pháp:} Sử dụng Target Encoding để mã hóa dựa trên xác suất của biến mục tiêu (Income >50K).
+\input{Chương_1/docs/sub_adult_census.tex}
+
+\subsection{Tổng kết Chương 1}
+Thông qua 4 bài toán thực tế với các thách thức khác nhau, chúng ta thấy rằng không có một quy trình tiền xử lý duy nhất cho mọi loại dữ liệu. Việc hiểu rõ bản chất của dữ liệu và lựa chọn kỹ thuật phù hợp là yếu tố tiên quyết để xây dựng mô hình AI thành công.

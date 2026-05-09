@@ -1,0 +1,60 @@
+**BÁO CÁO THỰC TẬP CƠ SỞ**
+
+Sinh viên chuẩn bị báo cáo gồm **4 chương**, nội dung như sau:
+
+### **Chương 1: AI và Tiền xử lý dữ liệu**
+
+* Trình bày tổng quan về Trí tuệ nhân tạo (AI), các lĩnh vực ứng dụng.
+* Vai trò của tiền xử lý dữ liệu trong Machine Learning / Deep Learning.
+* Các kỹ thuật tiền xử lý phổ biến: làm sạch dữ liệu, chuẩn hóa, mã hóa nhãn, chia tập train/test,...
+* Chọn **1 bộ dữ liệu từ Kaggle hoặc Stanford** để minh họa quá trình tiền xử lý.
+
+### **Chương 2: Mạng nơ-ron tích chập (CNN)**
+
+* Trình bày khái niệm, cấu trúc và nguyên lý hoạt động của CNN.
+* Lịch sử phát triển của CNN: ra đời năm nào, các mô hình nổi bật như LeNet, AlexNet, VGG, ResNet,...
+* Các ứng dụng thực tế của CNN trong nhận dạng ảnh, y tế, xe tự lái,...
+* Chọn **1 bộ dữ liệu từ Kaggle hoặc Stanford** để xây dựng mô hình CNN minh họa.
+
+### **Chương 3: Mạng nơ-ron hồi tiếp (RNN)**
+
+* Trình bày khái niệm, cơ chế hoạt động của RNN.
+* Ưu điểm, hạn chế (vanishing gradient, short-term memory,...).
+* Ứng dụng trong xử lý ngôn ngữ tự nhiên, chuỗi thời gian,...
+* Chọn **1 bộ dữ liệu phù hợp** để xây dựng mô hình RNN minh họa.
+
+### **Chương 4: Mạng LSTM**
+
+* Trình bày khái niệm LSTM, cấu trúc các cổng (input gate, forget gate, output gate).
+* Lý do LSTM ra đời để cải tiến RNN.
+* Các ứng dụng: dự báo giá cổ phiếu, dịch máy, chatbot,...
+* Chọn **1 bộ dữ liệu phù hợp** để xây dựng mô hình LSTM minh họa.
+
+---
+
+## **Yêu cầu trình bày**
+
+* Trong mỗi chương, sinh viên cần:
+
+  * Trình bày lý thuyết, lịch sử phát triển, ưu nhược điểm.
+  * Phân tích chi tiết **từng dòng lệnh trong code**, giải thích đoạn code đó liên hệ với lý thuyết như thế nào.
+  * Minh họa bằng kết quả thực nghiệm, biểu đồ, hình ảnh nếu có.
+
+---
+
+## **Dung lượng báo cáo**
+
+* Tổng cộng nhiều trang (4 chương + trang tài liệu tham khảo).
+* Bao gồm **1 trang tài liệu tham khảo**.
+
+---
+
+## **Lưu ý**
+
+Ví dụ chương CNN cần trình bày:
+
+* CNN ra đời năm nào.
+* Các mô hình CNN nổi bật gần đây.
+* Ứng dụng của CNN trong thực tế.
+
+Tương tự với RNN, LSTM và AI tiền xử lý dữ liệu.

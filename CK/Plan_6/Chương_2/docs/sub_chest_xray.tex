@@ -1,0 +1,15 @@
+\paragraph{Thực nghiệm với Chest X-Ray Pneumonia} \hfill \\
+Đây là bài toán phân loại nhị phân giữa ảnh phổi bình thường và ảnh phổi bị viêm phổi (Pneumonia). Trong y tế, Recall (khả năng không bỏ sót bệnh nhân) là chỉ số quan trọng hàng đầu.
+
+\paragraph{ResNet-50 và Fine-tuning} \hfill \\
+Kiến trúc ResNet với các "Residual connections" cho phép huấn luyện các mạng rất sâu mà không bị mất tín hiệu đạo hàm. Chúng ta thực hiện Fine-tuning lớp Dense cuối cùng để phù hợp với bài toán y tế đặc thù.
+
+\paragraph{Kết quả huấn luyện} \hfill \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_2/results/chest_xray/training_history.png}
+    \caption{Quá trình huấn luyện ResNet-50 cho chẩn đoán viêm phổi}
+    \label{fig:chest_history}
+\end{figure}
+
+Mô hình đạt được độ chính xác rất cao trên tập test, hỗ trợ bác sĩ trong việc sàng lọc nhanh các trường hợp nghi ngờ.

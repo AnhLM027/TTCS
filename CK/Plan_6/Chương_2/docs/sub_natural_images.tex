@@ -1,0 +1,18 @@
+\paragraph{Thực nghiệm với Natural Images và Grad-CAM} \hfill \\
+Bộ dữ liệu gồm nhiều lớp đối tượng tự nhiên (máy bay, ô tô, mèo, chó, hoa, v.v.).
+
+\paragraph{EfficientNet-B0} \hfill \\
+EfficientNet sử dụng kỹ thuật Compound Scaling để cân bằng giữa độ sâu, độ rộng và độ phân giải của mạng, mang lại hiệu quả vượt trội so với các mô hình trước đây.
+
+\paragraph{Trực quan hóa với Grad-CAM} \hfill \\
+Một trong những nhược điểm của Deep Learning là tính chất "Hộp đen" (Black box). Để giải quyết vấn đề này, chúng ta sử dụng Grad-CAM để tạo ra bản đồ nhiệt (heatmap), chỉ ra những vùng pixels nào trong ảnh có ảnh hưởng lớn nhất đến quyết định phân loại của mô hình.
+
+\paragraph{Kết quả trực quan hóa} \hfill \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Chương_2/results/natural_images/grad_cam.png}
+    \caption{Trực quan hóa Grad-CAM: Vùng mô hình tập trung để nhận diện đối tượng}
+    \label{fig:gradcam}
+\end{figure}
+
+Biểu đồ Grad-CAM cho thấy mô hình đã thực sự "nhìn" vào các đặc trưng quan trọng của đối tượng (như bánh xe ô tô hay cánh máy bay) thay vì dựa vào các yếu tố nền gây nhiễu.

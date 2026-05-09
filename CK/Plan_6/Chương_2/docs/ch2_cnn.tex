@@ -1,0 +1,35 @@
+\section{CHƯƠNG 2: MẠNG NƠ-RON TÍCH CHẬP (CNN - DEEP VISION)}
+
+\subsection{Tổng quan về Mạng Nơ-ron Tích chập (CNN)}
+Mạng Nơ-ron Tích chập (Convolutional Neural Networks - CNN) là một bước đột phá trong lĩnh vực Thị giác máy tính. Khác với các mạng nơ-ron truyền thống, CNN có khả năng tự động trích xuất các đặc trưng không gian (spatial features) từ hình ảnh thông qua các lớp tích chập (Convolution) và lớp gộp (Pooling).
+
+\subsection{Lịch sử và các kiến trúc kinh điển}
+Lịch sử của CNN bắt đầu từ LeNet-5 (1998) của Yann LeCun, tiếp nối bởi sự bùng nổ của AlexNet (2012), VGG, ResNet (2015) và gần đây là các mô hình tối ưu như MobileNet và EfficientNet.
+
+\subsection{Kỹ thuật Học chuyển đổi (Transfer Learning)}
+Học chuyển đổi là quá trình sử dụng một mô hình đã được huấn luyện trên một tập dữ liệu khổng lồ (như ImageNet) và tinh chỉnh nó cho một bài toán cụ thể khác. Kỹ thuật này giúp tiết kiệm thời gian huấn luyện và tài nguyên tính toán trong khi vẫn đạt được độ chính xác cao.
+
+\subsection{Thực nghiệm chuyên sâu trên 4 Datasets & 4 Models}
+
+\subsubsection{Dataset 1: Intel Image Classification (Custom CNN)}
+\textbf{Kiến trúc:} Xây dựng mạng CNN từ đầu với 3 lớp Convolution/Pooling.
+\textbf{Mục tiêu:} Hiểu rõ cơ chế hoạt động của từng lớp và cách trích xuất đặc trưng cơ bản từ ảnh phong cảnh.
+\input{Chương_2/docs/sub_intel_cnn.tex}
+
+\subsubsection{Dataset 2: Flowers-102 (MobileNetV2 - Transfer Learning)}
+\textbf{Kiến trúc:} MobileNetV2 (Pre-trained on ImageNet).
+\textbf{Mục tiêu:} Áp dụng mô hình nhẹ (lightweight) cho thiết bị di động để phân loại các loài hoa với độ chính xác cao.
+\input{Chương_2/docs/sub_flowers_mobilenet.tex}
+
+\subsubsection{Dataset 3: Chest X-Ray Pneumonia (ResNet-50 - Fine-tuning)}
+\textbf{Kiến trúc:} ResNet-50.
+\textbf{Mục tiêu:} Ứng dụng AI trong y tế để chẩn đoán viêm phổi từ ảnh X-quang. Sử dụng kiến trúc ResNet với cơ chế Residual blocks để giải quyết vấn đề tiêu biến đạo hàm.
+\input{Chương_2/docs/sub_chest_xray.tex}
+
+\subsubsection{Dataset 4: Natural Images (EfficientNet-B0 & Grad-CAM)}
+\textbf{Kiến trúc:} EfficientNet-B0.
+\textbf{Mục tiêu:} Sử dụng mô hình có hiệu năng tối ưu và triển khai Grad-CAM (Gradient-weighted Class Activation Mapping) để trực quan hóa "vùng nhìn" của mô hình, giúp AI trở nên dễ giải thích hơn (Explainable AI).
+\input{Chương_2/docs/sub_natural_images.tex}
+
+\subsection{Tổng kết Chương 2}
+Thông qua 4 thực nghiệm, chúng ta thấy được sự tiến hóa từ việc xây dựng model thủ công đến việc tận dụng sức mạnh của Transfer Learning. Đặc biệt, việc kết hợp Grad-CAM giúp tăng tính tin cậy của AI trong các ứng dụng thực tế.

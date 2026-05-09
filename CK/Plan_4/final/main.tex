@@ -1,0 +1,99 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{geometry}
+
+% Cấu hình lề trang
+\geometry{
+    a4paper,
+    left=3cm,
+    right=2cm,
+    top=2.5cm,
+    bottom=2.5cm
+}
+
+% Cấu hình hiển thị code
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstset{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+% Tiêu đề chương chuyên nghiệp
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\huge\color{blue}}
+  {\chaptertitlename\ \thechapter}{10pt}{\Huge}
+
+\begin{document}
+
+% --- TRANG BÌA ---
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    {\Large \textbf{TRƯỜNG ĐẠI HỌC ...} \par}
+    {\Large \textbf{KHOA CÔNG NGHỆ THÔNG TIN} \par}
+    \vspace{2cm}
+    % \includegraphics[width=0.3\textwidth]{images/logo.png}\par 
+    \vspace{2cm}
+    {\Huge \textbf{BÁO CÁO THỰC TẬP CƠ SỞ} \par}
+    \vspace{1.5cm}
+    {\Large \textbf{Đề tài: So sánh hiệu quả của các mô hình CNN, RNN và LSTM trong bài toán phân loại cảm xúc văn bản} \par}
+    \vfill
+    \begin{flushright}
+        \textbf{Sinh viên thực hiện:} Nguyễn Văn A \\
+        \textbf{Mã sinh viên:} 123456 \\
+        \textbf{Lớp:} ... \\
+        \textbf{Giảng viên hướng dẫn:} ...
+    \end{flushright}
+    \vspace{1cm}
+    {\large \today}
+\end{titlepage}
+
+\tableofcontents
+\listoffigures
+
+\chapter{Trí tuệ nhân tạo và Tiền xử lý dữ liệu văn bản}
+\input{chapters/ch1_preprocessing.tex}
+
+\chapter{Mạng nơ-ron tích chập (CNN) cho dữ liệu văn bản}
+\input{chapters/ch2_cnn.tex}
+
+\chapter{Mạng nơ-ron hồi quy (RNN)}
+\input{chapters/ch3_rnn.tex}
+
+\chapter{Mạng bộ nhớ dài-ngắn hạn (LSTM)}
+\input{chapters/ch4_lstm.tex}
+
+\chapter{So sánh kết quả và Thảo luận}
+\input{chapters/ch5_comparison.tex}
+
+\chapter*{Kết luận}
+\addcontentsline{toc}{chapter}{Kết luận}
+Tóm tắt kết quả đạt được...
+
+\end{document}

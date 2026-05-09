@@ -1,0 +1,150 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}      % Ho tro go tieng Viet (UTF-8)
+\usepackage[T5]{fontenc}         % Ho tro font tieng Viet
+\usepackage[vietnamese]{babel}   % Cac quy tac ngat dong, tieu de tieng Viet
+\usepackage{amsmath}             % Cho cac cong thuc toan (nhu \max)
+\usepackage{amssymb}
+\usepackage{graphicx}            % Cho hinh anh (neu co)
+\usepackage{booktabs}            % Cho bang dep hon (cho \begin{tabular})
+\usepackage{enumitem}            % Tuy chinh danh sach
+\usepackage{geometry}            % Tuy chinh le trang
+\geometry{a4paper, margin=1in}
+\usepackage{float}
+\usepackage{array}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{orange},
+    numbers=left,
+    numberstyle=\tiny,
+    breaklines=true,
+    frame=single,
+    columns=fullflexible,
+    keepspaces=true,
+    escapeinside={(*}{*)},
+    escapebegin=\color{gray}\itshape, % Auto-match color/style for escaped text
+    extendedchars=true,
+    inputencoding=utf8
+}
+
+% Section: I, II, III
+\renewcommand{\thesection}{\Roman{section}}
+
+% Subsection: 1, 2, 3 (doc lap)
+\renewcommand{\thesubsection}{\arabic{subsection}}
+
+% Subsubsection: 1.1, 1.1.1
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+
+% === THEM CAC GOI SAU DE GIAN MUC LUC ===
+\usepackage{tocloft}             % (A) Goi de tuy chinh muc luc
+\makeatletter
+\renewcommand{\numberline}[1]{#1\hspace{0.5em}}
+\makeatother
+
+\setlength{\cftparskip}{5pt}   % (B) Tang 5pt khoan cach giua cac muc
+\renewcommand{\cftsecaftersnum}{\quad}
+
+% Dam bao cac muc con (paragraph) cung duoc danh so (len den cap 4: 3.2.1.1)
+\setcounter{secnumdepth}{4}
+% Dam bao muc luc (TOC) cung hien thi den cap 4 (paragraph)
+\setcounter{tocdepth}{4}
+
+\begin{document}
+
+% === BAT DAU TRANG BIA ===
+\begin{titlepage}
+\begin{center}
+
+% Phan header
+\large\textbf{HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG}\\
+\textbf{KHOA CÔNG NGHỆ THÔNG TIN 1}\\[4mm]
+
+% Gach ngang
+\rule{\textwidth}{0.4pt}\\[10mm]
+
+% Logo
+\includegraphics[width=4cm]{images/logo.png}\\[10mm] 
+
+% Tieu de
+\LARGE\textbf{HỌC PHẦN: THỰC TẬP CƠ SỞ}\\[3mm]
+\large\textbf{BÁO CÁO KẾT QUẢ THỰC TẬP}\\[6mm]
+
+\large
+\begin{tabular}{p{14cm}}
+\textbf{Đề tài: Nghiên cứu chuyên sâu về Học máy và Học sâu qua thực nghiệm đa tầng} \\
+1. TIỀN XỬ LÝ DỮ LIỆU NÂNG CAO (4 DATASETS TABULAR) \\
+2. THỊ GIÁC MÁY TÍNH VỚI MẠNG TÍCH CHẬP (4 DATASETS IMAGE - 4 MODELS) \\
+3. XỬ LÝ CHUỖI VỚI MẠNG RNN VÀ LSTM (4 DATASETS TEXT - 4 MODELS) \\
+4. DỰ BÁO CHUỖI THỜI GIAN VỚI ATTENTION VÀ TRANSFORMER (4 DATASETS - 4 MODELS)
+\end{tabular}
+\\[15mm]
+
+% Thong tin Tutor va Student
+\begin{tabular}{>{\bfseries}rl}
+Giảng viên:\hspace{1cm} & \hspace{1mm}  PGS. TS. Trần Đình Quế\\[4mm]
+Nhóm học phần:\hspace{1cm} & \hspace{1mm} INT13187-20252-09 \\ [4mm]
+Sinh viên thực hiện:\hspace{1cm} & \hspace{1mm} Nguyễn Thị Thu Hoài - B23DCCN321\\
+\end{tabular}
+
+\vfill
+\textbf{HÀ NỘI – 2026}
+
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{TRÍ TUỆ NHÂN TẠO VÀ TIỀN XỬ LÝ DỮ LIỆU (ADVANCED PREPROCESSING)}
+\input{Chương_1/docs/ch1_preprocessing.tex}
+\newpage
+
+\section{MẠNG NƠ-RON TÍCH CHẬP (CNN - DEEP VISION)}
+\input{Chương_2/docs/ch2_cnn.tex}
+\newpage
+
+\section{MẠNG NƠ-RON HỒI QUY (RNN - TEMPORAL CONTEXT)}
+\input{Chương_3/docs/ch3_rnn.tex}
+\newpage
+
+\section{MẠNG LSTM VÀ CƠ CHẾ ATTENTION (LONG-TERM MEMORY)}
+\input{Chương_4/docs/ch4_lstm.tex}
+\newpage
+
+\section*{KẾT LUẬN}
+\addcontentsline{toc}{section}{KẾT LUẬN}
+Trong khuôn khổ của học phần Thực tập cơ sở, báo cáo đã trình bày một cách hệ thống và chi tiết từ những khái niệm nền tảng cơ bản nhất của Học máy (Machine Learning) cho đến các kiến trúc phức tạp của Học sâu (Deep Learning). Thông qua việc kết hợp chặt chẽ giữa lý thuyết và thực hành trên ngôn ngữ Python với các thư viện phổ biến (TensorFlow, Keras, Scikit-learn, Pandas), sinh viên đã đạt được những kết quả cụ thể như sau:
+
+\begin{itemize}
+    \item \textbf{Về Tiền xử lý dữ liệu:} Hiểu và vận dụng được tầm quan trọng của việc làm sạch, biến đổi và lựa chọn đặc trưng (Feature Engineering) thông qua bài toán phân loại hành khách sống sót trên tàu Titanic. Điều này khẳng định nguyên lý cốt lõi "Garbage In, Garbage Out" trong khoa học dữ liệu.
+    \item \textbf{Về Mạng nơ-ron tích chập (CNN):} Nắm vững cơ chế hoạt động của các lớp Convolution và Pooling. Thực nghiệm thành công mô hình phân loại hình ảnh trên tập dữ liệu Fashion MNIST, cho thấy sự vượt trội của CNN trong việc trích xuất các đặc trưng không gian (spatial features) trong các bài toán Thị giác máy tính.
+    \item \textbf{Về Mạng nơ-ron hồi quy (RNN):} Hiểu rõ cấu trúc lặp (Recurrent) và trạng thái ẩn (Hidden state) giúp mạng có khả năng xử lý dữ liệu chuỗi (Sequential data). Ứng dụng thành công RNN vào bài toán Phân tích cảm xúc (Sentiment Analysis) trên tập dữ liệu IMDB.
+    \item \textbf{Về Mạng bộ nhớ Dài-Ngắn hạn (LSTM):} Khắc phục được nhược điểm tiêu biến đạo hàm (Vanishing Gradient) của RNN truyền thống. Ứng dụng thành thạo cấu trúc các cổng (Gates) của LSTM để giải quyết xuất sắc bài toán dự báo chuỗi thời gian (Time Series Forecasting) dựa trên tập dữ liệu số lượng hành khách hàng không.
+\end{itemize}
+
+Nhìn chung, quá trình thực tập đã giúp củng cố kiến thức học thuật, rèn luyện tư duy phân tích bài toán và nâng cao kỹ năng lập trình AI thực tế. Đây sẽ là hành trang quan trọng để tiếp tục nghiên cứu và phát triển các hệ thống Trí tuệ nhân tạo quy mô lớn trong tương lai.
+
+\newpage
+\begin{thebibliography}{9}
+\addcontentsline{toc}{section}{TÀI LIỆU THAM KHẢO}
+\bibitem{goodfellow2016} Ian Goodfellow, Yoshua Bengio, and Aaron Courville, \textit{Deep Learning}, MIT Press, 2016.
+\bibitem{lecun1998} Yann LeCun, Leon Bottou, Yoshua Bengio, and Patrick Haffner, \textit{Gradient-based learning applied to document recognition}, Proceedings of the IEEE, 1998.
+\bibitem{hochreiter1997} Sepp Hochreiter and Jürgen Schmidhuber, \textit{Long Short-Term Memory}, Neural Computation, 1997.
+\bibitem{cho2014} Kyunghyun Cho et al., \textit{Learning Phrase Representations using RNN Encoder-Decoder for Statistical Machine Translation}, EMNLP, 2014.
+\bibitem{chollet2018} François Chollet, \textit{Deep Learning with Python}, Manning Publications, 2018.
+\bibitem{tfdocs} TensorFlow and Keras Documentation, \url{https://www.tensorflow.org/api_docs}.
+\bibitem{titanic} Titanic: Machine Learning from Disaster Dataset, Kaggle, \url{https://www.kaggle.com/c/titanic}.
+\bibitem{fashionmnist} Fashion MNIST Dataset, Zalando Research, \url{https://github.com/zalandoresearch/fashion-mnist}.
+\bibitem{imdb} IMDB Dataset of 50K Movie Reviews, Stanford University, \url{http://ai.stanford.edu/~amaas/data/sentiment/}.
+\bibitem{airline} International Airline Passengers Dataset, Brownlee, \url{https://raw.githubusercontent.com/jbrownlee/Datasets/master/airline-passengers.csv}.
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,23 @@
+\paragraph{Phân tích bộ dữ liệu Telco Churn} \hfill \\
+Bộ dữ liệu chứa thông tin của khách hàng một công ty viễn thông, bao gồm các dịch vụ họ sử dụng và trạng thái rời bỏ (Churn). Thách thức lớn nhất ở đây là sự mất cân bằng dữ liệu: số lượng khách hàng ở lại chiếm đa số, khiến mô hình dễ bị thiên kiến (bias) về phía lớp đa số.
+
+\paragraph{Kỹ thuật xử lý: SMOTE (Synthetic Minority Over-sampling Technique)} \hfill \\
+Thay vì chỉ đơn giản là nhân bản các mẫu ở lớp thiểu số (Random Over-sampling), SMOTE tạo ra các mẫu mới bằng cách nội suy giữa các mẫu hiện có. Điều này giúp mô hình học được ranh giới quyết định (decision boundary) tổng quát hơn.
+
+\paragraph{Kết quả thực nghiệm} \hfill \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{Chương_1/results/telco/imbalance_before.png}
+    \includegraphics[width=0.45\linewidth]{Chương_1/results/telco/imbalance_after.png}
+    \caption{Phân phối nhãn Churn trước và sau khi áp dụng SMOTE}
+    \label{fig:smote_distribution}
+\end{figure}
+
+Sau khi áp dụng SMOTE, tập huấn luyện đã đạt trạng thái cân bằng lý tưởng (50/50). Kết quả đánh giá trên tập Test cho thấy mô hình cải thiện đáng kể chỉ số Recall cho lớp Churn, giúp doanh nghiệp nhận diện được nhiều khách hàng có nguy cơ rời bỏ hơn.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Chương_1/results/telco/confusion_matrix.png}
+    \caption{Ma trận nhầm lẫn sau khi cân bằng dữ liệu}
+    \label{fig:telco_cm}
+\end{figure}

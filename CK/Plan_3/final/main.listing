@@ -1,0 +1,33 @@
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+
+# 1. Load dữ liệu
+df = pd.read_csv('titanic.csv')
+
+# 2. Xử lý giá trị khuyết (Theory: Imputation)
+# Lý thuyết: Điền Median giúp tránh ảnh hưởng của các giá trị ngoại lai (outliers)
+df['Age'] = df['Age'].fillna(df['Age'].median())
+
+# Lý thuyết: Điền Mode cho dữ liệu phân loại (Cảng lên tàu)
+df['Embarked'] = df['Embarked'].fillna(df['Embarked'].mode()[0])
+
+# 3. Kỹ nghệ đặc trưng (Theory: Feature Engineering)
+# Lý thuyết: Tạo ra đặc trưng mới có ý nghĩa hơn từ dữ liệu thô
+df['FamilySize'] = df['SibSp'] + df['Parch'] + 1
+
+# 4. Mã hóa (Theory: Categorical Encoding)
+# Lý thuyết: Chuyển giới tính về dạng số để mô hình tính toán được
+df['Sex'] = df['Sex'].map({'male': 0, 'female': 1})
+
+# Lý thuyết: One-hot encoding cho cảng Embarked để tránh giả định thứ tự
+df = pd.get_dummies(df, columns=['Embarked'], prefix='Port')
+
+# 5. Chuẩn hóa dữ liệu (Theory: Scaling)
+# Lý thuyết: Đưa các biến số về cùng một thang đo (Z-score Scaling)
+scaler = StandardScaler()
+df[['Age', 'Fare']] = scaler.fit_transform(df[['Age', 'Fare']])
+
+# 6. Loại bỏ cột không quan trọng (Theory: Feature Selection)
+# Lý thuyết: Loại bỏ các cột chứa quá nhiều giá trị thiếu hoặc không mang thông tin dự đoán
+df.drop(['PassengerId', 'Name', 'Ticket', 'Cabin'], axis=1, inplace=True)

@@ -1,0 +1,392 @@
+\subsection{Lịch sử phát triển và Tầm quan trọng}
+Trí tuệ nhân tạo (Artificial Intelligence - AI) không phải là một khái niệm mới mẻ. Nó đã bắt đầu từ những năm 1950 với phép thử Turing nổi tiếng của Alan Turing. Qua nhiều thập kỷ phát triển, từ những hệ chuyên gia dựa trên luật lệ (Rule-based systems) đến sự bùng nổ của Học máy (Machine Learning) và gần đây nhất là Học sâu (Deep Learning), AI đã chứng minh được khả năng giải quyết các vấn đề phức tạp mà con người khó có thể xử lý thủ công.
+
+Một nguyên lý bất biến trong lĩnh vực khoa học dữ liệu là \textbf{"Garbage In, Garbage Out"} (Rác đầu vào, Rác đầu ra). Cho dù mô hình học máy của bạn có phức tạp và hiện đại đến đâu, nếu dữ liệu đầu vào chứa nhiều sai sót, nhiễu hoặc không được định dạng đúng, kết quả đầu ra sẽ không có giá trị thực tiễn. Do đó, bước Tiền xử lý dữ liệu (Data Preprocessing) thường chiếm tới 70-80\% thời gian của một dự án khoa học dữ liệu.
+
+\subsubsection{Quy trình CRISP-DM trong dự án AI}
+Để một dự án AI thành công, các nhà khoa học dữ liệu thường tuân theo quy trình chuẩn công nghiệp CRISP-DM (Cross-Industry Standard Process for Data Mining) gồm 6 giai đoạn:
+\begin{enumerate}
+    \item \textbf{Business Understanding:} Hiểu mục tiêu và yêu cầu của bài toán kinh doanh.
+    \item \textbf{Data Understanding:} Thu thập và khám phá sơ bộ dữ liệu.
+    \item \textbf{Data Preparation:} Đây chính là bước Tiền xử lý dữ liệu, chuẩn bị tập dữ liệu cuối cùng để đưa vào mô hình.
+    \item \textbf{Modeling:} Lựa chọn và huấn luyện các thuật toán học máy.
+    \item \textbf{Evaluation:} Đánh giá kết quả dựa trên các chỉ số (Accuracy, Precision, Recall).
+    \item \textbf{Deployment:} Triển khai mô hình vào thực tế.
+\end{enumerate}
+Nó bao gồm việc làm sạch dữ liệu, xử lý các giá trị thiếu, mã hóa các biến phân loại và chuẩn hóa các thang đo để mô hình có thể "hiểu" và học tập hiệu quả nhất.
+
+\subsection{Lý thuyết các kỹ thuật Tiền xử lý}
+Trong chương này, chúng ta tập trung vào các kỹ thuật cốt lõi thường được áp dụng trong hầu hết các bài toán thực tế:
+
+\subsubsection{Xử lý giá trị khuyết (Missing Values)}
+Dữ liệu trong thực tế thường không hoàn hảo. Việc khuyết thiếu dữ liệu có thể do nhiều nguyên nhân: lỗi cảm biến, người dùng không cung cấp thông tin, hoặc lỗi trong quá trình truyền tải. Có hai cách tiếp cận chính:
+\begin{itemize}
+    \item \textbf{Loại bỏ (Deletion):} Xóa các dòng hoặc cột có giá trị thiếu. Cách này đơn giản nhưng dễ gây mất mát thông tin quan trọng nếu tỷ lệ khuyết lớn.
+    \item \textbf{Điền khuyết (Imputation):} Thay thế giá trị thiếu bằng một giá trị đại diện:
+    \begin{itemize}
+        \item \textit{Trung bình (Mean):} $\bar{x} = \frac{1}{n} \sum_{i=1}^{n} x_i$. Phù hợp với dữ liệu phân phối chuẩn và không có giá trị ngoại lai.
+        \item \textit{Trung vị (Median):} Giá trị nằm ở giữa tập dữ liệu đã sắp xếp. Phù hợp khi dữ liệu có nhiều giá trị ngoại lai (outliers).
+        \item \textit{Giá trị xuất hiện nhiều nhất (Mode):} Phù hợp cho dữ liệu phân loại (Categorical data).
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Mã hóa dữ liệu phân loại (Encoding)}
+Máy tính và các thuật toán học máy chỉ làm việc trên các con số. Vì vậy, các dữ liệu dạng chữ (như Giới tính: "Nam", "Nữ") cần được chuyển đổi:
+\begin{itemize}
+    \item \textbf{Label Encoding:} Gán mỗi nhãn một con số. Ví dụ: \{Hà Nội, Đà Nẵng, TP.HCM\} thành \{0, 1, 2\}.
+    \item \textbf{One-hot Encoding:} Tạo ra vector nhị phân. Ví dụ với biến "Màu sắc":
+    \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Màu sắc} & \textbf{Đỏ} & \textbf{Xanh} & \textbf{Vàng} \\ \hline
+    Đỏ & 1 & 0 & 0 \\ \hline
+    Xanh & 0 & 1 & 0 \\ \hline
+    Vàng & 0 & 0 & 1 \\ \hline
+    \end{tabular}
+    \caption{Ví dụ minh họa One-hot Encoding}
+    \end{table}
+\end{itemize}
+
+\subsubsection{Chuẩn hóa dữ liệu (Scaling)}
+Các đặc trưng thường có thang đo khác nhau. Hai kỹ thuật phổ biến nhất là:
+\begin{itemize}
+    \item \textbf{Min-Max Scaling (Normalization):} Đưa dữ liệu về khoảng [0, 1].
+    \begin{equation}
+        x_{norm} = \frac{x - x_{min}}{x_{max} - x_{min}}
+    \end{equation}
+    \item \textbf{Standardization (Z-score Scaling):} Đưa dữ liệu về phân phối có trung bình $\mu = 0$ và độ lệch chuẩn $\sigma = 1$.
+    \begin{equation}
+        z = \frac{x - \mu}{\sigma}
+    \end{equation}
+\end{itemize}
+
+\subsubsection{Kỹ nghệ đặc trưng (Feature Engineering)}
+Kỹ nghệ đặc trưng là quá trình sử dụng kiến thức chuyên môn về dữ liệu để tạo ra các biến mới giúp các thuật toán học máy hoạt động hiệu quả hơn. Đây được coi là một "nghệ thuật" trong khoa học dữ liệu. Một số cách tiếp cận:
+\begin{itemize}
+    \item \textbf{Biến đổi toán học:} Sử dụng Log, bình phương hoặc căn bậc hai để điều chỉnh phân phối của dữ liệu.
+    \item \textbf{Kết hợp đặc trưng:} Tạo ra biến mới từ các biến có sẵn (ví dụ: $FamilySize = SibSp + Parch + 1$).
+    \item \textbf{Trích xuất thông tin:} Lấy ra ngày, tháng, năm từ dữ liệu thời gian hoặc trích xuất danh xưng (Mr, Mrs) từ tên hành khách.
+\end{itemize}
+
+\subsubsection{Lựa chọn đặc trưng (Feature Selection)}
+Không phải tất cả dữ liệu thu thập được đều có ích cho việc dự báo. Việc giữ lại các cột không liên quan (như số định danh cá nhân) có thể làm tăng độ phức tạp của mô hình và dẫn đến hiện tượng quá khớp (Overfitting).
+\begin{itemize}
+    \item \textbf{Filter methods:} Sử dụng các phép đo thống kê (như Correlation) để đánh giá tầm quan trọng của từng đặc trưng.
+    \item \textbf{Wrapper methods:} Thử nghiệm mô hình với các tập con đặc trưng khác nhau để tìm ra tập tối ưu.
+\end{itemize}
+
+\subsection{Thực nghiệm: Dự đoán sống sót trên tàu Titanic}
+Chúng ta sử dụng bộ dữ liệu kinh điển "Titanic: Machine Learning from Disaster" từ Kaggle để minh họa các bước tiền xử lý. Bài toán yêu cầu dự đoán khả năng sống sót của hành khách dựa trên các thông tin cá nhân.
+
+\subsubsection{Kỹ thuật Lựa chọn Đặc trưng (Feature Selection)}
+Trong thực tế, không phải thuộc tính nào cũng mang lại thông tin hữu ích cho mô hình. Việc loại bỏ các thuộc tính gây nhiễu hoặc không có ý nghĩa thống kê (như ID hành khách, tên riêng) giúp giảm độ phức tạp của mô hình, tăng tốc độ huấn luyện và tránh hiện tượng quá khớp (Overfitting).
+
+\subsubsection{Chia tập dữ liệu (Train/Test Split)}
+Để đánh giá hiệu quả của mô hình một cách khách quan, dữ liệu cần được chia thành hai phần độc lập:
+\begin{itemize}
+    \item \textbf{Training Set:} Dùng để huấn luyện mô hình học các quy luật.
+    \item \textbf{Testing Set:} Dùng để kiểm tra khả năng dự báo trên dữ liệu mới mà mô hình chưa từng thấy. Thông thường tỷ lệ chia là 80/20 hoặc 70/30.
+\end{itemize}
+
+\subsection{Phân tích và Tiền xử lý dữ liệu với Python}
+Dưới đây là các bước thực nghiệm tiền xử lý dữ liệu dựa trên ngôn ngữ Python, sử dụng tập dữ liệu Titanic:
+
+\subsubsection{Khởi tạo và Tải dữ liệu}
+\begin{lstlisting}[language=Python]
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import random
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+SEED = 42
+np.random.seed(SEED)
+random.seed(SEED)
+
+sns.set_theme(style="whitegrid", palette="muted")
+plt.rcParams['figure.figsize'] = (12, 8)
+plt.rcParams['font.size'] = 12
+
+print("--- 1. Loading Dataset ---")
+df = pd.read_csv('./dataset/titanic.csv')
+print(df.head())
+\end{lstlisting}
+
+\paragraph{Giải thích chi tiết:} \hfill \\
+\begin{itemize}
+    \item \textbf{Thư viện Scikit-learn:} Chúng ta sử dụng \texttt{train\_test\_split} để chia dữ liệu, \texttt{StandardScaler} để chuẩn hóa, và \texttt{LogisticRegression} làm mô hình dự báo cơ bản. Đây là các module chuẩn trong học máy truyền thống.
+    \item \textbf{Cố định SEED:} Việc sử dụng \texttt{np.random.seed(42)} cực kỳ quan trọng trong thực nghiệm. Nó đảm bảo các kết quả (như việc chia dữ liệu ngẫu nhiên) sẽ được lặp lại giống hệt nhau ở mỗi lần chạy, giúp việc đánh giá mô hình được khách quan.
+    \item \textbf{Cấu hình Seaborn:} Lệnh \texttt{sns.set\_theme} thiết lập giao diện biểu đồ hiện đại, giúp việc quan sát phân phối dữ liệu trong bước EDA trở nên rõ ràng hơn.
+\end{itemize}
+
+\paragraph{Kết quả chạy:} \hfill \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{images/11.png}
+    \caption{Khởi tạo và Tải dữ liệu}
+    \label{fig:placeholder}
+\end{figure}
+
+\subsubsection{Phân tích và Trực quan hóa dữ liệu (EDA)}
+\begin{lstlisting}[language=Python]
+print("\n--- 2. Visualizing Data ---")
+fig, axes = plt.subplots(3, 2, figsize=(16, 20))
+
+# 1. Overall Survival Rate
+df['Survived'].value_counts().plot.pie(explode=[0, 0.1], autopct='%1.1f%%', ax=axes[0, 0], shadow=True, colors=['#ff9999','#66b3ff'])
+axes[0, 0].set_title('Overall Survival Rate')
+
+# 2. Survival by Sex
+sns.countplot(data=df, x='Sex', hue='Survived', ax=axes[0, 1], palette='magma')
+axes[0, 1].set_title('Survival by Sex')
+
+# 3. Survival Rate by Class
+sns.barplot(data=df, x='Pclass', y='Survived', ax=axes[1, 0], palette='viridis')
+axes[1, 0].set_title('Survival Rate by Class')
+
+# 4. Age Distribution by Survival
+sns.histplot(df[df['Survived'] == 1]['Age'].dropna(), color='green', label='Survived', kde=True, ax=axes[1, 1], alpha=0.5)
+sns.histplot(df[df['Survived'] == 0]['Age'].dropna(), color='red', label='Not Survived', kde=True, ax=axes[1, 1], alpha=0.5)
+axes[1, 1].set_title('Age Distribution by Survival')
+axes[1, 1].legend()
+
+# 5. Fare Distribution by Pclass & Survival
+sns.boxplot(data=df, x='Pclass', y='Fare', hue='Survived', ax=axes[2, 0], palette='Set2')
+axes[2, 0].set_title('Fare Distribution by Pclass & Survival')
+axes[2, 0].set_ylim(0, 300)
+
+# 6. Survival Probability by Embarkation & Sex
+sns.pointplot(data=df, x='Embarked', y='Survived', hue='Sex', ax=axes[2, 1], palette='coolwarm')
+axes[2, 1].set_title('Survival Probability by Embarkation & Sex')
+
+plt.tight_layout()
+plt.show()
+
+# Correlation Heatmap
+plt.figure(figsize=(10, 8))
+numeric_df = df.select_dtypes(include=[np.number])
+sns.heatmap(numeric_df.corr(), annot=True, cmap='RdBu_r', center=0, fmt='.2f')
+plt.title('Correlation Heatmap of Numeric Features')
+plt.show()
+\end{lstlisting}
+
+\paragraph{Giải thích chi tiết:} \hfill \\
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.1\linewidth]{images/12.png}
+    \caption{Các biểu đồ trực quan hóa dữ liệu EDA}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{itemize}
+
+    \item \textbf{Biểu đồ Pie (Overall Survival Rate):} Biểu đồ thể hiện tỷ lệ sống sót chung của hành khách trên tàu Titanic. Kết quả cho thấy khoảng \textbf{38.4\%} hành khách sống sót và \textbf{61.6\%} không sống sót. Bộ dữ liệu có sự chênh lệch nhẹ giữa hai lớp, tuy nhiên chưa ở mức mất cân bằng nghiêm trọng nên vẫn phù hợp để huấn luyện mô hình phân loại.
+
+    \item \textbf{Biểu đồ Countplot theo Giới tính (Survival by Sex):} Biểu đồ cho thấy giới tính là một đặc trưng có ảnh hưởng mạnh đến khả năng sống sót. Số lượng nữ giới sống sót cao hơn đáng kể so với nam giới, trong khi phần lớn nam giới không sống sót. Kết quả này phù hợp với nguyên tắc ưu tiên cứu hộ ``Women and Children First'' trong thảm họa Titanic.
+
+    \item \textbf{Biểu đồ Tỷ lệ sống theo Hạng vé (Survival Rate by Class):} Hành khách ở \textbf{hạng nhất (Pclass = 1)} có tỷ lệ sống sót cao nhất (trên 60\%), tiếp theo là hạng hai, và thấp nhất là \textbf{hạng ba}. Điều này cho thấy điều kiện kinh tế - xã hội và vị trí khoang tàu có ảnh hưởng rõ rệt đến cơ hội sống sót.
+
+    \item \textbf{Biểu đồ Phân bố Tuổi theo Trạng thái sống sót (Age Distribution by Survival):} Hành khách sống sót tập trung nhiều ở nhóm tuổi trẻ và trung niên. Nhóm trẻ em có xu hướng sống sót cao hơn, trong khi nhóm lớn tuổi có tỷ lệ tử vong cao hơn. Đây là dấu hiệu cho thấy độ tuổi là biến quan trọng trong bài toán dự đoán.
+
+    \item \textbf{Biểu đồ Boxplot Giá vé theo Hạng vé và Trạng thái sống sót (Fare Distribution by Pclass \& Survival):} Giá vé của hành khách hạng nhất cao hơn đáng kể so với các hạng còn lại. Đồng thời, những người sống sót thường có xu hướng trả mức vé cao hơn. Biểu đồ cũng xuất hiện nhiều giá trị ngoại lai (outliers), vì vậy cần thực hiện chuẩn hóa dữ liệu ở bước tiền xử lý để tránh ảnh hưởng đến mô hình.
+
+    \item \textbf{Biểu đồ Xác suất sống theo Cảng lên tàu và Giới tính (Survival Probability by Embarkation \& Sex):} Nữ giới có xác suất sống sót cao ở cả ba cảng lên tàu (S, C, Q), đặc biệt cao nhất tại cảng C. Trong khi đó nam giới có xác suất sống thấp hơn rõ rệt ở mọi cảng. Điều này cho thấy biến \texttt{Embarked} khi kết hợp với giới tính có thể cải thiện khả năng dự đoán của mô hình.
+
+    \item \textbf{Hàm \texttt{plt.tight\_layout()}:} Được sử dụng để tự động căn chỉnh khoảng cách giữa các biểu đồ con, giúp bố cục hình ảnh rõ ràng, không chồng lấn và tăng tính thẩm mỹ cho báo cáo.
+
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/13.png}
+    \caption{Biểu đồ tương quan (Correlation Heatmap)}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{itemize}
+
+    \item \textbf{Biểu đồ Correlation Heatmap:} Biểu đồ nhiệt được sử dụng để đo lường mức độ tương quan tuyến tính giữa các biến số trong tập dữ liệu Titanic. Giá trị tương quan nằm trong khoảng từ \(-1\) đến \(1\), trong đó:
+    \begin{itemize}
+        \item Giá trị gần \(1\): tương quan thuận mạnh.
+        \item Giá trị gần \(-1\): tương quan nghịch mạnh.
+        \item Giá trị gần \(0\): ít hoặc không có mối liên hệ tuyến tính.
+    \end{itemize}
+
+    \item \textbf{Biến \texttt{Pclass} và \texttt{Fare}:} Có hệ số tương quan âm khá mạnh \((-0.55)\). Điều này cho thấy hành khách ở hạng vé cao hơn (Pclass nhỏ hơn) thường trả mức giá vé cao hơn. Đây là mối quan hệ hợp lý vì hạng nhất có giá vé cao hơn hạng ba.
+
+    \item \textbf{Biến \texttt{Survived} và \texttt{Pclass}:} Có hệ số tương quan âm \((-0.34)\), chứng tỏ hành khách ở hạng vé cao có khả năng sống sót lớn hơn. Đây là đặc trưng quan trọng trong bài toán dự đoán sống sót.
+
+    \item \textbf{Biến \texttt{Survived} và \texttt{Fare}:} Có tương quan dương mức trung bình \((0.26)\). Hành khách trả giá vé cao hơn thường có xác suất sống sót cao hơn, phù hợp với nhận định rằng hành khách hạng cao được ưu tiên hơn trong cứu hộ.
+
+    \item \textbf{Biến \texttt{Age} và \texttt{Pclass}:} Có tương quan âm nhẹ \((-0.37)\), cho thấy hành khách lớn tuổi hơn thường xuất hiện nhiều hơn ở các hạng vé cao. Điều này phản ánh sự khác biệt về điều kiện kinh tế giữa các nhóm tuổi.
+
+    \item \textbf{Biến \texttt{SibSp} và \texttt{Parch}:} Có tương quan dương \((0.41)\), nghĩa là những hành khách đi cùng anh chị em/vợ chồng thường cũng đi cùng cha mẹ hoặc con cái. Đây là dấu hiệu cho thấy sự tồn tại của các nhóm gia đình trên tàu.
+
+    \item \textbf{Biến \texttt{Age} và \texttt{SibSp}:} Có tương quan âm nhẹ \((-0.31)\), cho thấy hành khách trẻ tuổi thường đi cùng anh chị em nhiều hơn so với người lớn tuổi.
+
+    \item \textbf{Biến \texttt{PassengerId}:} Gần như không tương quan với các biến còn lại. Đây chỉ là mã định danh hành khách nên không mang nhiều ý nghĩa dự đoán và có thể loại bỏ khi huấn luyện mô hình.
+
+    \item \textbf{Kết luận:} Từ biểu đồ nhiệt có thể thấy các biến \texttt{Pclass}, \texttt{Fare}, \texttt{Sex} (nếu mã hóa), \texttt{Age}, \texttt{SibSp}, \texttt{Parch} là những đặc trưng tiềm năng cho mô hình học máy. Trong đó \texttt{Pclass} và \texttt{Fare} là hai biến có tác động rõ rệt nhất đến khả năng sống sót.
+
+\end{itemize}
+
+\subsubsection{Tiền xử lý dữ liệu}
+\begin{lstlisting}[language=Python]
+print("\n--- 3. Data Preprocessing ---")
+# 3.1 Xu ly gia tri khuyet
+df['Age'] = df['Age'].fillna(df['Age'].median())
+df['Embarked'] = df['Embarked'].fillna(df['Embarked'].mode()[0])
+df['Fare'] = df['Fare'].fillna(df['Fare'].median())
+
+# 3.2 Trich xuat Title tu Name
+df['Title'] = df['Name'].str.extract(' ([A-Za-z]+)\.', expand=False)
+df['Title'] = df['Title'].replace(['Lady', 'Countess','Capt', 'Col', 'Don', 'Dr', 'Major', 'Rev', 'Sir', 'Jonkheer', 'Dona'], 'Rare')
+df['Title'] = df['Title'].replace(['Mlle', 'Ms'], 'Miss')
+df['Title'] = df['Title'].replace('Mme', 'Mrs')
+
+# 3.3 Ky nghe dac trung
+df['FamilySize'] = df['SibSp'] + df['Parch'] + 1
+df['IsAlone'] = (df['FamilySize'] == 1).astype(int)
+\end{lstlisting}
+
+\paragraph{Giải thích chi tiết:} \hfill \\
+\begin{itemize}
+    \item \textbf{Xử lý giá trị khuyết (\texttt{fillna}):}
+    \begin{itemize}
+        \item Với biến định lượng (\texttt{Age}, \texttt{Fare}), ta dùng \texttt{median} (trung vị) thay vì \texttt{mean} (trung bình). Lý thuyết chỉ ra rằng trung vị ít bị ảnh hưởng bởi các giá trị ngoại lai (như những người cực già hoặc giá vé cực cao).
+        \item Với biến định danh (\texttt{Embarked}), ta dùng \texttt{mode()[0]} (giá trị xuất hiện nhiều nhất) để lấp đầy, vì không thể tính trung bình cho tên cảng.
+    \end{itemize}
+    \item \textbf{Trích xuất danh xưng (\texttt{str.extract}):} Đây là kỹ thuật trích xuất thông tin từ dữ liệu văn bản thô. Danh xưng (Mr, Mrs, Master) thường phản ánh địa vị xã hội và độ tuổi, những yếu tố then chốt quyết định khả năng sống sót.
+    \item \textbf{Kỹ nghệ đặc trưng (\texttt{FamilySize}):} Kết hợp các biến \texttt{SibSp} (anh chị em/vợ chồng) và \texttt{Parch} (bố mẹ/con cái) để tạo ra tổng số thành viên gia đình. Một người đi một mình có thể có khả năng sống sót khác với một gia đình đông người.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/14.png}
+    \caption{Tỉ lệ sống sót dựa trên danh xưng (Title)}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{lstlisting}[language=Python]
+# 3.4 Loai bo cac cot thua
+df.drop(['PassengerId', 'Name', 'Ticket', 'Cabin'], axis=1, inplace=True)
+
+# 3.5 Ma hoa
+le = LabelEncoder()
+df['Sex'] = le.fit_transform(df['Sex'])
+df['Title'] = le.fit_transform(df['Title'])
+df = pd.get_dummies(df, columns=['Embarked'])
+\end{lstlisting}
+
+\paragraph{Giải thích chi tiết:} \hfill \\
+\begin{itemize}
+    \item \textbf{Mã hóa nhãn (\texttt{LabelEncoder}):} Chuyển \texttt{Sex} (Nam/Nữ) thành (0/1). Máy tính không hiểu chữ, chỉ hiểu số, vì vậy bước này là bắt buộc để mô hình có thể thực hiện các phép tính đại số tuyến tính.
+    \item \textbf{Mã hóa One-hot (\texttt{get\_dummies}):} Áp dụng cho cảng \texttt{Embarked}. Vì cảng S, C, Q không có thứ tự ưu tiên (S không lớn hơn C), nên ta chuyển chúng thành các cột nhị phân riêng biệt để tránh mô hình hiểu lầm đây là dữ liệu có thứ tự.
+\end{itemize}
+
+\subsubsection{Xây dựng và Đánh giá mô hình}
+\begin{lstlisting}[language=Python]
+# Chia du lieu
+X = df.drop('Survived', axis=1)
+y = df['Survived']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Build & Train Model (Logistic Regression)
+print("\n--- 4. Building & Training Model ---")
+model = LogisticRegression()
+model.fit(X_train_scaled, y_train)
+\end{lstlisting}
+
+\paragraph{Giải thích chi tiết:} \hfill \\
+\begin{itemize}
+    \item \textbf{Chuẩn hóa dữ liệu (\texttt{StandardScaler}):} Đưa các đặc trưng về phân phối chuẩn ($\mu=0, \sigma=1$). Mô hình Logistic Regression nhạy cảm với thang đo của dữ liệu; nếu không chuẩn hóa, biến \texttt{Fare} (0-500) sẽ "áp đảo" hoàn toàn biến \texttt{Sex} (0-1).
+    \item \textbf{Hàm \texttt{fit}:} Đây là quá trình "học". Mô hình tìm các trọng số (weights) $w$ và bias $b$ tối ưu để cực tiểu hóa hàm mất mát (Log Loss) thông qua giải thuật tối ưu hóa.
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+# Evaluation
+y_pred = model.predict(X_test_scaled)
+print("\nAccuracy Score:", accuracy_score(y_test, y_pred))
+
+# Confusion Matrix Visualization
+plt.figure(figsize=(6, 4))
+sns.heatmap(confusion_matrix(y_test, y_pred), annot=True, fmt='d', cmap='Blues')
+plt.title('Confusion Matrix - Titanic')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.show()
+\end{lstlisting}
+
+\paragraph{Giải thích chi tiết:} \hfill \\
+\begin{itemize}
+    \item \textbf{Ma trận nhầm lẫn (\texttt{confusion\_matrix}):} Cung cấp cái nhìn chi tiết hơn \texttt{Accuracy}. Nó cho biết mô hình dự đoán sai bao nhiêu người sống thành chết (False Negative) và bao nhiêu người chết thành sống (False Positive).
+    \item \textbf{Thông số \texttt{annot=True}:} Hiển thị các con số cụ thể trên Heatmap, giúp việc đọc kết quả thực nghiệm trực quan hơn.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/15.png}
+    \caption{Ma trận nhầm lẫn (Confusion Matrix) của mô hình Logistic Regression}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{itemize}
+
+    \item \textbf{Biểu đồ Confusion Matrix:} Ma trận nhầm lẫn được sử dụng để đánh giá hiệu quả của mô hình phân loại trong bài toán dự đoán sống sót của hành khách Titanic. Ma trận gồm 4 thành phần chính:
+
+    \begin{itemize}
+        \item \textbf{True Negative (TN = 91):} Mô hình dự đoán đúng 91 hành khách không sống sót.
+        \item \textbf{False Positive (FP = 14):} Mô hình dự đoán nhầm 14 hành khách sống sót trong khi thực tế không sống sót.
+        \item \textbf{False Negative (FN = 20):} Mô hình dự đoán nhầm 20 hành khách không sống sót trong khi thực tế sống sót.
+        \item \textbf{True Positive (TP = 54):} Mô hình dự đoán đúng 54 hành khách sống sót.
+    \end{itemize}
+
+    \item \textbf{Độ chính xác (Accuracy):} 
+    \[
+    Accuracy = \frac{TP + TN}{TP + TN + FP + FN}
+    = \frac{54 + 91}{179} \approx 0.81
+    \]
+    
+    Điều này cho thấy mô hình dự đoán đúng khoảng \textbf{81\%} tổng số mẫu kiểm tra, là mức khá tốt đối với bài toán phân loại nhị phân.
+
+    \item \textbf{Precision cho lớp sống sót (Class 1):}
+    \[
+    Precision = \frac{TP}{TP + FP}
+    = \frac{54}{54 + 14} \approx 0.79
+    \]
+
+    Nghĩa là khi mô hình dự đoán một hành khách sống sót, xác suất đúng là khoảng \textbf{79\%}.
+
+    \item \textbf{Recall cho lớp sống sót (Class 1):}
+    \[
+    Recall = \frac{TP}{TP + FN}
+    = \frac{54}{54 + 20} \approx 0.73
+    \]
+
+    Tức là mô hình phát hiện đúng khoảng \textbf{73\%} số hành khách thực sự sống sót.
+
+    \item \textbf{Khả năng nhận diện lớp không sống sót:} Giá trị TN cao (91) cho thấy mô hình dự đoán khá tốt đối với nhóm hành khách không sống sót.
+
+    \item \textbf{Phân tích lỗi dự đoán:}
+    \begin{itemize}
+        \item Số lượng \textbf{False Negative} (20) cao hơn \textbf{False Positive} (14), nghĩa là mô hình có xu hướng bỏ sót một số hành khách sống sót.
+        \item Trong thực tế, nếu mục tiêu là tìm đúng người sống sót, cần cải thiện chỉ số Recall.
+    \end{itemize}
+
+    \item \textbf{Kết luận:} Ma trận nhầm lẫn cho thấy mô hình hoạt động tốt với độ chính xác cao và khả năng phân biệt hai lớp khá ổn định. Tuy nhiên vẫn còn một số trường hợp dự đoán sai, đặc biệt là bỏ sót hành khách sống sót. Có thể cải thiện bằng cách tối ưu tham số mô hình hoặc sử dụng các thuật toán mạnh hơn như Random Forest, XGBoost hoặc Neural Network.
+
+\end{itemize}
+
+\subsubsection{Kết quả đạt được}
+Thông qua các kỹ thuật trực quan hóa và tiền xử lý chuyên sâu, dữ liệu đã được làm sạch và biểu diễn theo một hình thức tối ưu nhất cho học máy. Việc áp dụng lý thuyết vào từng dòng lệnh (như chọn Median thay vì Mean, hay One-hot encoding thay vì Label Encoding cho các biến không thứ tự) đã giúp mô hình Logistic Regression đạt được độ chính xác cao và ổn định. Kết quả thực nghiệm minh chứng rằng Tiền xử lý dữ liệu chính là chìa khóa quyết định sự thành bại của một dự án AI.

@@ -1,0 +1,15 @@
+\paragraph{Thực nghiệm với Intel Image Classification} \hfill \\
+Bộ dữ liệu gồm hàng ngàn hình ảnh thuộc 6 lớp phong cảnh: buildings, forest, glacier, mountain, sea, và street.
+
+\paragraph{Mô hình Custom CNN} \hfill \\
+Chúng ta thiết kế một mạng CNN đơn giản gồm 3 lớp tích chập với số lượng filter tăng dần (32, 64, 128). Mỗi lớp tích chập đi kèm với lớp ReLU activation và lớp Max Pooling để giảm kích thước đặc trưng.
+
+\paragraph{Kết quả huấn luyện} \hfill \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_2/results/intel/training_history.png}
+    \caption{Lịch sử huấn luyện (Accuracy và Loss) của mạng Custom CNN}
+    \label{fig:intel_history}
+\end{figure}
+
+Dù kiến trúc đơn giản, mô hình vẫn đạt được độ chính xác khả quan trên tập kiểm tra, chứng minh hiệu quả của việc trích xuất đặc trưng tự động.

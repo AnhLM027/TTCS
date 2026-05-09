@@ -1,0 +1,31 @@
+\section{CHƯƠNG 3: MẠNG NƠ-RON HỒI QUY (RNN - TEMPORAL CONTEXT)}
+
+\subsection{Tổng quan về Mạng nơ-ron hồi quy (RNN)}
+Mạng nơ-ron hồi quy (Recurrent Neural Networks - RNN) là một loại kiến trúc mạng nơ-ron được thiết kế đặc biệt để xử lý dữ liệu dạng chuỗi (sequential data). Điểm khác biệt cốt lõi của RNN là nó có các kết nối phản hồi, cho phép thông tin từ các bước thời gian trước đó được lưu trữ và sử dụng cho các bước tiếp theo thông qua "Hidden State".
+
+\subsection{Ưu điểm và Hạn chế của RNN truyền thống}
+\textbf{Ưu điểm:} Có khả năng xử lý dữ liệu có độ dài biến thiên và nắm bắt được ngữ cảnh cục bộ.
+\textbf{Hạn chế:} Vấn đề tiêu biến đạo hàm (Vanishing Gradient) khiến mạng khó có thể học được các phụ thuộc xa (long-term dependencies) trong chuỗi dài.
+
+\subsection{Kỹ thuật Nhúng từ (Word Embeddings)}
+Trong xử lý ngôn ngữ tự nhiên (NLP), Word Embeddings (như Word2Vec hoặc GloVe) được sử dụng để chuyển đổi các từ thành các vector số thực có số chiều thấp, sao cho các từ có ngữ nghĩa tương đồng sẽ nằm gần nhau trong không gian vector.
+
+\subsection{Thực nghiệm chuyên sâu trên 3 Datasets & 3 Models}
+
+\subsubsection{Dataset 1: Stock Market Sentiment (Vanilla RNN)}
+\textbf{Kiến trúc:} Mạng RNN cơ bản.
+\textbf{Mục tiêu:} Phân tích cảm xúc từ các tiêu đề tin tức chứng khoán để dự báo xu hướng thị trường.
+\input{Chương_3/docs/sub_stock_sentiment.tex}
+
+\subsubsection{Dataset 2: IMDB Movie Reviews (Bidirectional GRU)}
+\textbf{Kiến trúc:} Gated Recurrent Unit (GRU) hai chiều.
+\textbf{Mục tiêu:} Sử dụng GRU để cải tiến khả năng học chuỗi và cơ chế hai chiều (Bidirectional) để nắm bắt ngữ cảnh từ cả phía trước và phía sau của câu.
+\input{Chương_3/docs/sub_imdb_gru.tex}
+
+\subsubsection{Dataset 3: Amazon Reviews (Stacked LSTM)}
+\textbf{Kiến trúc:} Nhiều lớp LSTM xếp chồng (Stacked LSTM).
+\textbf{Mục tiêu:} Xây dựng mô hình phân loại cảm xúc phức tạp trên tập dữ liệu đánh giá sản phẩm Amazon quy mô lớn.
+\input{Chương_3/docs/sub_amazon_lstm.tex}
+
+\subsection{Tổng kết Chương 3}
+Chương này đã minh chứng khả năng của các biến thể RNN trong việc xử lý ngôn ngữ tự nhiên. Việc chuyển từ RNN truyền thống sang các cấu trúc có cổng (Gated) như GRU và LSTM là cần thiết để xử lý các văn bản dài và phức tạp.

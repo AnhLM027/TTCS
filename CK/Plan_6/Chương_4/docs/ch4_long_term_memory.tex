@@ -1,0 +1,32 @@
+\section{CHƯƠNG 4: BỘ NHỚ DÀI HẠN (LSTM/ATTENTION - LONG-TERM MEMORY)}
+
+\subsection{Từ LSTM đến Cơ chế Chú ý (Attention)}
+Mặc dù LSTM đã giải quyết tốt vấn đề tiêu biến đạo hàm, nó vẫn gặp khó khăn khi xử lý các chuỗi cực dài. Cơ chế Chú ý (Attention Mechanism) cho phép mô hình tập trung vào những phần quan trọng nhất của chuỗi đầu vào tại mỗi bước dự báo, thay vì nén toàn bộ thông tin vào một vector trạng thái duy nhất.
+
+\subsection{Dự báo chuỗi thời gian (Time Series Forecasting)}
+Khác với phân loại văn bản, dự báo chuỗi thời gian yêu cầu mô hình nắm bắt được tính mùa vụ (seasonality), xu hướng (trend) và các biến động phi tuyến tính từ dữ liệu số.
+
+\subsection{Thực nghiệm chuyên sâu trên 4 Datasets & 4 Models}
+
+\subsubsection{Dataset 1: Beijing Air Quality (LSTM + Multi-variate)}
+\textbf{Kiến trúc:} LSTM đa biến.
+\textbf{Mục tiêu:} Dự báo nồng độ bụi mịn PM2.5 dựa trên nhiều yếu tố khí tượng như nhiệt độ, độ ẩm, gió.
+\input{Chương_4/docs/sub_air_quality.tex}
+
+\subsubsection{Dataset 2: Google Stock Price (Conv1D + LSTM)}
+\textbf{Kiến trúc:} Kết hợp Convolutional 1D và LSTM.
+\textbf{Mục tiêu:} Sử dụng Conv1D để trích xuất đặc trưng cục bộ và LSTM để học xu hướng dài hạn của giá cổ phiếu.
+\input{Chương_4/docs/sub_stock_price.tex}
+
+\subsubsection{Dataset 3: Energy Consumption (LSTM + Attention)}
+\textbf{Kiến trúc:} LSTM tích hợp cơ chế Attention.
+\textbf{Mục tiêu:} Dự báo mức tiêu thụ điện năng của hộ gia đình, trực quan hóa trọng số Attention để xem mô hình tập trung vào thời điểm nào trong quá khứ.
+\input{Chương_4/docs/sub_energy.tex}
+
+\subsubsection{Dataset 4: Human Activity Recognition - HAR (GRU + Sensor Fusion)}
+\textbf{Kiến trúc:} GRU xử lý dữ liệu từ nhiều cảm biến (Gia tốc kế, Con quay hồi chuyển).
+\textbf{Mục tiêu:} Nhận diện hành động con người (đi bộ, chạy, leo cầu thang) từ dữ liệu sensor của smartphone.
+\input{Chương_4/docs/sub_har.tex}
+
+\subsection{Tổng kết Chương 4}
+Việc kết hợp LSTM với Attention và Conv1D mang lại độ chính xác cao vượt trội cho các bài toán chuỗi thời gian phức tạp. Đây là nền tảng quan trọng cho các kiến trúc Transformer hiện đại.

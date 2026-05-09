@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+# Profile ipython
+.ipython/
+
+# Virtual Environment
+venv/
+env/
+.env
+.venv
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Datasets and Large Files (Based on project structure)
+**/data/
+**/dataset/
+**/datasets/
+*.zip
+*.tar.gz
+*.rar
+*.7z
+__MACOSX/
+
+# Model weights and Results
+*.h5
+*.pth
+*.pt
+*.ckpt
+*.pkl
+*.npy
+*.npz
+**/results/
+**/output/
+
+# Logs
+*.log
+tensorboard/
+runs/
+
+# OS specific
+.DS_Store
+Thumbs.db

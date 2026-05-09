@@ -1,0 +1,412 @@
+\subsection{Lịch sử và Động lực ra đời của mạng RNN}
+Trong khi các mạng nơ-ron truyền thống (Feedforward Neural Networks) và CNN giả định rằng tất cả các đầu vào và đầu ra là độc lập với nhau, nhiều bài toán thực tế lại đòi hỏi khả năng xử lý dữ liệu có tính thứ tự (Sequential Data). Ví dụ, để hiểu một câu văn, bạn cần biết các từ đứng trước đó; hoặc để dự báo giá chứng khoán, bạn cần biết diễn biến giá trong quá khứ.
+
+Mạng nơ-ron hồi quy (Recurrent Neural Network - RNN) được ra đời để giải quyết bài toán này. Lịch sử của RNN bắt đầu từ những năm 1980 với các mô hình như mạng \textit{Hopfield} và sau đó là mạng \textit{Elman} (1990) hay mạng \textit{Jordan}. Ý tưởng cốt lõi là tạo ra một vòng lặp trong kiến trúc mạng, cho phép thông tin được lưu giữ và truyền từ bước thời gian này sang bước thời gian khác.
+
+\subsubsection{Các dạng kiến trúc RNN phổ biến}
+Tùy thuộc vào đầu vào và đầu ra, RNN có thể được cấu hình theo nhiều dạng khác nhau:
+\begin{itemize}
+    \item \textbf{One-to-Many:} Một đầu vào sinh ra một chuỗi đầu ra (ví dụ: mô tả hình ảnh bằng văn bản).
+    \item \textbf{Many-to-One:} Một chuỗi đầu vào sinh ra một đầu ra duy nhất (ví dụ: phân tích cảm xúc đoạn văn).
+    \item \textbf{Many-to-Many:} Chuỗi đầu vào sinh ra chuỗi đầu ra (ví dụ: dịch máy ngôn ngữ).
+\end{itemize}
+
+\subsection{Kiến trúc và Công thức toán học của RNN}
+Điểm khác biệt lớn nhất của RNN so với các mạng khác là sự xuất hiện của \textbf{Trạng thái ẩn (Hidden State)}, đóng vai trò như một bộ nhớ ngắn hạn của mạng.
+
+\subsubsection{Cơ chế hoạt động của Hidden State}
+Tại mỗi bước thời gian $t$, mạng RNN nhận đầu vào $x_t$ và trạng thái ẩn từ bước trước đó $h_{t-1}$ để tính toán trạng thái ẩn hiện tại $h_t$. Trạng thái ẩn này chứa đựng thông tin tổng hợp của toàn bộ chuỗi dữ liệu tính đến thời điểm $t$.
+
+\subsubsection{Công thức toán học}
+Quá trình tính toán trong một đơn vị RNN cơ bản được mô tả qua các công thức sau:
+\begin{equation}
+    h_t = \tanh(W_{xh} x_t + W_{hh} h_{t-1} + b_h)
+\end{equation}
+\begin{equation}
+    y_t = W_{hy} h_t + b_y
+\end{equation}
+
+Trong đó:
+\begin{itemize}
+    \item $x_t$: Vector đầu vào tại thời điểm $t$.
+    \item $h_t$: Trạng thái ẩn tại thời điểm $t$.
+    \item $W_{xh}, W_{hh}, W_{hy}$: Các ma trận trọng số được chia sẻ (shared weights) qua tất cả các bước thời gian.
+    \item $b_h, b_y$: Các vector bias.
+    \item $\tanh$: Hàm kích hoạt giúp giới hạn giá trị của trạng thái ẩn trong khoảng [-1, 1].
+\end{itemize}
+
+\subsubsection{Lan truyền ngược qua thời gian (BPTT)}
+Để huấn luyện RNN, người ta sử dụng giải thuật Backpropagation Through Time (BPTT). Về cơ bản, BPTT triển khai mạng RNN theo thời gian thành một mạng nơ-ron truyền thẳng sâu với các lớp có trọng số giống hệt nhau. Sai số được tính tại mỗi bước thời gian và được lan truyền ngược lại qua tất cả các bước thời gian trước đó để cập nhật trọng số. Tuy nhiên, khi chuỗi quá dài, việc nhân liên tiếp các đạo hàm sẽ dẫn đến vấn đề tiêu biến hoặc bùng nổ đạo hàm, đây chính là lý do các kiến trúc như LSTM ra đời.
+
+\subsection{Ưu, nhược điểm của RNN và So sánh với mạng truyền thống}
+
+Mạng nơ-ron hồi tiếp (RNN) ra đời nhằm giải quyết những bài toán mà mạng nơ-ron truyền thống (Feedforward Neural Network - FNN) không thể xử lý hiệu quả, đặc biệt là các dữ liệu có tính thứ tự.
+
+\subsubsection{Bảng so sánh RNN và mạng nơ-ron truyền thống (FNN):}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|p{3cm}|p{5.5cm}|p{5.5cm}|}
+        \hline
+        \textbf{Đặc điểm} & \textbf{Mạng truyền thống (FNN)} & \textbf{Mạng hồi tiếp (RNN)} \\ \hline
+        \textbf{Luồng thông tin} & Một chiều (từ đầu vào đến đầu ra). & Có vòng lặp (thông tin được lưu lại qua các bước thời gian). \\ \hline
+        \textbf{Bộ nhớ} & Không có bộ nhớ về các đầu vào trước đó. & Có bộ nhớ trạng thái ẩn ($h_t$) để lưu trữ ngữ cảnh. \\ \hline
+        \textbf{Kích thước đầu vào} & Cố định. & Có thể linh hoạt với các chuỗi có độ dài khác nhau. \\ \hline
+        \textbf{Chia sẻ trọng số} & Mỗi lớp có bộ trọng số riêng. & Chia sẻ cùng một bộ trọng số ($W$) qua tất cả các bước thời gian. \\ \hline
+    \end{tabular}
+    \caption{So sánh đặc điểm giữa FNN và RNN}
+\end{table}
+
+\subsubsection{Ưu điểm của RNN:}
+\begin{itemize}
+    \item \textbf{Xử lý dữ liệu chuỗi:} Là lựa chọn hàng đầu cho các bài toán mà thứ tự của dữ liệu đóng vai trò quyết định (như ngôn ngữ, âm thanh).
+    \item \textbf{Hiệu quả tham số:} Nhờ cơ chế chia sẻ trọng số, RNN có số lượng tham số ít hơn so với việc dùng mạng FNN cực lớn để học chuỗi.
+\end{itemize}
+
+\subsubsection{Hạn chế và Thách thức:}
+Mặc dù mạnh mẽ, RNN gặp phải hai vấn đề lớn trong quá trình huấn luyện:
+\begin{itemize}
+    \item \textbf{Vanishing Gradient (Biến mất đạo hàm):} Khi chuỗi quá dài, thông tin từ các bước đầu tiên bị mờ nhạt dần khi lan truyền ngược, khiến mạng không thể học được các phụ thuộc xa (long-term dependencies).
+    \item \textbf{Exploding Gradient (Bùng nổ đạo hàm):} Các giá trị đạo hàm tăng vọt khiến trọng số thay đổi quá lớn, làm mô hình mất ổn định.
+\end{itemize}
+
+\subsubsection{Giải pháp Gradient Clipping:} \hfill \\
+Để khắc phục lỗi bùng nổ đạo hàm, kỹ thuật \textbf{Gradient Clipping} thường được áp dụng. Kỹ thuật này giới hạn giá trị cực đại của đạo hàm trong một ngưỡng nhất định trước khi cập nhật trọng số, giúp quá trình hội tụ diễn ra ổn định hơn.
+
+\subsection{Phân tích cảm xúc văn bản với tập dữ liệu IMDB}
+Bài toán phân loại cảm xúc (Sentiment Analysis) là một ứng dụng tiêu biểu của RNN trong xử lý ngôn ngữ tự nhiên (NLP).
+
+\subsubsection{Tiền xử lý văn bản cho RNN}
+Văn bản thô không thể đưa trực tiếp vào mạng nơ-ron. Chúng ta cần thực hiện các bước chuẩn bị:
+\begin{itemize}
+    \item \textbf{Tokenization:} Chia văn bản thành các từ đơn lẻ và gán cho mỗi từ một chỉ số số nguyên.
+    \item \textbf{Word Embedding:} Chuyển các chỉ số từ thành các vector đặc trưng dày đặc (dense vectors) trong không gian đa chiều, nơi các từ có nghĩa gần nhau sẽ đứng gần nhau.
+    \item \textbf{Padding:} Đảm bảo các chuỗi văn bản đầu vào có độ dài bằng nhau bằng cách thêm các giá trị 0 hoặc cắt bớt.
+\end{itemize}
+
+\subsubsection{Tập dữ liệu IMDB}
+Tập dữ liệu IMDB bao gồm 50,000 bài đánh giá phim (movie reviews) được dán nhãn tích cực (positive) hoặc tiêu cực (negative). Đây là tập dữ liệu chuẩn để đánh giá khả năng hiểu ngữ cảnh và cảm xúc của các mô hình học sâu dạng chuỗi.
+
+\subsection{Thực nghiệm với Python}
+Dưới đây là mã nguồn xây dựng mạng RNN để phân loại cảm xúc văn bản:
+
+\subsubsection{Khám phá và Tiền xử lý văn bản}
+\begin{lstlisting}[language=Python]
+import os
+import random
+import tensorflow as tf
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import re
+import nltk
+from nltk.corpus import stopwords
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras import layers, models
+from sklearn.model_selection import train_test_split
+import seaborn as sns
+
+SEED = 42
+os.environ["PYTHONHASHSEED"] = str(SEED)
+random.seed(SEED)
+np.random.seed(SEED)
+tf.random.set_seed(SEED)
+tf.keras.utils.set_random_seed(SEED)
+
+print("--- 1. Loading Local CSV Dataset ---")
+max_features = 10000
+maxlen = 500
+df = pd.read_csv('dataset/IMDB Dataset.csv')
+
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/31.png}
+    \caption{10 bản ghi đầu trong IMDB}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{lstlisting}[language=Python]
+# Chuyen label ve so
+df['sentiment'] = df['sentiment'].map({'positive': 1, 'negative': 0})
+
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r'<.*?>', '', text) # Remove HTML
+    text = re.sub(r'[^a-z\s]', '', text) # Remove special chars
+    return text
+
+df['review'] = df['review'].apply(clean_text)
+
+# Loc Stop words
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
+
+stop_words = set(stopwords.words('english'))
+stop_words.update(['br', 'movie', 'film'])
+def remove_stopwords(text):
+    return ' '.join([w for w in text.split() if w not in stop_words])
+
+df['review'] = df['review'].apply(remove_stopwords)
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/32.png}
+    \caption{Các label được chuẩn hóa về 0 và 1}
+    \label{fig:placeholder}
+\end{figure}
+
+\paragraph{Giải thích chi tiết:}
+\begin{itemize}
+    \item \textbf{Thư viện NLTK:} Sử dụng để tải danh sách \texttt{stopwords} (các từ phổ biến như 'the', 'is', 'and'). Việc loại bỏ các từ này giúp mô hình tập trung vào các từ mang sắc thái cảm xúc thực sự (như 'good', 'bad', 'excellent').
+    \item \textbf{Regex \texttt{re.sub}:} Chúng ta sử dụng biểu thức chính quy để loại bỏ các thẻ HTML (\texttt{<.*?>}) và các ký tự đặc biệt. Lý thuyết NLP chỉ ra rằng các ký tự này thường mang tính nhiễu.
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+# Tokenization
+tokenizer = Tokenizer(num_words=max_features)
+tokenizer.fit_on_texts(df['review'])
+X = tokenizer.texts_to_sequences(df['review'])
+y = df['sentiment'].values
+
+word_index = tokenizer.word_index
+reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
+
+def decode_review(encoded_review):
+    return ' '.join([reverse_word_index.get(i, '?') for i in encoded_review if i != 0])
+
+print("Review mau:", decode_review(X[0]))
+
+# Thong ke do dai
+review_lengths = [len(x) for x in X]
+print(f"Do dai trung binh: {np.mean(review_lengths):.2f}")
+print(f"Do dai lon nhat: {np.max(review_lengths)}")
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train = pad_sequences(X_train, maxlen=maxlen)
+X_test = pad_sequences(X_test, maxlen=maxlen)
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{images/33.png}
+    \caption{Chia dataset thành 2 tập train (80\%) và tập test (20\%)}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/34.png}
+    \caption{Thống kê độ dài dữ liệu train}
+    \label{fig:placeholder}
+\end{figure}
+
+\paragraph{Giải thích chi tiết:}
+\begin{itemize}
+    \item \textbf{\texttt{decode\_review}:} Hàm này giúp kiểm tra tính đúng đắn của quá trình Tokenization bằng cách chuyển các con số quay lại thành từ ngữ.
+    \item \textbf{\texttt{pad\_sequences}:} Vì mỗi bài đánh giá có độ dài khác nhau, nhưng mạng RNN yêu cầu đầu vào có kích thước cố định. Chúng ta thêm các giá trị 0 (\texttt{padding}) vào các bài ngắn hoặc cắt bớt các bài dài hơn 500 từ.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/35.png}
+    \caption{Phân phối độ dài các bài đánh giá}
+    \label{fig:placeholder}
+\end{figure}
+
+Biểu đồ Histogram kết hợp đường cong KDE mô tả sự phân phối độ dài của các bài đánh giá trong tập dữ liệu:
+
+\begin{itemize}
+    \item \textbf{Đặc điểm phân phối:} Dữ liệu có dạng phân phối lệch phải (Right-skewed). Hầu hết các bài đánh giá tương đối ngắn, tập trung dày đặc nhất ở khoảng $50 - 100$ từ. Các bài đánh giá dài xuất hiện với tần suất rất thấp, tạo thành phần đuôi dài (long tail).
+    
+    \item \textbf{Ngưỡng cắt (Maxlen = 500):} Đường đứt nét màu đỏ thể hiện tham số chiều dài tối đa (max length) được thiết lập cho đầu vào của các mô hình mạng học sâu. 
+    
+    \item \textbf{Cơ chế xử lý dữ liệu đầu vào:}
+    \begin{itemize}
+        \item \textbf{Padding (Đệm):} Các chuỗi có độ dài $< 500$ từ sẽ được đệm thêm các token \texttt{<PAD>} để đạt kích thước chuẩn.
+        \item \textbf{Truncation (Cắt xén):} Các chuỗi có độ dài $> 500$ từ sẽ bị cắt bỏ phần thừa.
+    \end{itemize}
+    
+    \item \textbf{Ý nghĩa:} Ngưỡng $500$ bao phủ gần như toàn bộ tập dữ liệu (hơn $95\%$), giúp mô hình giữ lại trọn vẹn thông tin ngữ nghĩa mà vẫn tối ưu hóa được không gian tính toán của bộ nhớ.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/36.png}
+    \caption{Phân phối nhãn trong tập huấn luyện}
+    \label{fig:placeholder}
+\end{figure}
+
+Biểu đồ cột (Bar chart) trực quan hóa số lượng bài đánh giá theo từng nhãn phân lớp trong tập dữ liệu huấn luyện:
+
+\begin{itemize}
+    \item \textbf{Tỷ lệ các lớp:} Tập dữ liệu bao gồm hai nhãn là \textit{Negative (0)} và \textit{Positive (1)}. Số lượng mẫu ở cả hai nhãn đều đạt mức xấp xỉ $20.000$ bài đánh giá.
+    
+    \item \textbf{Tính cân bằng (Balanced Dataset):} Biểu đồ cho thấy đây là một tập dữ liệu hoàn toàn cân bằng giữa lớp tích cực và tiêu cực.
+    
+    \item \textbf{Ý nghĩa trong huấn luyện mô hình:} Sự cân bằng này rất lý tưởng, giúp mô hình phân loại không bị thiên vị (bias) về lớp chiếm đa số. Do đó, trong trường hợp này, chỉ số \textbf{Accuracy (Độ chính xác)} hoàn toàn có thể được sử dụng làm thước đo chính để đánh giá khách quan hiệu suất của mô hình.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/37.png}
+    \caption{So sánh độ dài bài đánh giá theo nhãn}
+    \label{fig:placeholder}
+\end{figure}
+
+Biểu đồ hộp (Boxplot) thể hiện sự phân bố độ dài văn bản (tính bằng số lượng từ) giữa hai nhóm đánh giá: Tiêu cực (0) và Tích cực (1).
+
+\begin{itemize}
+    \item \textbf{Phân bố trung vị và vùng tứ phân vị (Median \& IQR):} Hình hộp (chứa 50\% lượng dữ liệu ở giữa) và đường trung vị của cả hai nhóm gần như tương đồng nhau (tập trung chủ yếu dưới 100 từ). Điều này cho thấy xu hướng viết ngắn gọn là đặc điểm chung, bất kể thái độ của người dùng là khen hay chê.
+    
+    \item \textbf{Các giá trị ngoại lai (Outliers):} Cả hai nhóm đều có phần đuôi dài với rất nhiều điểm ngoại lai (các vòng tròn phía trên). Tuy nhiên, nhóm Tích cực (1) xuất hiện một vài bài đánh giá có độ dài cực đoan hơn (chạm ngưỡng hơn 900 từ), trong khi nhóm Tiêu cực (0) thường dừng lại ở mức $600 - 700$ từ.
+    
+    \item \textbf{Ý nghĩa đối với mô hình:} Do sự phân bố độ dài giữa hai lớp không có sự khác biệt đáng kể, ta có thể kết luận độ dài văn bản không phải là một đặc trưng (feature) có sức nặng để phân loại cảm xúc. Mô hình học sâu sẽ phải phụ thuộc hoàn toàn vào việc trích xuất ngữ nghĩa từ vựng thay vì độ dài của chuỗi.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/38.png}
+    \caption{Top 20 từ xuất hiện nhiều nhất trong Dataset}
+    \label{fig:placeholder}
+\end{figure}
+
+\subsection{Phân tích tần suất từ vựng (Top 20 từ phổ biến nhất)}
+
+Biểu đồ cột ngang (Bar chart) trực quan hóa 20 từ có số lần xuất hiện cao nhất trong toàn bộ tập dữ liệu:
+
+\begin{itemize}
+    \item \textbf{Từ vựng mang sắc thái cảm xúc:} Sự xuất hiện dày đặc của các từ như \textit{"good", "great", "bad"} cung cấp tín hiệu mạnh mẽ và trực tiếp cho mô hình trong bài toán phân loại cảm xúc.
+    \item \textbf{Từ vựng đặc thù của miền dữ liệu:} Các từ như \textit{"story", "movies"} phản ánh rõ ràng bối cảnh của tập dữ liệu (đánh giá phim ảnh).
+    \item \textbf{Từ vựng thông dụng (Common words):} Các từ trung tính như \textit{"one", "like", "would", "time"} chiếm tần suất cao nhất (trên $15.000$ lần). Điều này cho thấy mặc dù đã qua tiền xử lý, văn bản vẫn giữ lại cấu trúc và văn phong tự nhiên của người viết.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/39.png}
+    \caption{Word Cloud các từ phổ biến nhất trong tập dữ liệu}
+    \label{fig:placeholder}
+\end{figure}
+
+Biểu đồ Word Cloud cung cấp một góc nhìn sinh động và tổng quan về mức độ phổ biến của các từ vựng trong toàn bộ tập dữ liệu:
+
+\begin{itemize}
+    \item \textbf{Nguyên lý hiển thị:} Kích thước của mỗi từ tỷ lệ thuận với tần suất xuất hiện của nó. Dễ dàng nhận thấy các từ thông dụng như \textit{"one", "like", "would", "time"} có kích thước lớn nhất, hoàn toàn đồng nhất với kết quả thống kê Top 20 từ trước đó.
+    
+    \item \textbf{Mật độ đặc trưng cảm xúc:} Đan xen giữa các từ trung tính là những từ mang sắc thái đánh giá rõ nét (\textit{"good", "great", "bad", "well"}) và các từ khóa định hình chủ đề (\textit{"story", "movies"}).
+    
+    \item \textbf{Ý nghĩa:} Trực quan hóa này khẳng định rằng, mặc dù các từ ngữ mang tính cấu trúc ngữ pháp xuất hiện nhiều, tập dữ liệu vẫn chứa đựng một lượng lớn các "từ khóa" mang thông tin cốt lõi. Đây sẽ là những tín hiệu ngữ nghĩa quan trọng nhất giúp mạng nơ-ron học cách phân biệt thái độ của người đánh giá.
+\end{itemize}
+
+\subsubsection{Xây dựng và Huấn luyện mô hình RNN}
+\begin{lstlisting}[language=Python]
+print("\n--- 3. Building SimpleRNN Model ---")
+model = models.Sequential([
+    layers.Embedding(max_features, 32, input_length=maxlen),
+    layers.SimpleRNN(32, dropout=0.2, recurrent_dropout=0.2),
+    layers.Dense(1, activation='sigmoid')
+])
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+print("\n--- 4. Training Model ---")
+early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
+history = model.fit(X_train, y_train, epochs=15, batch_size=64, validation_split=0.2, callbacks=[early_stop])
+\end{lstlisting}
+
+\paragraph{Giải thích chi tiết:}
+\begin{itemize}
+    \item \textbf{Lớp Embedding:} Chuyển các chỉ số từ thành các vector đặc trưng dày đặc. Đây là linh hồn của các mô hình NLP hiện đại.
+    \item \textbf{\texttt{recurrent\_dropout}:} Áp dụng Dropout lên các kết nối hồi quy. Nó giúp mạng RNN chống lại hiện tượng quá khớp mạnh mẽ hơn.
+\end{itemize}
+
+\subsubsection{Đánh giá kết quả}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/310.png}
+    \caption{Đồ thị Accuracy và Loss trong quá trình huấn luyện RNN}
+    \label{fig:placeholder}
+\end{figure}
+
+Biểu đồ thể hiện độ chính xác (Accuracy) và độ đo mất mát (Loss) của mô hình RNN qua 8 vòng huấn luyện (epochs):
+
+\begin{itemize}
+    \item \textbf{Tập huấn luyện (Train):} Mô hình học tập tốt. Đường Accuracy (xanh) tăng đều đặn lên mức $\approx 0.88$ và đường Loss (xanh) giảm liên tục.
+    
+    \item \textbf{Tập kiểm định (Validation):} Hiệu suất trên tập Validation (đường màu cam) không ổn định. Val Accuracy đạt đỉnh cao nhất ($\approx 0.83$) tại epoch 4. Tương ứng, Val Loss cũng chạm mức cực tiểu tại epoch 4 trước khi bật tăng trở lại.
+    
+    \item \textbf{Kết luận:} Mô hình bắt đầu xảy ra hiện tượng \textbf{Overfitting (quá khớp)} sau epoch 4. Do đó, epoch 4 chính là điểm dừng sớm (Early Stopping) tối ưu nhất để lưu lại trọng số của mô hình.
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
+
+y_pred_probs = model.predict(X_test).ravel()
+y_pred = (y_pred_probs > 0.5).astype("int32")
+
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+# Plot ROC Curve
+fpr, tpr, thresholds = roc_curve(y_test, y_pred_probs)
+roc_auc = auc(fpr, tpr)
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, color='darkorange', label=f'ROC curve (AUC = {roc_auc:.2f})')
+plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+plt.title('ROC Curve'); plt.legend(); plt.show()
+\end{lstlisting}
+
+\paragraph{Giải thích chi tiết:}
+\begin{itemize}
+    \item \textbf{Đường cong ROC \& AUC:} Chỉ số AUC (Area Under Curve) cho biết khả năng phân biệt giữa hai lớp của mô hình. Giá trị AUC càng gần 1 thì mô hình càng tốt.
+    \item \textbf{Classification Report:} Cung cấp các chỉ số Precision, Recall và F1-score để đánh giá toàn diện hiệu năng phân loại.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/311.png}
+    \caption{Ma trận nhầm lẫn (Confusion Matrix) của mô hình RNN trên IMDB}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/312.png}
+    \caption{Đường cong ROC đánh giá hiệu năng phân loại cảm xúc}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Ma trận nhầm lẫn (Confusion Matrix):} Mô hình phân loại chính xác tổng cộng $8.349$ trên $10.000$ mẫu ($4.094$ Negative và $4.255$ Positive), đạt độ chính xác (Accuracy) xấp xỉ $83.5\%$. Các trường hợp dự đoán sai (FP = $867$, FN = $784$) khá cân bằng, cho thấy mô hình không bị thiên vị lớp nào.
+    
+    \item \textbf{Đường cong ROC (ROC Curve):} Đường cong ROC bám sát góc trên bên trái với chỉ số diện tích $\text{AUC} = 0.90$. Điều này khẳng định mô hình có khả năng phân biệt xuất sắc ($90\%$) giữa hai thái độ đánh giá tích cực và tiêu cực.
+\end{itemize}
+
+\subsection{Phân tích kết quả thực nghiệm và Đánh giá hiệu năng}
+
+Bài toán phân loại cảm xúc IMDB là một thử thách lớn đối với mạng RNN cơ bản do độ dài của các bài đánh giá có sự chênh lệch đáng kể. Dưới đây là phân tích chi tiết về kết quả đạt được.
+
+\subsubsection{Ý nghĩa các chỉ số trong Phân tích cảm xúc}
+Trong bài toán này, các chỉ số mang ý nghĩa thực tế như sau:
+
+\begin{itemize}
+    \item \textbf{Precision (Độ chính xác):} Trả lời câu hỏi: "Trong số các bài đánh giá mô hình dự đoán là Tích cực (Positive), có bao nhiêu bài thực sự là Tích cực?". Precision cao giúp tránh việc gắn nhãn nhầm một lời phê bình tiêu cực thành khen ngợi.
+    \item \textbf{Recall (Độ nhạy):} Trả lời câu hỏi: "Mô hình đã tìm được bao nhiêu phần trăm trong tổng số các bài đánh giá Tích cực thực tế?". Recall cao đảm bảo chúng ta không bỏ sót các ý kiến phản hồi tốt.
+    \item \textbf{F1-score và Accuracy:} Do tập dữ liệu huấn luyện hoàn toàn cân bằng ($20.000$ mẫu Positive và $20.000$ mẫu Negative), Accuracy và F1-score phản ánh rất trung thực năng lực của mạng nơ-ron. Dựa trên Ma trận nhầm lẫn (Confusion Matrix), mô hình đạt độ chính xác xấp xỉ $83.5\%$ trên tập kiểm tra ($8.349 / 10.000$ mẫu dự đoán đúng) với chỉ số AUC lên tới $0.90$, cho thấy khả năng phân biệt sắc thái cảm xúc rất tốt.
+\end{itemize}
+
+\subsubsection{Phân tích hiện tượng Overfitting đặc thù của RNN}
+Mạng RNN thường dễ bị Overfitting nhanh hơn CNN trên dữ liệu văn bản vì:
+
+\begin{itemize}
+    \item \textbf{Lớp Embedding và từ vựng:} Với từ điển hàng ngàn từ, số lượng tham số ở lớp đầu tiên là rất lớn, dễ dẫn đến việc mô hình "học thuộc" các từ đặc trưng trong tập Train thay vì tổng quát hóa cấu trúc câu.
+    \item \textbf{Biểu đồ Loss thực tế:} Quan sát biểu đồ huấn luyện, Training Loss (đường màu xanh) giảm liên tục, trong khi Validation Loss (đường màu cam) chạm ngưỡng cực tiểu tại \textbf{Epoch thứ 4} và sau đó có dấu hiệu tăng mạnh trở lại. Tương ứng, Validation Accuracy cũng đạt đỉnh tại Epoch 4. Điều này chỉ ra rõ ràng mô hình đã bắt đầu bị Overfitting sau Epoch này.
+    \item \textbf{Biện pháp khắc phục:} Ngoài việc sử dụng Dropout, chúng ta đã khảo sát dữ liệu thực tế và thiết lập giới hạn chiều dài câu ở ngưỡng tối ưu \textbf{\texttt{maxlen=500}} (bao phủ phần lớn phân phối dữ liệu mà không gây nhiễu). Đồng thời, dựa vào biểu đồ huấn luyện, việc áp dụng cơ chế dừng sớm (Early Stopping) tại Epoch thứ 4 là cần thiết để ngắt quá trình và lưu lại bộ trọng số (weights) tổng quát hóa tốt nhất của mô hình.
+\end{itemize}
+
+\subsubsection{Kết quả đạt được}
+Mạng SimpleRNN đã chứng minh được khả năng ghi nhớ thông tin thứ tự của các từ để phân loại cảm xúc văn bản. Mặc dù gặp phải một số hạn chế về "trí nhớ ngắn hạn" so với các kiến trúc tiên tiến hơn, mô hình vẫn đạt được độ chính xác tốt trên tập IMDB nhờ các kỹ thuật tiền xử lý văn bản kỹ lưỡng và cơ chế Embedding hiệu quả.
