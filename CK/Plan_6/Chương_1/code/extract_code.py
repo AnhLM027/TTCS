@@ -42,8 +42,8 @@ def extract_code_from_ipynb(ipynb_path, py_path):
         return False
 
 def main():
-    # Directory containing the notebooks
-    dir_path = "/home/llm/AnhLM/TTCS/CK/Plan_6/Chương_1/code"
+    # Directory containing the notebooks (relative to the script itself)
+    dir_path = os.path.dirname(os.path.abspath(__file__))
     
     # Find all .ipynb files in the directory
     ipynb_files = glob.glob(os.path.join(dir_path, "*.ipynb"))
