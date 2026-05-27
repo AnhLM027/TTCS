@@ -1,15 +1,107 @@
-\paragraph{Phân tích bộ dữ liệu Adult Census} \hfill \\
-Dữ liệu điều tra dân số năm 1994 với mục tiêu dự đoán thu nhập (>50K hay <=50K). Đặc điểm nổi bật là chứa nhiều biến định danh (Categorical) có số lượng nhãn rất lớn như "native-country" hay "occupation".
+\paragraph{Phân tích bộ dữ liệu Adult Census Income} \hfill \\
+Mục tiêu là dự báo thu nhập của một cá nhân dựa trên các biến nhân khẩu học. Đây là bài toán điển hình về dữ liệu hạng mục có độ phức tạp cao (High Cardinality).
 
-\paragraph{Kỹ thuật xử lý: Target Encoding} \hfill \\
-Thay vì sử dụng One-hot Encoding (gây bùng nổ số chiều), chúng ta sử dụng Target Encoding. Kỹ thuật này thay thế mỗi nhãn bằng giá trị trung bình của biến mục tiêu tương ứng với nhãn đó. Điều này giúp mô hình nắm bắt được mối quan hệ trực tiếp giữa đặc trưng và mục tiêu mà không làm tăng độ phức tạp của dữ liệu.
-
-\paragraph{Kết quả thực nghiệm} \hfill \\
+\paragraph{Phân tích đặc trưng hạng mục} \hfill \\
+Biểu đồ EDA cho thấy sự chênh lệch thu nhập rõ rệt giữa các cấp học vấn, độ tuổi và nghề nghiệp:
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_1/results/adult_census/occupation_encoding.png}
-    \caption{Xác suất thu nhập cao theo từng nhóm ngành nghề (Cơ sở của Target Encoding)}
-    \label{fig:target_encoding}
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/adult_census/01_eda_overview.png}
+    \caption{Phân phối thu nhập theo Tuổi, Học vấn và Giới tính}
 \end{figure}
 
-Việc mã hóa theo mục tiêu giúp mô hình Logistic Regression đạt được độ chính xác ổn định đồng thời giữ cho số lượng đặc trưng ở mức tối giản, giúp tăng tốc độ huấn luyện và giảm thiểu Overfitting.
+Hình 1.1 cho thấy sự phân hóa thu nhập rõ rệt. Nhóm có trình độ học vấn cao (Bachelors, Masters, Doctorate) có tỷ lệ thu nhập trên 50K cao hơn đáng kể. Về độ tuổi, thu nhập có xu hướng tăng dần và đạt đỉnh ở độ tuổi trung niên (40-50 tuổi) trước khi giảm nhẹ khi về già.
+
+\paragraph{Kỹ thuật xử lý: Target Encoding} \hfill \\
+Thay vì One-hot Encoding (gây bùng nổ số chiều), chúng ta áp dụng Target Encoding cho các biến như \texttt{occupation} và \texttt{education}. Giá trị được mã hóa tỷ lệ thuận với xác suất có thu nhập >50K:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/adult_census/02_target_encoding_basis.png}
+    \caption{Nguyên lý Target Encoding: Ánh xạ nhãn sang xác suất nhãn mục tiêu}
+\end{figure}
+
+Nguyên lý của Target Encoding (Hình 1.2) là thay thế mỗi nhãn hạng mục bằng giá trị trung bình của biến mục tiêu cho nhãn đó. Điều này giúp mô hình học được mối quan hệ trực tiếp giữa hạng mục và mục tiêu mà không cần tạo thêm nhiều cột mới.
+
+Biểu đồ mã hóa chi tiết cho biến Nghề nghiệp:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/adult_census/03_occupation_target_encoding.png}
+    \caption{Giá trị Target Encoded cho từng loại nghề nghiệp}
+\end{figure}
+
+Hình 1.3 minh họa giá trị xác suất sau khi mã hóa. Các nghề nghiệp như "Exec-managerial" hay "Prof-specialty" có giá trị mã hóa cao, phản ánh thực tế đây là những nhóm ngành có thu nhập trung bình cao nhất trong bộ dữ liệu.
+
+\paragraph{Kết quả thực nghiệm} \hfill \\
+Thực nghiệm so sánh Logistic Regression và Gradient Boosting.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|c|c|}
+    \hline
+    \textbf{Mô hình} & \textbf{Accuracy} & \textbf{ROC-AUC} & \textbf{Recall (>50K)} & \textbf{F1 (>50K)} \\ \hline
+    Logistic Regression & 0.8377 & 0.8911 & 0.56 & 0.63 \\ \hline
+    \textbf{Gradient Boosting} & \textbf{0.8616} & \textbf{0.9161} & \textbf{0.63} & \textbf{0.69} \\ \hline
+    \end{tabular}
+    \caption{So sánh hiệu năng dự báo thu nhập}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/adult_census/04_confusion_matrices.png}
+    \caption{Ma trận nhầm lẫn của Logistic Regression và Gradient Boosting}
+\end{figure}
+
+Ma trận nhầm lẫn (Hình 1.4) cho thấy Gradient Boosting (bên phải) có khả năng phát hiện lớp thiểu số (>50K) tốt hơn với số lượng mẫu True Positive cao hơn (1392 so với 1239), đồng thời giảm thiểu sai lầm loại II (False Negative).
+
+Gradient Boosting cho thấy khả năng khai phá các mối quan hệ phi tuyến giữa các biến đã được mã hóa hiệu quả hơn hẳn mô hình tuyến tính.
+
+\paragraph{Phụ lục: Chi tiết quá trình thực hiện thực nghiệm Adult Census} \hfill \\
+Phần này trình bày chi tiết các bước xử lý dữ liệu và huấn luyện mô hình cho bài toán phân loại thu nhập.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/44.png}
+    \caption{Khởi tạo và Tải dữ liệu: Import các thư viện và đọc dataset Adult Census.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/45.png}
+    \caption{Mã nguồn EDA: Thiết kế các biểu đồ phân tích Thu nhập theo Độ tuổi, Trình độ học vấn và Số giờ làm việc.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/46.png}
+    \caption{Kết quả EDA: Nhận diện xu hướng thu nhập tăng dần theo độ tuổi lao động và trình độ chuyên môn (Prof-school, Doctorate).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/47.png}
+    \caption{Kỹ thuật mã hóa nâng cao: Mã nguồn triển khai Target Encoding cho các biến phân loại có nhiều nhãn (Workclass, Occupation).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/48.png}
+    \caption{Kiểm tra dữ liệu sau mã hóa: Các đặc trưng định tính đã được chuyển sang xác suất số tương ứng với mục tiêu.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/49.png}
+    \caption{Huấn luyện mô hình: So sánh độ chính xác của Logistic Regression, Random Forest và Gradient Boosting.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/50.png}
+    \caption{Mã nguồn đánh giá: Triển khai vẽ Ma trận nhầm lẫn để so sánh chi tiết khả năng phân loại của các mô hình.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/51.png}
+    \caption{Kết quả cuối cùng: Ma trận nhầm lẫn khẳng định Gradient Boosting là mô hình tối ưu nhất cho bài toán này.}
+\end{figure}
+    

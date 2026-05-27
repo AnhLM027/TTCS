@@ -30,7 +30,7 @@ datasets = {
 }
 
 def download_and_move():
-    base_dir = "Plan_6"
+    base_dir = "."
     for chapter, items in datasets.items():
         chapter_data_dir = os.path.join(base_dir, chapter, "data")
         os.makedirs(chapter_data_dir, exist_ok=True)

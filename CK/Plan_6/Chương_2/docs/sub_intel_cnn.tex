@@ -1,15 +1,155 @@
 \paragraph{Thực nghiệm với Intel Image Classification} \hfill \\
-Bộ dữ liệu gồm hàng ngàn hình ảnh thuộc 6 lớp phong cảnh: buildings, forest, glacier, mountain, sea, và street.
+Bộ dữ liệu gồm hàng ngàn hình ảnh thuộc 6 lớp phong cảnh: buildings, forest, glacier, mountain, sea, và street. Đây là một bài toán phân loại đa lớp (Multi-class Classification) điển hình trong thị giác máy tính.
 
-\paragraph{Mô hình Custom CNN} \hfill \\
-Chúng ta thiết kế một mạng CNN đơn giản gồm 3 lớp tích chập với số lượng filter tăng dần (32, 64, 128). Mỗi lớp tích chập đi kèm với lớp ReLU activation và lớp Max Pooling để giảm kích thước đặc trưng.
+\paragraph{Phân tích Dữ liệu (EDA) và Tiền xử lý} \hfill \\
+Trước khi huấn luyện, chúng ta tiến hành phân tích sự phân bổ các lớp và quan sát dữ liệu mẫu. Việc cân bằng dữ liệu giữa các lớp là yếu tố quan trọng để mô hình không bị thiên kiến.
 
-\paragraph{Kết quả huấn luyện} \hfill \\
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_2/results/intel/training_history.png}
-    \caption{Lịch sử huấn luyện (Accuracy và Loss) của mạng Custom CNN}
-    \label{fig:intel_history}
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Chương_2/results/intel/01_class_distribution.png}
+        \caption{Sự phân bổ dữ liệu giữa các lớp phong cảnh}
+        \label{fig:intel_dist}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Chương_2/results/intel/02_sample_images.png}
+        \caption{Hình ảnh mẫu từ bộ dữ liệu Intel}
+        \label{fig:intel_samples}
+    \end{minipage}
 \end{figure}
 
-Dù kiến trúc đơn giản, mô hình vẫn đạt được độ chính xác khả quan trên tập kiểm tra, chứng minh hiệu quả của việc trích xuất đặc trưng tự động.
+Để tăng khả năng tổng quát hóa, kỹ thuật **Data Augmentation** đã được áp dụng, bao gồm các phép xoay, lật và thay đổi độ sáng nhẹ.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_2/results/intel/03_augmentation_demo.png}
+    \caption{Minh họa các kỹ thuật Data Augmentation áp dụng cho ảnh đầu vào}
+    \label{fig:intel_aug}
+\end{figure}
+
+\paragraph{Mô hình Custom CNN} \hfill \\
+Chúng ta thiết kế một mạng CNN đơn giản gồm 3 lớp tích chập với số lượng filter tăng dần (32, 64, 128). Mỗi lớp tích chập đi kèm với lớp ReLU activation và lớp Max Pooling để giảm kích thước đặc trưng. Tổng số tham số của mô hình là \textbf{10,759,974}.
+
+\paragraph{Kết quả huấn luyện và Đánh giá} \hfill \\
+Mô hình đạt độ chính xác cao nhất trên tập kiểm tra là \textbf{81.10\%}. Dưới đây là các biểu đồ minh chứng cho hiệu năng của mô hình:
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Chương_2/results/intel/04_training_history.png}
+        \caption{Lịch sử huấn luyện (Accuracy và Loss)}
+        \label{fig:intel_history}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Chương_2/results/intel/05_confusion_matrix.png}
+        \caption{Ma trận nhầm lẫn (Confusion Matrix)}
+        \label{fig:intel_cm}
+    \end{minipage}
+\end{figure}
+
+Dựa trên ma trận nhầm lẫn, chúng ta thấy mô hình phân loại rất tốt các lớp như \textit{forest} (F1-score 0.89), tuy nhiên còn có sự nhầm lẫn nhẹ giữa \textit{glacier} và \textit{mountain} do đặc điểm hình thái tương đồng của chúng.
+
+\paragraph{Phụ lục: Quy trình thực nghiệm chi tiết} \hfill \\
+Dưới đây là các bước triển khai chi tiết trên môi trường Jupyter Notebook:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/1 (1).png}
+    \caption{Thiết lập môi trường: Import các thư viện cần thiết (TensorFlow, Keras) và cấu hình hạt giống ngẫu nhiên (Seed) để đảm bảo tính tái lập.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/2.png}
+    \caption{Cấu hình Determinism: Thiết lập các thông số để kết quả huấn luyện không thay đổi giữa các lần chạy.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/3.png}
+    \caption{Quản lý đường dẫn và Kiểm tra thiết bị: Định nghĩa thư mục dữ liệu và xác nhận sự hiện diện của GPU để tăng tốc huấn luyện.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/4.png}
+    \caption{Tải danh sách lớp: Nhận diện 6 thư mục tương ứng với 6 lớp phong cảnh của bộ dữ liệu Intel.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/5.png}
+    \caption{Thống kê số lượng mẫu: Kiểm tra độ cân bằng dữ liệu giữa các lớp (Train: 14,034 ảnh, Test: 3,000 ảnh).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/6.png}
+    \caption{Trực quan hóa mẫu ảnh: Hiển thị lưới ảnh đại diện cho từng lớp để hiểu đặc trưng thị giác ban đầu.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/7.png}
+    \caption{Mã nguồn Data Augmentation: Định nghĩa các phép biến đổi ảnh (rotation, shift, zoom, flip) để làm phong phú dữ liệu.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/8.png}
+    \caption{Kết quả Augmentation: Minh họa một ảnh gốc sau khi đi qua các phép biến đổi ngẫu nhiên.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/9.png}
+    \caption{Thiết lập Data Generators: Sử dụng `flow\_from\_directory` để đọc dữ liệu theo batch từ ổ đĩa.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/10.png}
+    \caption{Kiểm tra batch dữ liệu: Xác nhận kích thước đầu vào (150x150x3) và nhãn One-hot encoding.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/11.png}
+    \caption{Kiến trúc Custom CNN: Chi tiết các lớp Convolution, Batch Normalization, MaxPooling và Dropout.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/12.png}
+    \caption{Quá trình huấn luyện: Theo dõi sự thay đổi của Loss và Accuracy qua 10 epochs đầu tiên.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/13.png}
+    \caption{Mã nguồn vẽ biểu đồ lịch sử: Sử dụng Matplotlib để trực quan hóa quá trình hội tụ của mô hình.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/14.png}
+    \caption{Kết quả Training History: Accuracy đạt trên 80\% và Loss giảm ổn định, cho thấy mô hình học tốt.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/15.png}
+    \caption{Mã nguồn đánh giá Ma trận nhầm lẫn: Tính toán CM trên tập Test để phân tích sai sót của mô hình.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/16.png}
+    \caption{Kết quả Confusion Matrix: Trực quan hóa các lớp bị nhầm lẫn, đặc biệt là giữa Mountain và Glacier.}
+\end{figure}

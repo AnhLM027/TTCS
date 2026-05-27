@@ -1,15 +1,29 @@
-\section{CHƯƠNG 2: MẠNG NƠ-RON TÍCH CHẬP (CNN - DEEP VISION)}
-
 \subsection{Tổng quan về Mạng Nơ-ron Tích chập (CNN)}
-Mạng Nơ-ron Tích chập (Convolutional Neural Networks - CNN) là một bước đột phá trong lĩnh vực Thị giác máy tính. Khác với các mạng nơ-ron truyền thống, CNN có khả năng tự động trích xuất các đặc trưng không gian (spatial features) từ hình ảnh thông qua các lớp tích chập (Convolution) và lớp gộp (Pooling).
+Mạng Nơ-ron Tích chập (Convolutional Neural Networks - CNN) là một loại mạng nơ-ron sâu được thiết kế đặc biệt để xử lý dữ liệu có cấu trúc lưới như hình ảnh. CNN đã trở thành nền tảng của hầu hết các hệ thống Thị giác máy tính hiện đại, từ nhận diện khuôn mặt đến xe tự lái.
 
-\subsection{Lịch sử và các kiến trúc kinh điển}
-Lịch sử của CNN bắt đầu từ LeNet-5 (1998) của Yann LeCun, tiếp nối bởi sự bùng nổ của AlexNet (2012), VGG, ResNet (2015) và gần đây là các mô hình tối ưu như MobileNet và EfficientNet.
+\subsubsection{Cấu trúc cơ bản của CNN}
+Một mạng CNN tiêu chuẩn thường bao gồm các thành phần chính sau:
+\begin{itemize}
+    \item \textbf{Lớp Tích chập (Convolutional Layer):} Sử dụng các bộ lọc (kernels) để quét qua hình ảnh và trích xuất các đặc trưng như cạnh, góc, vân bề mặt.
+    \item \textbf{Hàm kích hoạt (Activation Function):} Thường là ReLU ($f(x) = \max(0, x)$), giúp mô hình học được các quan hệ phi tuyến tính.
+    \item \textbf{Lớp Gộp (Pooling Layer):} Thường là Max Pooling, giúp giảm kích thước không gian của bản đồ đặc trưng, giảm số lượng tham số và tăng tính bất biến với các phép dịch chuyển nhỏ.
+    \item \textbf{Lớp Kết nối đầy đủ (Fully Connected Layer):} Thường nằm ở cuối mạng để thực hiện nhiệm vụ phân loại dựa trên các đặc trưng đã được trích xuất.
+\end{itemize}
+
+\subsection{Lịch sử phát triển và các kiến trúc kinh điển}
+Lịch sử của CNN là một hành trình không ngừng cải tiến để giải quyết các thách thức về độ sâu và hiệu năng:
+\begin{itemize}
+    \item \textbf{LeNet-5 (1998):} Do Yann LeCun phát triển, được sử dụng để nhận dạng chữ số viết tay trên các tấm séc ngân hàng. Đây là mô hình đầu tiên áp dụng khái niệm tích chập và pooling.
+    \item \textbf{AlexNet (2012):} Đánh dấu sự bùng nổ của Deep Learning khi giành chiến thắng cách biệt tại cuộc thi ImageNet. AlexNet sâu hơn LeNet và sử dụng GPU để huấn luyện.
+    \item \textbf{VGGNet (2014):} Nổi tiếng với sự đơn giản khi sử dụng các bộ lọc $3 \times 3$ xếp chồng lên nhau, chứng minh rằng chiều sâu của mạng là yếu tố then chốt cho hiệu năng.
+    \item \textbf{ResNet (2015):} Giới thiệu "Residual Learning" (kết nối tắt) để giải quyết vấn đề tiêu biến đạo hàm (vanishing gradient), cho phép huấn luyện các mạng có độ sâu lên tới hàng trăm lớp.
+    \item \textbf{MobileNet \& EfficientNet:} Các kiến trúc hiện đại tập trung vào việc cân bằng giữa độ chính xác và tài nguyên tính toán, phù hợp cho các thiết bị di động và môi trường hạn chế.
+\end{itemize}
 
 \subsection{Kỹ thuật Học chuyển đổi (Transfer Learning)}
-Học chuyển đổi là quá trình sử dụng một mô hình đã được huấn luyện trên một tập dữ liệu khổng lồ (như ImageNet) và tinh chỉnh nó cho một bài toán cụ thể khác. Kỹ thuật này giúp tiết kiệm thời gian huấn luyện và tài nguyên tính toán trong khi vẫn đạt được độ chính xác cao.
+Học chuyển đổi là một chiến lược mạnh mẽ trong đó chúng ta tái sử dụng một mô hình đã được huấn luyện trên một tập dữ liệu lớn (như ImageNet) cho một bài toán mới. Thay vì huấn luyện từ đầu (vốn đòi hỏi hàng triệu ảnh và hàng tuần tính toán), chúng ta chỉ cần "tinh chỉnh" (fine-tune) lại lớp phân loại cuối cùng. Điều này đặc biệt hiệu quả khi chúng ta có ít dữ liệu thực nghiệm.
 
-\subsection{Thực nghiệm chuyên sâu trên 4 Datasets & 4 Models}
+\subsection{Thực nghiệm chuyên sâu trên 4 Datasets \& 4 Models}
 
 \subsubsection{Dataset 1: Intel Image Classification (Custom CNN)}
 \textbf{Kiến trúc:} Xây dựng mạng CNN từ đầu với 3 lớp Convolution/Pooling.
@@ -26,10 +40,29 @@ Học chuyển đổi là quá trình sử dụng một mô hình đã được 
 \textbf{Mục tiêu:} Ứng dụng AI trong y tế để chẩn đoán viêm phổi từ ảnh X-quang. Sử dụng kiến trúc ResNet với cơ chế Residual blocks để giải quyết vấn đề tiêu biến đạo hàm.
 \input{Chương_2/docs/sub_chest_xray.tex}
 
-\subsubsection{Dataset 4: Natural Images (EfficientNet-B0 & Grad-CAM)}
+\subsubsection{Dataset 4: Natural Images (EfficientNet-B0 \& Grad-CAM)}
 \textbf{Kiến trúc:} EfficientNet-B0.
 \textbf{Mục tiêu:} Sử dụng mô hình có hiệu năng tối ưu và triển khai Grad-CAM (Gradient-weighted Class Activation Mapping) để trực quan hóa "vùng nhìn" của mô hình, giúp AI trở nên dễ giải thích hơn (Explainable AI).
 \input{Chương_2/docs/sub_natural_images.tex}
 
+\subsection{So sánh và Đánh giá tổng hợp (Benchmarking)}
+Dưới đây là bảng tổng hợp kết quả thực nghiệm của 4 mô hình trên 4 tập dữ liệu khác nhau:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|l|l|l|l|}
+    \hline
+    \textbf{Dataset} & \textbf{Model} & \textbf{Accuracy} & \textbf{Params} & \textbf{Kỹ thuật chính} \\ \hline
+    Intel Image & Custom CNN & 81.10\% & 10.7M & Scratch Building \\ \hline
+    Flowers-102 & MobileNetV2 & 86.51\% & 2.6M & Transfer Learning \\ \hline
+    Chest X-Ray & ResNet-50 & 82.00\% & 24.1M & Fine-tuning (Recall 0.97) \\ \hline
+    Natural Images & EfficientNet-B0 & 72.00\% & 4.4M & Compound Scaling + XAI \\ \hline
+    \end{tabular}
+    \caption{Bảng so sánh hiệu năng các mô hình CNN trong Chương 2}
+    \label{tab:cnn_comparison}
+\end{table}
+
+Qua bảng so sánh, ta thấy MobileNetV2 đạt độ chính xác cao nhất với số lượng tham số rất khiêm tốn, minh chứng cho hiệu quả cực lớn của phương pháp Transfer Learning. ResNet-50 tuy nặng nhất nhưng lại cho kết quả Recall cực tốt cho bài toán y tế, đảm bảo tính an toàn trong chẩn đoán.
+
 \subsection{Tổng kết Chương 2}
-Thông qua 4 thực nghiệm, chúng ta thấy được sự tiến hóa từ việc xây dựng model thủ công đến việc tận dụng sức mạnh của Transfer Learning. Đặc biệt, việc kết hợp Grad-CAM giúp tăng tính tin cậy của AI trong các ứng dụng thực tế.
+Thông qua 4 thực nghiệm, chúng ta đã chứng minh được sức mạnh của CNN từ các kiến trúc cơ bản đến các mô hình hiện đại. Việc sử dụng Transfer Learning và Grad-CAM không chỉ cải thiện hiệu năng mà còn tăng tính minh bạch cho các hệ thống AI.

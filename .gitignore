@@ -72,3 +72,13 @@ runs/
 # OS specific
 .DS_Store
 Thumbs.db
+
+# LaTeX
+*.aux
+*.fdb_latexmk
+*.fls
+*.toc
+*.out
+*.synctex.gz
+*.pdf
+

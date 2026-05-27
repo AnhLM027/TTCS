@@ -1,15 +1,106 @@
 \paragraph{Thực nghiệm với Chest X-Ray Pneumonia} \hfill \\
-Đây là bài toán phân loại nhị phân giữa ảnh phổi bình thường và ảnh phổi bị viêm phổi (Pneumonia). Trong y tế, Recall (khả năng không bỏ sót bệnh nhân) là chỉ số quan trọng hàng đầu.
+Đây là bài toán phân loại nhị phân (Binary Classification) có ý nghĩa thực tiễn cao trong y tế. Mục tiêu là phát hiện dấu hiệu viêm phổi qua ảnh chụp X-quang lồng ngực.
 
-\paragraph{ResNet-50 và Fine-tuning} \hfill \\
-Kiến trúc ResNet với các "Residual connections" cho phép huấn luyện các mạng rất sâu mà không bị mất tín hiệu đạo hàm. Chúng ta thực hiện Fine-tuning lớp Dense cuối cùng để phù hợp với bài toán y tế đặc thù.
+\paragraph{Phân tích Dữ liệu Y tế} \hfill \\
+Dữ liệu ảnh X-quang thường có độ tương phản thấp và đòi hỏi sự tỉ mỉ trong việc quan sát các vùng mờ.
 
-\paragraph{Kết quả huấn luyện} \hfill \\
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_2/results/chest_xray/training_history.png}
-    \caption{Quá trình huấn luyện ResNet-50 cho chẩn đoán viêm phổi}
-    \label{fig:chest_history}
+    \includegraphics[width=0.8\linewidth]{Chương_2/results/chest_xray/01_dataset_overview.png}
+    \caption{Tổng quan dữ liệu ảnh X-quang (Bình thường vs Viêm phổi)}
+    \label{fig:chest_overview}
 \end{figure}
 
-Mô hình đạt được độ chính xác rất cao trên tập test, hỗ trợ bác sĩ trong việc sàng lọc nhanh các trường hợp nghi ngờ.
+\paragraph{ResNet-50 và Fine-tuning} \hfill \\
+Kiến trúc ResNet-50 với 50 lớp sâu và các kết nối tắt giúp mô hình học được các đặc trưng phức tạp trong ảnh y tế. Với \textbf{24,113,537} tham số, mô hình đủ mạnh để phân biệt các tổn thương mờ nhạt trên phổi.
+
+\paragraph{Kết quả và Phân tích chuyên sâu} \hfill \\
+Mô hình đạt chỉ số \textbf{ROC-AUC là 0.9265}. Đặc biệt, trong y tế, chỉ số \textbf{Recall} (độ nhạy) cho lớp \textit{PNEUMONIA} đạt tới \textbf{0.97}, nghĩa là mô hình hầu như không bỏ sót bệnh nhân nào bị viêm phổi.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/02_training_history.png}
+        \caption{Lịch sử huấn luyện ResNet-50}
+        \label{fig:chest_history}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/03_confusion_roc.png}
+        \caption{Confusion Matrix và Đường cong ROC}
+        \label{fig:chest_roc}
+    \end{minipage}
+\end{figure}
+
+Việc ưu tiên Recall giúp hệ thống trở thành một công cụ hỗ trợ đắc lực cho các bác sĩ trong việc sàng lọc ban đầu, giảm thiểu rủi ro chẩn đoán sót.
+
+\paragraph{Phụ lục: Quy trình thực nghiệm chi tiết} \hfill \\
+Dưới đây là các bước triển khai chi tiết trên môi trường Jupyter Notebook:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/17.png}
+    \caption{Thiết lập môi trường Y tế: Import kiến trúc ResNet50 và các thư viện xử lý ảnh chuyên sâu.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/18.png}
+    \caption{Phân tích độ mất cân bằng lớp: Nhận diện sự chênh lệch lớn giữa lớp Pneumonia (74.3\%) và Normal (25.7\%).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/19.png}
+    \caption{Mã nguồn EDA dữ liệu y tế: Vẽ biểu đồ phân bổ lớp kèm theo hiển thị ảnh mẫu cho từng loại.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/20.png}
+    \caption{Kết quả Dataset Overview: Hình ảnh so sánh sự khác biệt mờ đục giữa phổi bình thường và phổi bị viêm.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/21.png}
+    \caption{Xử lý mất cân bằng: Mã nguồn tính toán `class\_weights` để gán trọng số cao hơn cho lớp thiểu số (Normal).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/22.png}
+    \caption{Thiết kế mô hình Transfer Learning: Sử dụng ResNet50 làm Base model và thêm các lớp Dense tùy chỉnh.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/23.png}
+    \caption{Quá trình huấn luyện với Trọng số lớp: Sử dụng tham số `class\_weight` trong hàm `fit` để cân bằng mô hình.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/24.png}
+    \caption{Mã nguồn trực quan hóa kết quả: Vẽ biểu đồ Accuracy, Loss và đặc biệt là ROC-AUC.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/25.png}
+    \caption{Kết quả Training History: Chỉ số ROC-AUC đạt mức ổn định cao (0.92+), chứng minh khả năng phân loại tốt.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/26.png}
+    \caption{Mã nguồn đánh giá y tế chuyên sâu: Tính toán Precision, Recall và vẽ đường cong ROC.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/27.png}
+    \caption{Kết quả đánh giá cuối cùng: Sự kết hợp giữa Confusion Matrix và ROC Curve cho cái nhìn toàn diện về mô hình.}
+\end{figure}

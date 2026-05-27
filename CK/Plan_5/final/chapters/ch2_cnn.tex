@@ -4,814 +4,239 @@ Mạng nơ-ron tích chập (Convolutional Neural Network - CNN) là một trong
 Quá trình phát triển của CNN trải qua nhiều giai đoạn quan trọng:
 
 \begin{itemize}
-
-    \item \textbf{Thập niên 1980:} Kunihiko Fukushima giới thiệu mô hình \textbf{Neocognitron}, lấy cảm hứng từ hệ thần kinh thị giác sinh học. Đây là tiền thân của CNN hiện đại với ý tưởng về receptive field và cấu trúc phân tầng.
-
-    \item \textbf{Năm 1998:} Yann LeCun phát triển \textbf{LeNet-5}, mạng CNN đầu tiên đạt thành công thực tiễn trong nhận dạng chữ số viết tay trên ngân phiếu ngân hàng. LeNet sử dụng Convolution, Pooling và Fully Connected Layers.
-
-    \item \textbf{Giai đoạn 2000 -- 2011:} CNN chưa phát triển mạnh do hạn chế về dữ liệu lớn và năng lực phần cứng. Trong thời kỳ này, các phương pháp như SVM + HOG vẫn chiếm ưu thế.
-
-    \item \textbf{Năm 2012:} Mạng \textbf{AlexNet} của Alex Krizhevsky chiến thắng cuộc thi ImageNet với sai số vượt trội. AlexNet sử dụng GPU để huấn luyện sâu, hàm kích hoạt ReLU và Dropout. Đây được xem là cột mốc mở ra kỷ nguyên Deep Learning.
-
-    \item \textbf{Năm 2014:} Hai kiến trúc nổi bật xuất hiện:
-    \begin{itemize}
-        \item \textbf{VGGNet}: sử dụng nhiều lớp tích chập nhỏ \(3 \times 3\), giúp kiến trúc đơn giản và hiệu quả.
-        \item \textbf{GoogLeNet / Inception}: giới thiệu Inception Module, cho phép xử lý đa tỉ lệ đặc trưng cùng lúc.
-    \end{itemize}
-
-    \item \textbf{Năm 2015:} \textbf{ResNet} được đề xuất bởi Microsoft Research, sử dụng Residual Learning và Skip Connection, giải quyết vấn đề mất gradient khi huấn luyện mạng rất sâu.
-
-    \item \textbf{Giai đoạn 2017 -- nay:} Nhiều mô hình hiện đại ra đời:
-    \begin{itemize}
-        \item \textbf{DenseNet}: kết nối mọi tầng với nhau để tái sử dụng đặc trưng.
-        \item \textbf{MobileNet}: tối ưu cho thiết bị di động bằng Depthwise Separable Convolution.
-        \item \textbf{EfficientNet}: mở rộng đồng thời chiều sâu, chiều rộng và độ phân giải theo cách cân bằng.
-        \item \textbf{ConvNeXt}: hiện đại hóa CNN với cảm hứng từ Vision Transformer.
-        \item \textbf{YOLO Series}: ứng dụng CNN trong nhận diện vật thể thời gian thực.
-    \end{itemize}
-
-\end{itemize}
-
-
-\subsection{So sánh các kiến trúc CNN tiêu biểu}
-
-\begin{table}[H]
-\centering
-\caption{So sánh các mô hình CNN từ cổ điển đến hiện đại}
-\begin{tabular}{|p{2.7cm}|c|c|c|p{5cm}|}
-\hline
-\textbf{Mô hình} & \textbf{Năm} & \textbf{Số tầng} & \textbf{Tham số} & \textbf{Đặc điểm nổi bật} \\ \hline
-
-LeNet-5 & 1998 & 7 & \(\sim 60K\) & CNN đầu tiên, dùng cho nhận dạng chữ số viết tay. \\ \hline
-
-AlexNet & 2012 & 8 & \(\sim 60M\) & Sử dụng ReLU, Dropout, GPU training. \\ \hline
-
-VGG16 & 2014 & 16 & \(\sim 138M\) & Kiến trúc đơn giản, nhiều lớp \(3 \times 3\). \\ \hline
-
-GoogLeNet & 2014 & 22 & \(\sim 6.8M\) & Inception module, ít tham số. \\ \hline
-
-ResNet-50 & 2015 & 50 & \(\sim 25M\) & Skip connection, huấn luyện mạng rất sâu. \\ \hline
-
-DenseNet-121 & 2017 & 121 & \(\sim 8M\) & Tái sử dụng đặc trưng giữa các tầng. \\ \hline
-
-MobileNetV2 & 2018 & 53 & \(\sim 3.4M\) & Tối ưu cho mobile, nhẹ và nhanh. \\ \hline
-
-EfficientNet-B0 & 2019 & 82 & \(\sim 5.3M\) & Scale model cân bằng depth-width-resolution. \\ \hline
-
-ConvNeXt-Tiny & 2022 & 28 & \(\sim 29M\) & CNN hiện đại cạnh tranh với Transformer. \\ \hline
-
-\end{tabular}
-\end{table}
-
-Nhận xét: Từ bảng trên có thể thấy xu hướng phát triển của CNN gồm:
-
-\begin{itemize}
-    \item Tăng độ sâu mô hình để học đặc trưng phức tạp hơn.
-    \item Giảm số tham số nhờ thiết kế thông minh hơn.
-    \item Tăng tốc độ suy luận để ứng dụng thời gian thực.
-    \item Tối ưu cho thiết bị nhúng và điện thoại.
-    \item Kết hợp tư tưởng của Transformer vào CNN hiện đại.
+    \item \textbf{Thập niên 1980:} Kunihiko Fukushima giới thiệu mô hình \textbf{Neocognitron}, lấy cảm hứng từ hệ thần kinh thị giác sinh học.
+    \item \textbf{Năm 1998:} Yann LeCun phát triển \textbf{LeNet-5}, mạng CNN đầu tiên đạt thành công thực tiễn trong nhận dạng chữ số viết tay.
+    \item \textbf{Năm 2012:} Mạng \textbf{AlexNet} chiến thắng cuộc thi ImageNet với sai số vượt trội, mở ra kỷ nguyên Deep Learning.
+    \item \textbf{Năm 2015:} \textbf{ResNet} sử dụng Residual Learning và Skip Connection, giải quyết vấn đề mất gradient khi huấn luyện mạng rất sâu.
 \end{itemize}
 
 \subsection{Kiến trúc và nguyên lý hoạt động của CNN}
+Một kiến trúc CNN điển hình bao gồm các thành phần: Lớp tích chập (Convolution Layer), Lớp kích hoạt (Activation Function), Lớp gộp (Pooling Layer) và các Lớp kết nối đầy đủ (Fully Connected Layers).
 
-Mạng nơ-ron tích chập (Convolutional Neural Network - CNN) là một trong những kiến trúc quan trọng nhất trong lĩnh vực Thị giác máy tính (Computer Vision), đặc biệt hiệu quả đối với các bài toán xử lý ảnh như phân loại ảnh, phát hiện đối tượng, nhận dạng khuôn mặt, phân đoạn ảnh và nhận diện ký tự.
+\subsubsection{Lớp Tích chập (Convolution Layer)}
+Lớp Convolution là trái tim của CNN, thực hiện phép tích chập giữa bộ lọc (kernel/filter) và vùng ảnh đầu vào. Công thức toán học:
 
-Khác với mạng nơ-ron truyền thẳng truyền thống (Fully Connected Neural Network), CNN được thiết kế chuyên biệt để khai thác cấu trúc không gian của ảnh. Thay vì kết nối toàn bộ điểm ảnh với tất cả neuron ở lớp kế tiếp, CNN chỉ tập trung vào các vùng cục bộ thông qua các bộ lọc tích chập. Điều này giúp mô hình học được đặc trưng hiệu quả hơn, giảm số lượng tham số và tăng khả năng tổng quát hóa.
+\begin{equation}
+    (f * g)(i,j) = \sum_{m} \sum_{n} f(m,n) \cdot g(i-m, j-n)
+\end{equation}
 
-CNN hoạt động theo nguyên tắc học đặc trưng theo cấp bậc (Hierarchical Feature Learning). Ở các tầng đầu tiên, mạng học những đặc trưng đơn giản như cạnh, góc, đường thẳng hoặc biên màu sắc. Ở các tầng trung gian, mạng học các họa tiết (texture), hình khối hoặc bộ phận của vật thể. Đến các tầng sâu hơn, mô hình có thể nhận biết các cấu trúc phức tạp như mắt, khuôn mặt, bánh xe, chữ viết hoặc toàn bộ vật thể.
-
-Một kiến trúc CNN điển hình bao gồm các thành phần sau:
-
-\subsubsection{Lớp đầu vào (Input Layer)}
-
-Lớp đầu vào tiếp nhận dữ liệu ảnh dưới dạng tensor ba chiều gồm chiều cao, chiều rộng và số kênh màu:
-
-\[
-H \times W \times C
-\]
-
-Trong đó:
-
+\textbf{Các siêu tham số quan trọng:}
 \begin{itemize}
-    \item \(H\): chiều cao của ảnh (Height)
-    \item \(W\): chiều rộng của ảnh (Width)
-    \item \(C\): số kênh màu (Channels)
+    \item \textbf{Kích thước kernel:} Thường là 3×3 hoặc 5×5, ảnh hưởng đến receptive field.
+    \item \textbf{Số lượng kernel:} Xác định số feature maps đầu ra.
+    \item \textbf{Stride:} Bước nhảy của kernel, ảnh hưởng đến kích thước output.
+    \item \textbf{Padding:} Thêm viền để giữ nguyên kích thước (same padding) hoặc giảm (valid padding).
 \end{itemize}
 
-Thông thường:
-
+\subsubsection{Lớp Kích hoạt (Activation Functions)}
+Hàm kích hoạt giới thiệu tính phi tuyến vào mạng, cho phép học các pattern phức tạp:
 \begin{itemize}
-    \item Ảnh xám: \(C=1\)
-    \item Ảnh RGB màu: \(C=3\)
-    \item Ảnh RGBA: \(C=4\)
+    \item \textbf{ReLU (Rectified Linear Unit):} $f(x) = max(0, x)$ - Giải quyết vanishing gradient, phổ biến nhất.
+    \item \textbf{Sigmoid:} $f(x) = \frac{1}{1+e^{-x}}$ - Đưa về [0,1], phù hợp cho binary classification.
+    \item \textbf{Tanh:} $f(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}$ - Đưa về [-1,1], zero-centered.
+    \item \textbf{Softmax:} $f(x_i) = \frac{e^{x_i}}{\sum_j e^{x_j}}$ - Cho multi-class classification.
 \end{itemize}
 
-Ví dụ, ảnh đầu vào phổ biến trong nhiều mô hình hiện đại như VGG, ResNet có kích thước:
-
-\[
-224 \times 224 \times 3
-\]
-
-Trước khi đưa vào mạng, dữ liệu thường được tiền xử lý như:
-
+\subsubsection{Lớp Gộp (Pooling Layer)}
+Pooling giảm kích thước feature map, tăng tính bất biến không gian và giảm tham số:
 \begin{itemize}
-    \item Chuẩn hóa giá trị pixel về khoảng \([0,1]\)
-    \item Trừ mean và chia standard deviation
-    \item Resize ảnh về cùng kích thước
-    \item Tăng cường dữ liệu (Data Augmentation)
+    \item \textbf{Max Pooling:} Lấy giá trị lớn nhất trong vùng, giữ lại đặc trưng mạnh nhất.
+    \item \textbf{Average Pooling:} Lấy trung bình, làm mịn feature map.
+    \item \textbf{Global Average Pooling:} Trung bình toàn bộ feature map, thay thế FC layers.
 \end{itemize}
 
-\subsubsection{Lớp tích chập (Convolution Layer)}
+\subsubsection{Lớp Kết nối Đầy đủ (Fully Connected Layer)}
+FC layers thực hiện classification dựa trên features đã trích xuất. Tuy nhiên, chúng có nhiều tham số và dễ overfitting.
 
-Đây là thành phần cốt lõi và quan trọng nhất của CNN. Lớp tích chập sử dụng các bộ lọc nhỏ (Kernel hoặc Filter), thường có kích thước \(3\times3\), \(5\times5\), để quét qua ảnh đầu vào và trích xuất đặc trưng.
-
-Phép tích chập hai chiều được mô tả như sau:
-
-\[
-S(i,j)=\sum_m \sum_n I(i-m,j-n)K(m,n)
-\]
-
-Trong đó:
-
+\subsubsection{Các Kiến trúc CNN Hiện đại}
 \begin{itemize}
-    \item \(I\): ảnh đầu vào
-    \item \(K\): kernel hoặc filter
-    \item \(S\): đầu ra sau tích chập (Feature Map)
+    \item \textbf{VGGNet:} Sử dụng kernel 3×3 nhỏ, stack nhiều layers.
+    \item \textbf{ResNet:} Skip connections giải quyết degradation problem.
+    \item \textbf{Inception:} Multiple kernel sizes trong cùng layer.
+    \item \textbf{MobileNet:} Depthwise separable convolution cho mobile devices.
 \end{itemize}
 
-Khi kernel di chuyển trên ảnh, tại mỗi vị trí nó thực hiện phép nhân từng phần tử rồi cộng lại để tạo ra một giá trị mới. Toàn bộ quá trình này tạo nên bản đồ đặc trưng.
-
-Ví dụ:
-
+\subsubsection{Huấn luyện CNN}
 \begin{itemize}
-    \item Kernel phát hiện cạnh ngang
-    \item Kernel phát hiện cạnh dọc
-    \item Kernel phát hiện vùng sáng/tối
+    \item \textbf{Hàm mất mát:} Cross-entropy cho classification, MSE cho regression.
+    \item \textbf{Optimizer:} Adam, SGD với momentum, RMSprop.
+    \item \textbf{Regularization:} Dropout, Batch Normalization, Data Augmentation.
+    \item \textbf{Transfer Learning:} Fine-tuning pretrained models.
 \end{itemize}
 
-Ưu điểm lớn của lớp tích chập là:
+\subsection{Thực nghiệm theo từng dataset}
 
-\begin{itemize}
-    \item Chia sẻ trọng số (Weight Sharing): cùng một kernel dùng cho toàn ảnh
-    \item Kết nối cục bộ (Local Connectivity)
-    \item Giảm số tham số so với Fully Connected Network
-    \item Tăng khả năng học đặc trưng không gian
-\end{itemize}
+Trong phần này, chúng ta sẽ thực hiện xây dựng và huấn luyện các mô hình CNN trên hai bộ dữ liệu tiêu chuẩn: MNIST và Fashion-MNIST. Quy trình bao gồm từ EDA (Exploratory Data Analysis) đến thiết kế kiến trúc mạng và đánh giá kết quả.
 
-Ý nghĩa của các tầng:
-
-\begin{itemize}
-    \item Tầng đầu: học cạnh, đường biên, góc
-    \item Tầng giữa: học texture, hình khối, bộ phận vật thể
-    \item Tầng sâu: học mắt, khuôn mặt, bánh xe, chữ số,...
-\end{itemize}
-
-\subsubsection{Stride và Padding}
-
-Hai tham số quan trọng trong tích chập là:
-
-\begin{itemize}
-    \item \textbf{Stride}: bước nhảy của kernel khi trượt qua ảnh
-    \item \textbf{Padding}: thêm viền số 0 quanh ảnh đầu vào
-\end{itemize}
-
-Stride lớn giúp giảm kích thước đầu ra nhanh hơn nhưng có thể mất thông tin. Padding giúp bảo toàn kích thước ảnh sau tích chập.
-
-Kích thước đầu ra được tính:
-
-\[
-Output = \frac{W-F+2P}{S}+1
-\]
-
-Trong đó:
-
-\begin{itemize}
-    \item \(W\): kích thước đầu vào
-    \item \(F\): kích thước kernel
-    \item \(P\): padding
-    \item \(S\): stride
-\end{itemize}
-
-\subsubsection{Hàm kích hoạt (Activation Function)}
-
-Sau mỗi lớp tích chập, đầu ra thường được đưa qua hàm kích hoạt phi tuyến để tăng khả năng biểu diễn của mô hình.
-
-Phổ biến nhất là hàm ReLU:
-
-\[
-f(x)=\max(0,x)
-\]
-
-Ý nghĩa:
-
-\begin{itemize}
-    \item Nếu \(x<0\) thì đầu ra bằng 0
-    \item Nếu \(x\geq0\) thì giữ nguyên giá trị
-\end{itemize}
-
-Ưu điểm của ReLU:
-
-\begin{itemize}
-    \item Tính toán đơn giản
-    \item Giảm hiện tượng vanishing gradient
-    \item Huấn luyện nhanh hơn sigmoid/tanh
-\end{itemize}
-
-Ngoài ra còn có:
-
-\begin{itemize}
-    \item Leaky ReLU
-    \item ELU
-    \item GELU
-    \item Swish
-\end{itemize}
-
-\subsubsection{Lớp chuẩn hóa (Batch Normalization)}
-
-Batch Normalization được thêm vào để chuẩn hóa đầu ra của một lớp theo từng mini-batch. Mục tiêu là giữ phân phối dữ liệu ổn định trong quá trình huấn luyện.
-
-Lợi ích:
-
-\begin{itemize}
-    \item Tăng tốc độ hội tụ
-    \item Giảm dao động gradient
-    \item Cho phép learning rate lớn hơn
-    \item Giảm phụ thuộc vào khởi tạo trọng số
-    \item Có tác dụng regularization nhẹ
-\end{itemize}
-
-BatchNorm thường được đặt sau Convolution và trước Activation.
-
-\subsubsection{Lớp gộp (Pooling Layer)}
-
-Pooling Layer dùng để giảm kích thước không gian của Feature Map nhưng vẫn giữ lại thông tin quan trọng.
-
-Hai loại phổ biến:
-
-\begin{itemize}
-    \item MaxPooling: lấy giá trị lớn nhất trong vùng
-    \item AveragePooling: lấy giá trị trung bình
-\end{itemize}
-
-Ví dụ:
-
-\[
-28 \times 28 \rightarrow 14 \times 14
-\]
-
-Lợi ích:
-
-\begin{itemize}
-    \item Giảm số phép tính
-    \item Giảm số tham số
-    \item Giảm overfitting
-    \item Tăng tính bất biến đối với dịch chuyển nhỏ
-\end{itemize}
-
-Trong thực tế, MaxPooling thường được sử dụng nhiều hơn.
-
-\subsubsection{Flatten / Global Pooling}
-
-Sau nhiều lớp Convolution, đầu ra là tensor nhiều chiều. Để đưa vào lớp Dense, dữ liệu cần được chuyển thành vector.
-
-\textbf{Flatten}: trải tensor thành vector 1 chiều.
-
-Ví dụ:
-
-\[
-7 \times 7 \times 512 \rightarrow 25088
-\]
-
-Tuy nhiên Flatten tạo nhiều tham số khi nối với Dense Layer. Vì vậy các mô hình hiện đại thường dùng:
-
-\begin{itemize}
-    \item Global Average Pooling (GAP)
-    \item Global Max Pooling (GMP)
-\end{itemize}
-
-Ưu điểm:
-
-\begin{itemize}
-    \item Giảm số tham số
-    \item Giảm overfitting
-    \item Mô hình gọn hơn
-\end{itemize}
-
-\subsubsection{Fully Connected Layer}
-
-Đây là lớp cuối dùng để kết hợp toàn bộ đặc trưng đã học và đưa ra quyết định phân loại.
-
-Phép biến đổi tuyến tính:
-
-\[
-y = Wx + b
-\]
-
-Trong đó:
-
-\begin{itemize}
-    \item \(x\): vector đầu vào
-    \item \(W\): ma trận trọng số
-    \item \(b\): bias
-\end{itemize}
-
-Với bài toán nhiều lớp, đầu ra thường đi qua Softmax:
-
-\[
-P(y=i)=\frac{e^{z_i}}{\sum_j e^{z_j}}
-\]
-
-Softmax biến logits thành xác suất sao cho tổng bằng 1.
-
-\subsubsection{Dropout}
-
-Dropout là kỹ thuật regularization nhằm giảm overfitting. Trong quá trình huấn luyện, một số neuron được tắt ngẫu nhiên với xác suất nhất định.
-
-Ví dụ:
-
-\[
-Dropout = 0.5
-\]
-
-nghĩa là 50\% neuron bị vô hiệu hóa tạm thời trong mỗi lần cập nhật.
-
-Lợi ích:
-
-\begin{itemize}
-    \item Giảm phụ thuộc giữa các neuron
-    \item Tăng khả năng tổng quát hóa
-    \item Hạn chế ghi nhớ dữ liệu huấn luyện
-\end{itemize}
-
-\subsubsection{Hàm mất mát và tối ưu}
-
-Trong huấn luyện CNN, mô hình cần tối thiểu hóa hàm mất mát (Loss Function).
-
-Một số hàm phổ biến:
-
-\begin{itemize}
-    \item Binary Cross Entropy: phân loại 2 lớp
-    \item Categorical Cross Entropy: đa lớp
-    \item Mean Squared Error: hồi quy
-\end{itemize}
-
-Bộ tối ưu (Optimizer):
-
-\begin{itemize}
-    \item SGD
-    \item Momentum SGD
-    \item RMSprop
-    \item Adam
-    \item AdamW
-\end{itemize}
-
-Quá trình huấn luyện sử dụng lan truyền ngược (Backpropagation) để cập nhật trọng số sao cho loss giảm dần.
-
-\subsection{Các chỉ số đánh giá mô hình CNN}
-
-Sau khi huấn luyện, hiệu quả mô hình được đánh giá bằng nhiều chỉ số khác nhau.
-
-\begin{itemize}
-
-\item \textbf{Accuracy}
-
-Tỷ lệ dự đoán đúng trên toàn bộ mẫu:
-
-\[
-Accuracy=\frac{TP+TN}{TP+TN+FP+FN}
-\]
-
-Trong đó:
-
-\begin{itemize}
-    \item TP: dự đoán đúng lớp dương
-    \item TN: dự đoán đúng lớp âm
-    \item FP: dự đoán nhầm dương
-    \item FN: dự đoán nhầm âm
-\end{itemize}
-
-\item \textbf{Precision}
-
-Độ chính xác trong các mẫu được dự đoán là dương:
-
-\[
-Precision=\frac{TP}{TP+FP}
-\]
-
-Precision cao rất quan trọng khi cần hạn chế cảnh báo giả.
-
-\item \textbf{Recall}
-
-Khả năng tìm đúng toàn bộ mẫu dương:
-
-\[
-Recall=\frac{TP}{TP+FN}
-\]
-
-Recall cao quan trọng trong y tế, phát hiện lỗi, an ninh.
-
-\item \textbf{F1-score}
-
-Trung bình điều hòa giữa Precision và Recall:
-
-\[
-F1=2\cdot \frac{Precision \cdot Recall}{Precision+Recall}
-\]
-
-F1-score phù hợp khi dữ liệu mất cân bằng.
-
-\item \textbf{Confusion Matrix}
-
-Ma trận nhầm lẫn thể hiện số lượng dự đoán đúng và sai giữa các lớp, giúp phân tích lỗi cụ thể.
-
-\item \textbf{ROC-AUC}
-
-Đo khả năng phân biệt giữa các lớp ở nhiều ngưỡng khác nhau. Giá trị càng gần 1 càng tốt.
-
-\end{itemize}
-
-\subsection{Tập dữ liệu Fashion MNIST}
-Để thực nghiệm mạng CNN, báo cáo sử dụng tập dữ liệu \textbf{Fashion MNIST} (được Zalando Research công bố). Đây là tập dữ liệu thay thế hiện đại cho tập chữ số MNIST đã quá cũ và đơn giản.
-
-\begin{itemize}
-    \item \textbf{Quy mô:} 70,000 hình ảnh xám (Grayscale).
-    \item \textbf{Kích thước:} 28x28 pixels.
-    \item \textbf{Nhãn:} 10 loại trang phục (Áo thun, Quần dài, Áo len, Váy, Áo khoác, Sandal, Áo sơ mi, Giày thể thao, Túi xách, Ủng).
-\end{itemize}
-
-Tập dữ liệu này đòi hỏi mạng CNN phải học được các cấu trúc phức tạp hơn (đường viền túi, họa tiết áo) thay vì chỉ là các nét chữ số đơn giản, do đó nó minh họa rất tốt sức mạnh của kiến trúc CNN.
-
-\subsection{Thực nghiệm với Python}
-Dưới đây là mã nguồn xây dựng mạng CNN để phân loại hình ảnh thời trang:
-
-\subsubsection{Chuẩn bị dữ liệu và Trực quan hóa}
-\begin{lstlisting}[language=Python]
-import tensorflow as tf
-from tensorflow.keras import layers, models
-import matplotlib.pyplot as plt
-import numpy as np
-import random
-from sklearn.metrics import confusion_matrix
-import seaborn as sns
-
-SEED = 42
-np.random.seed(SEED)
-random.seed(SEED)
-tf.random.set_seed(SEED)
-tf.keras.utils.set_random_seed(SEED)
-
-print("--- 1. Loading Fashion MNIST Dataset ---")
-(train_images, train_labels), (test_images, test_labels) = tf.keras.datasets.fashion_mnist.load_data()
-
-img_height, img_width = 64, 64
-
-# Normalize
-train_images = train_images.astype("float32") / 255.0
-test_images = test_images.astype("float32") / 255.0
-
-# Add channel dimension
-train_images = train_images[..., np.newaxis]
-test_images = test_images[..., np.newaxis]
-
-# Resize
-train_images = tf.image.resize(train_images, (img_height, img_width)).numpy()
-test_images = tf.image.resize(test_images, (img_height, img_width)).numpy()
-
-class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat', 'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
-
-# 2. Visualize samples
-print("\n--- 2. Visualizing Samples ---")
-plt.figure(figsize=(10,10))
-for i in range(25):
-    plt.subplot(5,5,i+1)
-    plt.xticks([])
-    plt.yticks([])
-    plt.grid(False)
-    plt.imshow(train_images[i].reshape(img_height, img_width), cmap=plt.cm.binary)
-    plt.xlabel(class_names[train_labels[i]])
-plt.show()
-\end{lstlisting}
-
-\paragraph{Mô tả quá trình xử lý dữ liệu:}\hfill\break
-
-Trước khi đưa dữ liệu vào mô hình CNN, tập dữ liệu Fashion MNIST cần được tiền xử lý để phù hợp với đầu vào của mạng học sâu.
-
-\begin{itemize}
-
-\item \textbf{Tải dữ liệu:}
-
-Tập dữ liệu Fashion MNIST được cung cấp sẵn trong TensorFlow, gồm:
-
-\begin{itemize}
-    \item 60.000 ảnh dùng cho huấn luyện
-    \item 10.000 ảnh dùng cho kiểm thử
-\end{itemize}
-
-Mỗi ảnh là ảnh xám kích thước \(28 \times 28\), thuộc một trong 10 nhóm sản phẩm thời trang khác nhau.
-
-\item \textbf{Chuẩn hóa dữ liệu:}
-
-Giá trị pixel ban đầu nằm trong khoảng từ 0 đến 255. Dữ liệu được chia cho 255.0 để đưa về khoảng từ 0 đến 1.
-
-Việc chuẩn hóa giúp mô hình học ổn định hơn, tăng tốc độ hội tụ và cải thiện hiệu quả huấn luyện.
-
-\item \textbf{Thêm chiều kênh màu:}
-
-Do ảnh gốc là ảnh xám nên mỗi ảnh có kích thước \((28,28)\). Tuy nhiên lớp \texttt{Conv2D} yêu cầu dữ liệu đầu vào có thêm chiều kênh màu.
-
-Sau khi xử lý, ảnh có dạng:
-
-\[
-(28,28,1)
-\]
-
-Trong đó số 1 biểu thị ảnh chỉ có một kênh màu xám.
-
-\item \textbf{Thay đổi kích thước ảnh:}
-
-Toàn bộ ảnh được chuyển từ kích thước \(28 \times 28\) lên \(64 \times 64\).
-
-Việc resize giúp tăng không gian đặc trưng để mạng CNN học hiệu quả hơn khi sử dụng nhiều tầng tích chập.
-
-\item \textbf{Gán tên nhãn:}
-
-Các nhãn số từ 0 đến 9 được ánh xạ thành tên lớp như sau:  
-0 -- T-shirt/top, 1 -- Trouser, 2 -- Pullover, 3 -- Dress, 4 -- Coat, 5 -- Sandal, 6 -- Shirt, 7 -- Sneaker, 8 -- Bag, 9 -- Ankle boot.
-
-\item \textbf{Trực quan hóa dữ liệu:}
-
-Chương trình hiển thị 25 ảnh mẫu đầu tiên của tập huấn luyện dưới dạng lưới \(5 \times 5\).
-
-Mục đích của bước này:
-
-\begin{itemize}
-    \item Kiểm tra dữ liệu đã được tải chính xác
-    \item Quan sát chất lượng ảnh sau khi thay đổi kích thước
-    \item Kiểm tra nhãn hiển thị tương ứng với từng ảnh
-    \item Hiểu đặc điểm hình dạng của từng nhóm sản phẩm
-\end{itemize}
-
-\end{itemize}
+Trước tiên, chúng ta thiết lập môi trường lập trình với TensorFlow và Keras.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{images/21.png}
-    \caption{Một số mẫu dữ liệu từ tập Fashion MNIST}
-    \label{fig:fashion_samples}
+    \includegraphics[width=0.9\textwidth]{../code/ch2_cnn/images/1.png}
+    \caption{Khởi tạo các thư viện Deep Learning và cấu hình môi trường đồ họa Seaborn cho các biểu đồ phân tích.}
 \end{figure}
 
-\subsubsection{Xây dựng và Huấn luyện mô hình CNN}
-\begin{lstlisting}[language=Python]
-print("\n--- 3. Building CNN Model ---")
-model = models.Sequential([
-    # Layer 1: Convolution + BatchNorm + Pooling + Dropout
-    layers.Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=(img_height, img_width, 1)),
-    layers.BatchNormalization(),
-    layers.MaxPooling2D((2, 2)),
-    layers.Dropout(0.25),
-    
-    # Layer 2: Convolution + BatchNorm + Pooling + Dropout
-    layers.Conv2D(64, (3, 3), padding='same', activation='relu'),
-    layers.BatchNormalization(),
-    layers.MaxPooling2D((2, 2)),
-    layers.Dropout(0.25),
-    
-    # Layer 3: Convolution + BatchNorm + Flatten
-    layers.Conv2D(128, (3, 3), padding='same', activation='relu'),
-    layers.BatchNormalization(),
-    layers.Flatten(),
-    
-    # Fully Connected Layers
-    layers.Dense(128, activation='relu'),
-    layers.BatchNormalization(),
-    layers.Dropout(0.5),
-    layers.Dense(10, activation='softmax')
-])
+\textbf{Giải thích chi tiết:} Đoạn code này thiết lập stack công nghệ cho deep learning. TensorFlow 2.x với Keras API cung cấp high-level interface cho việc xây dựng mạng neural. Numpy xử lý tensor operations, matplotlib/seaborn tạo visualizations. Cấu hình 'Agg' backend tránh xung đột GUI trên headless servers. Việc import theo chuẩn đảm bảo reproducibility và compatibility giữa các phiên bản thư viện.
 
-model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-model.summary()
-
-print("\n--- 4. Training Model ---")
-early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
-history = model.fit(train_images, train_labels, epochs=15, validation_split=0.2, callbacks=[early_stop], verbose=1)
-\end{lstlisting}
-
-\paragraph{Giải thích chi tiết:}
-
-\textbf{Mô tả mô hình:}
-
-Mô hình CNN được xây dựng theo dạng tuần tự (\texttt{Sequential}) gồm ba khối tích chập dùng để trích xuất đặc trưng và hai lớp Dense để phân loại.
-
-\begin{itemize}
-
-\item \textbf{Khối tích chập thứ nhất:} sử dụng 32 bộ lọc kích thước \(3 \times 3\), sau đó chuẩn hóa Batch Normalization, giảm kích thước bằng MaxPooling và áp dụng Dropout 0.25.
-
-\item \textbf{Khối tích chập thứ hai:} sử dụng 64 bộ lọc, tiếp tục học các đặc trưng phức tạp hơn từ đầu ra tầng trước.
-
-\item \textbf{Khối tích chập thứ ba:} sử dụng 128 bộ lọc nhằm học các đặc trưng mức cao hơn, sau đó chuyển dữ liệu nhiều chiều thành vector bằng Flatten.
-
-\item \textbf{Lớp Dense 128 neuron:} dùng hàm kích hoạt ReLU để kết hợp các đặc trưng đã học.
-
-\item \textbf{Dropout 0.5:} giúp giảm hiện tượng overfitting trước khi đưa vào lớp phân loại cuối.
-
-\item \textbf{Lớp đầu ra:} gồm 10 neuron với hàm Softmax, tương ứng 10 lớp của tập dữ liệu Fashion MNIST.
-
-\end{itemize}
-
-\textbf{Quá trình huấn luyện:}
-
-\begin{itemize}
-
-\item Mô hình sử dụng bộ tối ưu Adam và hàm mất mát \texttt{sparse\_categorical\_crossentropy}.
-
-\item Dữ liệu huấn luyện được tách 20\% làm tập kiểm định để theo dõi hiệu năng sau mỗi epoch.
-
-\item Huấn luyện tối đa 15 epoch.
-
-\item Early Stopping được sử dụng để dừng sớm khi giá trị \texttt{val\_loss} không còn cải thiện sau 5 epoch liên tiếp, đồng thời khôi phục trọng số tốt nhất.
-
-\end{itemize}
+\subsubsection{Bài toán 1: Nhận dạng chữ số viết tay với MNIST}
+MNIST là bộ dữ liệu cơ bản nhưng cực kỳ quan trọng để kiểm tra khả năng trích xuất đặc trưng không gian của lớp Convolution.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{images/22.png}
-    \caption{Tham số mô hình}
-    \label{fig:placeholder}
+    \includegraphics[width=0.9\textwidth]{../code/ch2_cnn/images/2.png}
+    \caption{Nạp dữ liệu MNIST và thực hiện chuẩn hóa pixel về khoảng [0, 1] để tăng tốc độ hội tụ của Gradient Descent.}
 \end{figure}
 
-\subsubsection{Đánh giá kết quả}
-
-\begin{lstlisting}[language=Python]
-print("\n--- 5. Evaluating Model ---")
-test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
-print(f'\nTest Accuracy: {test_acc:.4f}')
-
-print("\n--- 7. Confusion Matrix ---")
-y_pred = model.predict(test_images)
-y_pred_classes = np.argmax(y_pred, axis=1)
-
-cm = confusion_matrix(test_labels, y_pred_classes)
-plt.figure(figsize=(10, 8))
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
-plt.title('Confusion Matrix - Fashion MNIST')
-plt.ylabel('Actual')
-plt.xlabel('Predicted')
-plt.show()
-
-# 8. Predict on random samples
-def plot_image(i, predictions_array, true_label, img):
-    true_label, img = true_label[i], img[i]
-    plt.grid(False); plt.xticks([]); plt.yticks([])
-    plt.imshow(img.reshape(img_height, img_width), cmap=plt.cm.binary)
-    predicted_label = np.argmax(predictions_array)
-    color = 'blue' if predicted_label == true_label else 'red'
-    plt.xlabel(f"{class_names[predicted_label]} {100*np.max(predictions_array):2.0f}% ({class_names[true_label]})", color=color)
-
-plt.figure(figsize=(15, 10))
-num_rows, num_cols = 5, 3
-for i in range(num_rows * num_cols):
-    idx = np.random.randint(0, test_images.shape[0])
-    plt.subplot(num_rows, 2*num_cols, 2*i+1)
-    plot_image(idx, y_pred[idx], test_labels, test_images)
-plt.tight_layout(); plt.show()
-\end{lstlisting}
-
-\paragraph{Giải thích chi tiết:}
-\begin{itemize}
-    \item \textbf{Hàm \texttt{plot\_image}:} Đây là hàm hỗ trợ trực quan hóa dự báo. Nếu dự báo đúng, tên lớp hiển thị màu xanh, nếu sai hiển thị màu đỏ kèm xác suất \% tin cậy của mô hình.
-    \item \textbf{Heatmap Confusion Matrix:} Giúp ta quan sát các lỗi phổ biến. Ví dụ: mô hình hay nhầm Shirt với T-shirt hoặc Coat, điều này hoàn toàn hợp lý về mặt thị giác.
-\end{itemize}
+\textbf{Giải thích chi tiết:} MNIST loader của Keras tự động download và cache dataset. Reshape (60000, 28, 28, 1) chuẩn bị cho CNN input. Normalization x/255.0 đưa pixel từ [0,255] về [0,1], giúp gradient descent hội tụ nhanh hơn vì weights initialization thường quanh 0. Việc này cũng tránh vanishing/exploding gradients và làm cho learning rate dễ tune hơn.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{images/23.png}
-    \caption{Đồ thị Accuracy và Loss trong quá trình huấn luyện CNN}
-    \label{fig:placeholder}
+    \includegraphics[width=0.9\textwidth]{../code/ch2_cnn/images/3.png}
+    \caption{Mã nguồn thực hiện trực quan hóa dữ liệu MNIST, bao gồm mẫu ảnh, phân phối lớp và cường độ điểm ảnh.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} EDA code sử dụng matplotlib để plot sample images, class distribution histogram, và pixel intensity distribution. Việc kiểm tra balance của classes quan trọng vì imbalance có thể bias model. Pixel distribution cho thấy hầu hết pixels là 0 (background), giúp hiểu sparsity của data và lựa chọn activation functions phù hợp.
+
+Dưới đây là các phân tích trực quan thu được từ bước EDA trên bộ MNIST:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch2_cnn/plots/mnist_sample_images.png}
+    \caption{Mẫu ảnh MNIST: Trực quan hóa 25 mẫu ảnh ngẫu nhiên cùng nhãn tương ứng, xác nhận dữ liệu đã được nạp đúng định dạng.}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{images/24.png}
-    \caption{Ma trận nhầm lẫn (Confusion Matrix) của mô hình CNN trên Fashion MNIST}
-    \label{fig:placeholder}
+    \includegraphics[width=0.75\textwidth]{../code/ch2_cnn/plots/mnist_class_distribution.png}
+    \caption{Phân phối lớp: Biểu đồ cột cho thấy sự cân bằng tuyệt vời giữa 10 chữ số, giúp mô hình tránh được hiện tượng thiên lệch (bias).}
 \end{figure}
-
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{images/25.png}
-    \caption{Kết quả dự đoán ngẫu nhiên}
-    \label{fig:placeholder}
+    \includegraphics[width=0.75\textwidth]{../code/ch2_cnn/plots/mnist_average_digits.png}
+    \caption{Ảnh trung bình theo lớp: Thể hiện hình dạng lý tưởng của mỗi chữ số sau khi lấy trung bình hàng nghìn mẫu, làm nổi bật đặc trưng hình học cốt lõi.}
 \end{figure}
 
-\subsection{Phân tích kết quả thực nghiệm và Đánh giá mô hình}
-
-Sau quá trình huấn luyện trên tập dữ liệu Fashion MNIST, mô hình CNN đạt kết quả tốt với độ chính xác trên tập kiểm tra khoảng \(93\%\). Để đánh giá toàn diện hiệu năng mô hình, cần xem xét đồng thời các chỉ số phân loại, biểu đồ huấn luyện và ma trận nhầm lẫn.
-
-\subsubsection{Phân tích Classification Report}
-
-Báo cáo phân loại cho thấy hiệu quả dự đoán của mô hình trên từng lớp dữ liệu.
-
-\begin{itemize}
-
-\item Các lớp có kết quả tốt nhất gồm: Trouser, Sneaker, Bag, Ankle boot, Sandal 
-(Đây là các lớp có hình dạng đặc trưng rõ ràng, dễ nhận diện và ít bị nhầm lẫn với lớp khác.)
-
-\item Các lớp có kết quả thấp hơn gồm: T-shirt/top, Shirt, Pullover, Coat
-(Nguyên nhân là do các loại trang phục này có cấu trúc khá giống nhau, đặc biệt khi ảnh đầu vào chỉ có kích thước \(28 \times 28\) và ở dạng ảnh xám.)
-
-\item Chỉ số F1-score giữa các lớp khá đồng đều, cho thấy mô hình hoạt động ổn định và không thiên lệch quá nhiều về một lớp cụ thể.
-
-\end{itemize}
-
-\subsubsection{Phân tích biểu đồ Accuracy và Loss}
-
-Dựa trên đồ thị huấn luyện:
-
-\begin{itemize}
-
-\item Accuracy trên tập huấn luyện tăng đều từ khoảng \(84\%\) lên gần \(96\%\), chứng tỏ mô hình học tốt từ dữ liệu.
-
-\item Accuracy trên tập kiểm định tăng nhanh trong những epoch đầu và ổn định quanh mức \(92\%-93\%\), cho thấy khả năng tổng quát hóa tốt.
-
-\item Loss trên tập huấn luyện giảm liên tục theo thời gian, thể hiện quá trình tối ưu hiệu quả.
-
-\item Loss trên tập kiểm định giảm mạnh ở giai đoạn đầu và dao động nhẹ ở các epoch sau, cho thấy mô hình đã hội tụ.
-
-\item Khoảng cách giữa đường huấn luyện và kiểm định không quá lớn, vì vậy mô hình chỉ xuất hiện overfitting nhẹ.
-
-\end{itemize}
-
-\subsubsection{Phân tích Confusion Matrix}
-
-Ma trận nhầm lẫn cho thấy mức độ dự đoán đúng và sai giữa các lớp.
-
-\begin{itemize}
-
-\item Các lớp được nhận diện tốt nhất:
-
-\begin{itemize}
-    \item \textit{Bag}: 988 mẫu đúng
-    \item \textit{Sandal}: 986 mẫu đúng
-    \item \textit{Trouser}: 982 mẫu đúng
-    \item \textit{Sneaker}: 979 mẫu đúng
-    \item \textit{Ankle boot}: 966 mẫu đúng
-\end{itemize}
-
-\item Các cặp lớp dễ bị nhầm lẫn:
-
-\begin{itemize}
-    \item \textit{T-shirt/top} và \textit{Shirt}
-    \item \textit{Pullover} và \textit{Shirt}
-    \item \textit{Coat} và \textit{Shirt}
-    \item \textit{Dress} và \textit{Coat}
-\end{itemize}
-
-\item Lớp \textit{Shirt} là lớp bị nhầm lẫn nhiều nhất, do hình dáng gần giống với nhiều loại áo khác.
-
-\end{itemize}
-
-\subsubsection{Đánh giá tổng quát}
-
-Từ các kết quả thu được có thể rút ra một số nhận xét:
-
-\begin{itemize}
-
-\item Mô hình CNN đạt hiệu năng tốt trên tập dữ liệu Fashion MNIST với độ chính xác khoảng \(93\%\).
-
-\item Quá trình huấn luyện ổn định, hội tụ nhanh và không xảy ra overfitting nghiêm trọng.
-
-\item Mô hình nhận diện rất tốt các lớp có đặc trưng riêng biệt như giày dép, túi xách và quần dài.
-
-\item Sai số chủ yếu tập trung ở các nhóm quần áo phần thân trên có hình dạng tương đồng.
-
-\item Nếu sử dụng kiến trúc sâu hơn, tăng cường dữ liệu hoặc áp dụng Batch Normalization, kết quả có thể tiếp tục được cải thiện.
-
-\end{itemize}
-
-\subsection{Thử nghiệm thay đổi tham số: Ảnh hưởng của Dropout}
-Để đánh giá tầm quan trọng của các kỹ thuật điều quy (Regularization), chúng ta tiến hành so sánh hai phiên bản mô hình:
-\begin{itemize}
-    \item \textbf{Model A (Base):} Kiến trúc CNN cơ bản, không sử dụng tầng Dropout.
-    \item \textbf{Model B (Optimized):} Kiến trúc CNN có sử dụng tầng Dropout (0.25 và 0.5) như đã trình bày ở trên.
-\end{itemize}
-
-\paragraph{Bảng so sánh kết quả:}
-
-\begin{table}[H]
+\begin{figure}[H]
     \centering
-    \caption{So sánh hiệu năng giữa Model A và Model B trên Fashion MNIST}
-    \begin{tabular}{|l|c|c|c|}
-        \hline
-        \textbf{Mô hình} & \textbf{Train Accuracy} & \textbf{Test Accuracy} & \textbf{Trình trạng} \\ \hline
-        \textbf{Model A (No Dropout)} & ~98.56\% & ~92.43\% & Overfitting \\ \hline
-        \textbf{Model B (With Dropout)} & ~96.53\% & ~92.85\% & Hoạt động ổn định \\ \hline
-    \end{tabular}
-\end{table}
+    \includegraphics[width=0.75\textwidth]{../code/ch2_cnn/plots/mnist_pixel_intensity_distribution.png}
+    \caption{Phân phối cường độ Pixel: Cho thấy hầu hết các điểm ảnh có giá trị gần 0 (nền đen) hoặc gần 1 (nét vẽ), phản ánh tính thưa (sparsity) của dữ liệu.}
+\end{figure}
 
-\paragraph{Phân tích:} 
-Kết quả cho thấy mặc dù Model A đạt độ chính xác trên tập Train rất cao, nhưng khi áp dụng vào tập Test, kết quả bị sụt giảm mạnh. Model B tuy có độ chính xác tập Train thấp hơn một chút (do tầng Dropout gây khó khăn cho việc học thuộc lòng) nhưng lại đạt độ chính xác tập Test cao hơn, chứng tỏ khả năng tổng quát hóa tốt hơn trên dữ liệu lạ.
+Tiếp theo, chúng ta định nghĩa và xây dựng mô hình CNN.
 
-\subsubsection{Kết quả đạt được}
-Mô hình CNN với kiến trúc cải tiến (có BatchNormalization và Dropout) đã đạt được độ chính xác ấn tượng trên tập Fashion MNIST. Việc sử dụng các tầng Convolution phân cấp giúp mạng học được các cấu trúc hình học của trang phục một cách tự động mà không cần can thiệp thủ công. Kết quả thực nghiệm cho thấy mạng CNN là lựa chọn hàng đầu cho các bài toán nhận dạng hình ảnh nhờ khả năng bảo toàn thông tin không gian xuất sắc.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch2_cnn/images/4.png}
+    \caption{Thiết kế kiến trúc Simple CNN: Sử dụng các lớp Conv2D để trích xuất đặc trưng và MaxPooling để giảm kích thước bản đồ đặc trưng.}
+\end{figure}
+
+\textbf{Phân tích kiến trúc:} Lớp \texttt{Conv2D} thực hiện phép tính tích chập giữa ảnh đầu vào và các bộ lọc (kernels). Mỗi bộ lọc sẽ học cách nhận diện một đặc trưng cụ thể (ví dụ: nét ngang, nét dọc). Lớp \texttt{MaxPooling} đi kèm đóng vai trò quan trọng trong việc tạo ra tính "bất biến dịch chuyển" (Translation Invariance), giúp mô hình vẫn nhận ra chữ số ngay cả khi nó bị lệch nhẹ trong khung hình.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch2_cnn/images/5.png}
+    \caption{Tóm tắt kiến trúc mạng (Model Summary): Hiển thị số lượng tham số huấn luyện tại mỗi lớp, giúp quản lý độ phức tạp của mô hình.}
+\end{figure}
+
+Tiến hành huấn luyện mô hình Simple CNN và so sánh với kiến trúc LeNet-5 cổ điển.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch2_cnn/images/6.png}
+    \caption{Quá trình huấn luyện Simple CNN trên 5 epochs, theo dõi độ chính xác (Accuracy) và hàm mất mát (Loss).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch2_cnn/images/7.png}
+    \caption{Triển khai mạng LeNet-5: Sử dụng hàm kích hoạt Tanh và lớp AveragePooling theo đúng kiến trúc nguyên bản của Yann LeCun.}
+\end{figure}
+
+Kết quả đánh giá mô hình MNIST:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch2_cnn/plots/ch2_mnist_history.png}
+    \caption{So sánh lịch sử huấn luyện: Đồ thị cho thấy cả hai mô hình đều đạt độ chính xác trên 98\% chỉ sau vài epochs, tuy nhiên Simple CNN hội tụ nhanh hơn nhờ ReLU.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch2_cnn/plots/mnist_confusion_matrix.png}
+    \caption{Ma trận nhầm lẫn (Confusion Matrix): Phân tích chi tiết các cặp chữ số dễ gây nhầm lẫn (như 4 và 9, hoặc 3 và 5).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch2_cnn/plots/mnist_feature_maps.png}
+    \caption{Trực quan hóa Feature Maps: Hiển thị cách các bộ lọc (filters) ở lớp đầu tiên nhận diện các cạnh, góc và nét vẽ thô của chữ số.}
+\end{figure}
+
+\textbf{Kết nối thực nghiệm:} Quan sát các Feature Maps này, ta thấy lớp đầu tiên hoạt động tương tự như các toán tử phát hiện biên (như Sobel hay Canny) trong xử lý ảnh truyền thống. Tuy nhiên, thay vì được thiết kế tay, các bộ lọc này được CNN tự học thông qua quá trình lan truyền ngược (Backpropagation).
+
+\subsubsection{Bài toán 2: Phân loại Fashion-MNIST}
+Fashion-MNIST có độ phức tạp cao hơn do các mẫu ảnh trang phục chứa nhiều chi tiết tinh xảo hơn chữ số.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch2_cnn/images/8.png}
+    \caption{Nạp bộ dữ liệu Fashion-MNIST và chuẩn bị danh sách nhãn (class\_names) cho việc hiển thị.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch2_cnn/images/9.png}
+    \caption{Xây dựng hai phiên bản mô hình: Simple CNN và Deep CNN (có sử dụng BatchNormalization và Dropout để chống Overfitting).}
+\end{figure}
+
+\textbf{Vai trò của Regularization:} Trong mô hình Deep CNN, \texttt{BatchNormalization} giúp ổn định quá trình huấn luyện bằng cách chuẩn hóa đầu ra của mỗi lớp. Trong khi đó, \texttt{Dropout} ngẫu nhiên loại bỏ một tỷ lệ nơ-ron, buộc mạng không được phụ thuộc quá mức vào bất kỳ đặc trưng riêng lẻ nào, từ đó nâng cao khả năng tổng quát hóa (Generalization) trên dữ liệu chưa biết.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch2_cnn/images/10.png}
+    \caption{Mã nguồn so sánh hiệu suất giữa mạng CNN đơn giản và mạng CNN sâu trên bộ dữ liệu trang phục.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch2_cnn/plots/ch2_fashion_history.png}
+    \caption{So sánh hội tụ: Deep CNN đạt kết quả ổn định hơn nhờ các lớp Regularization, mặc dù thời gian huấn luyện mỗi epoch lâu hơn.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch2_cnn/images/11.png}
+    \caption{Mã nguồn thực hiện EDA chi tiết cho Fashion-MNIST để phân tích tính đa dạng của các loại trang phục.}
+\end{figure}
+
+Các kết quả phân tích Fashion-MNIST:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch2_cnn/plots/fashion_mnist_sample_images.png}
+    \caption{Mẫu trang phục: Hiển thị 25 sản phẩm thời trang đại diện cho 10 lớp nhãn khác nhau.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch2_cnn/plots/fashion_mnist_class_distribution.png}
+    \caption{Sự cân bằng dữ liệu: Khẳng định tính chuẩn mực của bộ dữ liệu Fashion-MNIST với số lượng mẫu đồng đều cho mọi loại trang phục.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch2_cnn/plots/fashion_mnist_average_items.png}
+    \caption{Hình dáng trung bình của trang phục: Giúp nhận diện các đặc điểm chung của từng lớp (ví dụ: tay áo dài của Coat so với T-shirt).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch2_cnn/plots/fashion_mnist_pixel_intensity_distribution.png}
+    \caption{Phân phối cường độ Pixel: Phản ánh độ phức tạp cao hơn của ảnh trang phục so với ảnh chữ số (nhiều mức xám trung gian hơn).}
+\end{figure}
+
+\subsection{Kết luận Chương 2}
+Thông qua các thực nghiệm trên MNIST và Fashion-MNIST, chúng ta đã chứng minh được sức mạnh trích xuất đặc trưng của mạng CNN. Việc tinh chỉnh kiến trúc (như thêm Dropout, BatchNormalization) và lựa chọn hàm kích hoạt phù hợp (ReLU) đóng vai trò then chốt trong việc cải thiện hiệu suất mô hình.
+
+Đặc biệt, việc trực quan hóa Feature Maps và Confusion Matrix đã giúp chúng ta có cái nhìn sâu sắc hơn về cách mạng nơ-ron "nhìn" và "phân loại" hình ảnh.

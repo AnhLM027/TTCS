@@ -16,18 +16,16 @@
 
 ### CHƯƠNG 1: XỬ LÝ DỮ LIỆU (THE FOUNDATION OF INTELLIGENCE)
 *Mục tiêu: Chứng minh ảnh hưởng của tiền xử lý đến hiệu suất mô hình.*
-- **Datasets (4 bộ):** 
+- **Datasets (2 bộ đơn giản nhất):** 
     1. **Titanic (Tabular):** Missing values & Encoding.
     2. **Breast Cancer (Numerical):** Outliers & Scaling.
-    3. **SMS Spam (Text):** Cleaning & Tokenization.
-    4. **Dry Bean (Geometry):** PCA & t-SNE.
 - **Thử nghiệm:** So sánh Performance (Accuracy/F1) của 1 mô hình trên dữ liệu Gốc vs dữ liệu đã qua Tiền xử lý.
 - **Kỹ thuật:** SMOTE, Robust Scaler, Target Encoding, PCA, t-SNE visualization.
 - **Visualization:** Missing data matrix, Outlier boxplots, PCA 2D/3D cluster, Feature distribution.
 
 ### CHƯƠNG 2: MẠNG NƠ-RON TÍCH CHẬP (DEEP VISION & FEATURES)
 *Mục tiêu: Hiểu cách CNN trích xuất đặc trưng và sức mạnh của Transfer Learning.*
-- **Datasets (4 bộ):** 1. MNIST, 2. CIFAR-10, 3. Fashion-MNIST, 4. MedMNIST (Pneumonia).
+- **Datasets (2 bộ đơn giản nhất):** 1. MNIST, 2. Fashion-MNIST.
 - **Mô hình (4 kiến trúc):** 
     1. **Simple CNN** (Dưới 3 lớp).
     2. **LeNet-5** (Kiến trúc kinh điển).
@@ -40,7 +38,7 @@
 
 ### CHƯƠNG 3: MẠNG NƠ-RON HỒI QUY (TEMPORAL DEPENDENCIES)
 *Mục tiêu: Phân tích khả năng ghi nhớ chuỗi và vấn đề Vanishing Gradient.*
-- **Datasets (4 bộ):** 1. IMDB Sentiment, 2. Reuters News, 3. Sine Wave (Simple Seq), 4. Stock Prediction (Baseline).
+- **Datasets (2 bộ đơn giản nhất):** 1. IMDB Sentiment, 2. Sine Wave (Simple Seq).
 - **Mô hình (4 kiến trúc):** 
     1. **Vanilla RNN.**
     2. **Bidirectional RNN.**
@@ -53,7 +51,7 @@
 
 ### CHƯƠNG 4: LSTM & ATTENTION MECHANISM (LONG-TERM MEMORY)
 *Mục tiêu: Tối ưu hóa dự báo chuỗi thời gian và cơ chế tập trung.*
-- **Datasets (4 bộ):** 1. Google Stock, 2. Weather Forecasting, 3. Air Quality, 4. Text Generation.
+- **Datasets (2 bộ đơn giản nhất):** 1. Google Stock, 2. Weather Forecasting.
 - **Mô hình (4 kiến trúc):** 
     1. **Standard LSTM.**
     2. **Stacked LSTM.**

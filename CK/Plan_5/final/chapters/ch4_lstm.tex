@@ -48,253 +48,280 @@ Tại mỗi bước thời gian $t$, quá trình tính toán trong một đơn v
     \end{equation}
 \end{enumerate}
 
-Trong đó $\sigma$ là hàm \textit{sigmoid} điều tiết luồng thông tin trong khoảng [0, 1].
-
-\subsection{Biến thể GRU (Gated Recurrent Unit) và So sánh với LSTM}
-GRU là một biến thể hiện đại của LSTM, được giới thiệu bởi Cho và các cộng sự vào năm 2014. GRU đơn giản hóa cấu trúc của LSTM bằng cách kết hợp cổng quên và cổng vào thành một "cổng cập nhật" duy nhất, đồng thời bỏ đi trạng thái ô (Cell State).
-
-\subsubsection{Sự khác biệt về cấu trúc:} 
-Bảng dưới đây tóm tắt những điểm khác biệt cốt lõi giữa hai kiến trúc:
-
-\begin{table}[H]
-    \centering
-    \begin{tabular}{|p{3cm}|p{5cm}|p{5cm}|}
-        \hline
-        \textbf{Đặc điểm} & \textbf{LSTM} & \textbf{GRU} \\ \hline
-        \textbf{Số lượng cổng} & 3 cổng (Forget, Input, Output). & 2 cổng (Reset, Update). \\ \hline
-        \textbf{Trạng thái} & Tách biệt Cell state ($C_t$) và Hidden state ($h_t$). & Chỉ sử dụng Hidden state ($h_t$). \\ \hline
-        \textbf{Độ phức tạp} & Phức tạp hơn, nhiều tham số hơn. & Đơn giản hơn, ít tham số hơn. \\ \hline
-        \textbf{Tốc độ huấn luyện} & Chậm hơn. & Nhanh hơn (thường nhanh hơn 20-30\%). \\ \hline
-        \textbf{Khả năng học} & Tốt hơn trên các tập dữ liệu cực lớn và chuỗi rất dài. & Hiệu quả trên tập dữ liệu nhỏ/vừa hoặc chuỗi ngắn hơn. \\ \hline
-    \end{tabular}
-    \caption{So sánh kiến trúc LSTM và GRU}
-\end{table}
-
-\subsubsection{Tại sao GRU đôi khi hiệu quả hơn?}
-
-Mặc dù LSTM về lý thuyết mạnh mẽ hơn, GRU thường được lựa chọn trong thực tế vì các lý do sau:
+\subsubsection{Các biến thể của LSTM}
 \begin{itemize}
-    \item \textbf{Hiệu năng tính toán:} Với ít cổng hơn, GRU yêu cầu ít bộ nhớ và sức mạnh tính toán hơn, giúp huấn luyện nhanh hơn trên cùng một phần cứng.
-    \item \textbf{Khả năng hội tụ:} Trên các tập dữ liệu không quá lớn, GRU có xu hướng hội tụ nhanh hơn và ít bị hiện tượng Overfitting hơn do mô hình đơn giản hơn.
-    \item \textbf{Độ trễ thấp:} Trong các ứng dụng thời gian thực như chatbot hoặc nhận dạng giọng nói, tốc độ phản hồi của GRU là một lợi thế lớn.
+    \item \textbf{Peephole LSTM:} Cho phép các cổng nhìn thấy Cell State trực tiếp.
+    \item \textbf{GRU (Gated Recurrent Unit):} Phiên bản đơn giản hóa với ít tham số hơn.
+    \item \textbf{Bidirectional LSTM:} Xử lý chuỗi theo cả hai hướng (quá khứ và tương lai).
+    \item \textbf{Stacked LSTM:} Ghép nhiều lớp LSTM để tăng độ sâu của mô hình.
 \end{itemize}
 
-\subsection{Dự báo chuỗi thời gian (Time Series Forecasting)}
-Dự báo chuỗi thời gian là bài toán dự đoán các giá trị tương lai dựa trên các giá trị quan sát được trong quá khứ. Đây là lĩnh vực mà LSTM thể hiện sức mạnh vượt trội nhờ khả năng nắm bắt được cả xu hướng (trend) dài hạn và tính mùa vụ (seasonality).
-
-\subsubsection{Kỹ thuật Cửa sổ trượt (Sliding Window)}
-Để huấn luyện mô hình LSTM cho chuỗi thời gian, ta cần chuyển đổi dữ liệu về dạng học có giám sát (Supervised Learning). Kỹ thuật phổ biến nhất là sử dụng cửa sổ trượt: dùng $N$ giá trị trong quá khứ để dự đoán giá trị tại thời điểm tiếp theo.
-
-\subsubsection{Tập dữ liệu Airline Passengers}
-Báo cáo sử dụng tập dữ liệu kinh điển ghi lại số lượng hành khách hàng không hàng tháng từ năm 1949 đến 1960. Tập dữ liệu này có các đặc điểm: tính phi tuyến, tính xu hướng (Trend) và tính mùa vụ (Seasonality).
-
-\subsection{Thực nghiệm với Python}
-Dưới đây là mã nguồn xây dựng mạng LSTM để dự báo dữ liệu chuỗi thời gian lượng hành khách:
-
-\subsubsection{Chuẩn bị dữ liệu}
-\begin{lstlisting}[language=Python]
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import math
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import mean_squared_error
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
-
-print("--- 1. Loading Dataset ---")
-file_path = "AirPassengers.csv"
-df = pd.read_csv(file_path, usecols=[1])
-data = df.values.astype('float32')
-
-print("\n--- 2. Visualizing Raw Data ---")
-plt.figure(figsize=(10, 6))
-plt.plot(df, label='Monthly Passengers')
-plt.title('International Airline Passengers')
-plt.show()
-\end{lstlisting}
-
-\paragraph{Giải thích chi tiết:}
+\subsubsection{Ưu điểm của LSTM so với RNN}
 \begin{itemize}
-    \item \textbf{\texttt{usecols=[1]}:} Tập dữ liệu gốc chứa cột thời gian và cột số lượng hành khách. Vì LSTM sẽ học dựa trên vị trí thứ tự của mảng, ta chỉ cần cột giá trị.
-    \item \textbf{Trực quan hóa dữ liệu thô:} Bước này giúp xác định xu hướng và mùa vụ của dữ liệu trước khi chọn kiến trúc mạng.
+    \item \textbf{Khắc phục Vanishing Gradient:} Các cổng cho phép thông tin lưu trữ lâu dài.
+    \item \textbf{Selective Memory:} Có thể học được thông tin nào quan trọng để giữ lại.
+    \item \textbf{Stable Training:} Gradient được kiểm soát tốt hơn, ít bị explode.
 \end{itemize}
+
+\subsubsection{Các ứng dụng thực tế của LSTM}
+\begin{itemize}
+    \item \textbf{Xử lý ngôn ngữ tự nhiên:} Machine Translation, Sentiment Analysis, Text Generation.
+    \item \textbf{Dự báo thời gian:} Stock Price Prediction, Weather Forecasting, Traffic Prediction.
+    \item \textbf{Computer Vision:} Action Recognition, Video Captioning.
+    \item \textbf{Y học:} ECG Analysis, Disease Prediction from Time Series.
+\end{itemize}
+
+\subsubsection{Huấn luyện và tối ưu hóa LSTM}
+\begin{itemize}
+    \item \textbf{Data Preparation:} Sequence creation, normalization, train/validation split.
+    \item \textbf{Architecture Design:} Number of layers, hidden units, dropout rates.
+    \item \textbf{Training Tricks:} Gradient clipping, learning rate scheduling, early stopping.
+    \item \textbf{Evaluation:} Time series cross-validation, metrics like RMSE, MAE.
+\end{itemize}
+
+\subsection{Thực nghiệm theo từng tập dữ liệu}
+
+Trong chương này, chúng ta sẽ kiểm chứng sức mạnh của LSTM thông qua hai bài toán dự báo chuỗi thời gian phức tạp: Dự báo giá cổ phiếu (Google Stock) và Dự báo thời tiết.
+
+Khởi tạo môi trường với các thư viện hỗ trợ xử lý dữ liệu chuỗi và mô hình LSTM.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{images/41.png}
-    \caption{Dữ liệu gốc lượng hành khách hàng tháng}
-    \label{fig:placeholder}
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/1.png}
+    \caption{Thiết lập các công cụ Deep Learning và thư viện Scikit-learn để chuẩn hóa dữ liệu đầu vào cho LSTM.}
 \end{figure}
 
-Biểu đồ đường (Line chart) trực quan hóa sự biến động của số lượng hành khách hàng không quốc tế hàng tháng. Dựa vào các thông tin trên biểu đồ, ta có thể rút ra các đặc điểm sau:
+\textbf{Giải thích chi tiết:} Thiết lập này kết hợp TensorFlow/Keras cho mô hình LSTM và Scikit-learn để chuẩn hóa input. Preprocessing đúng cách rất quan trọng với dữ liệu chuỗi vì các giá trị khác scale có thể ảnh hưởng mạnh tới gradient và hội tụ.
 
-\begin{itemize}
-    \item \textbf{Thông tin các trục:} Trục hoành \textit{Month (Index)} thể hiện các bước thời gian từ $0$ đến hơn $140$. Trục tung \textit{Passengers} thể hiện số lượng hành khách tương ứng.
-    \item \textbf{Xu hướng tăng (Upward Trend):} Đường biểu diễn \textit{Monthly Passengers} (màu xanh) cho thấy sự tăng trưởng liên tục và rõ rệt. Dữ liệu bắt đầu ở mức xấp xỉ $100$ hành khách (tại index $0$) và đạt đỉnh cao nhất vượt mức $600$ (gần index $140$).
-    \item \textbf{Tính mùa vụ (Seasonality):} Dữ liệu liên tục dao động tạo thành các đỉnh (cao điểm) và đáy (thấp điểm) lặp lại đều đặn dọc theo trục thời gian.
-    \item \textbf{Biên độ dao động mở rộng (Increasing Variance):} Khoảng cách giữa các đỉnh và đáy trong cùng một chu kỳ ngày càng giãn rộng khi tiến về phía cuối biểu đồ. Điều này chỉ ra rằng đây là một chuỗi thời gian dạng nhân (Multiplicative Time Series) chứ không phải dạng cộng.
-\end{itemize}
-
-\begin{lstlisting}[language=Python]
-print("\n--- 3. Preprocessing ---")
-scaler = MinMaxScaler(feature_range=(0, 1))
-dataset = scaler.fit_transform(data)
-
-train_size = int(len(dataset) * 0.7)
-test_size = len(dataset) - train_size
-train, test = dataset[0:train_size,:], dataset[train_size:len(dataset),:]
-
-def create_dataset(dataset, look_back=1):
-    dataX, dataY = [], []
-    for i in range(len(dataset)-look_back-1):
-        a = dataset[i:(i+look_back), 0]
-        dataX.append(a)
-        dataY.append(dataset[i + look_back, 0])
-    return np.array(dataX), np.array(dataY)
-
-look_back = 12
-trainX, trainY = create_dataset(train, look_back)
-testX, testY = create_dataset(test, look_back)
-
-trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
-testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
-\end{lstlisting}
-
-\paragraph{Giải thích chi tiết:}
-\begin{itemize}
-    \item \textbf{\texttt{MinMaxScaler(0, 1)}:} Đưa dữ liệu về khoảng [0, 1] để phù hợp với hàm kích hoạt của LSTM.
-    \item \textbf{Hàm \texttt{create\_dataset} (Sliding Window):} Chuyển đổi chuỗi thành bài toán học có giám sát.
-    \item \textbf{Tham số \texttt{look\_back}:} Xác định số lượng bước thời gian trong quá khứ được dùng để dự báo. Ở đây ta chọn 12 tháng gần nhất để dự đoán tháng tiếp theo.
-\end{itemize}
-
-\subsubsection{Xây dựng và Huấn luyện mô hình LSTM}
-\begin{lstlisting}[language=Python]
-print("\n--- 4. Building LSTM Model ---")
-model = Sequential([
-    LSTM(50, return_sequences=True, input_shape=(1, look_back)),
-    Dropout(0.5),
-    LSTM(50),
-    Dropout(0.5),
-    Dense(1)
-])
-model.compile(loss='mean_squared_error', optimizer='adam')
-model.summary()
-
-print("\n--- 5. Training Model ---")
-history = model.fit(trainX, trainY, epochs=100, batch_size=1, verbose=0, validation_split=0.1)
-\end{lstlisting}
-
-\paragraph{Giải thích cấu trúc và tham số:}
-\begin{itemize}
-    \item \textbf{\texttt{return\_sequences=True}:} Truyền toàn bộ chuỗi trạng thái ẩn từ lớp LSTM thứ nhất sang lớp LSTM thứ hai để trích xuất đặc trưng sâu hơn.
-    \item \textbf{\texttt{Dropout(0.5)}:} Tắt ngẫu nhiên $50\%$ nơ-ron trong quá trình huấn luyện nhằm ngăn chặn triệt để hiện tượng Overfitting.
-    \item \textbf{Hàm mất mát \& Tối ưu hóa:} Sử dụng \texttt{mean\_squared\_error} phù hợp cho bài toán hồi quy (Regression), kết hợp bộ tối ưu \texttt{adam} để tăng tốc độ hội tụ.
-    \item \textbf{\texttt{batch\_size=1}:} Cập nhật trọng số ngay sau từng mẫu dữ liệu (Online Learning), giúp mô hình bám sát các biến động chi tiết của chuỗi thời gian.
-\end{itemize}
+\subsubsection{Bài toán 1: Dự báo giá cổ phiếu Google}
+Dự báo tài chính là bài toán thách thức do dữ liệu có tính biến động cao và chịu ảnh hưởng của nhiều yếu tố phi tuyến tính.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{images/42.png}
-    \caption{Tham số mô hình}
-    \label{fig:placeholder}
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/2.png}
+    \caption{Sinh dữ liệu giá cổ phiếu giả lập: Kết hợp các thành phần xu hướng (trend) và biến động ngẫu nhiên để tạo ra chuỗi dữ liệu thực tế.}
 \end{figure}
+
+\textbf{Giải thích chi tiết:} Dữ liệu tổng hợp này mô phỏng đặc điểm của giá cổ phiếu thực tế: một trend dài hạn cộng với nhiễu ngắn hạn. Nó giúp kiểm tra khả năng LSTM học được các pattern phi tuyến và tính biến động.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{images/43.png}
-    \caption{Đồ thị Loss trong quá trình huấn luyện LSTM}
-    \label{fig:placeholder}
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/3.png}
+    \caption{Mã nguồn thực hiện EDA cho dữ liệu tài chính: Phân tích xu hướng dài hạn và các chỉ số thống kê biến động.}
 \end{figure}
 
-Biểu đồ \textit{LSTM Training History} thể hiện sự biến thiên của hàm mất mát (Loss) qua 150 vòng huấn luyện (epochs):
+\textbf{Giải thích chi tiết:} EDA tài chính cung cấp cái nhìn về tính stationarity, volatility và trend. Những phân tích này xác định cách chuẩn bị dữ liệu và cấu trúc mô hình LSTM phù hợp.
 
-\begin{itemize}
-    \item \textbf{Tập huấn luyện (Train Loss):} Giảm mạnh ở những epoch đầu và nhanh chóng hội tụ, duy trì ổn định ở mức cực kỳ thấp (xấp xỉ 0.001 - 0.002).
-    
-    \item \textbf{Tập kiểm định (Val Loss):} Điểm khác biệt lớn nhất là đường Val Loss giờ đây \textbf{bám rất sát} đường Train Loss. Mặc dù vẫn còn vài dao động nhỏ, biên độ các đỉnh đã giảm đáng kể và không còn hiện tượng lệch pha kéo dài.
-    
-    \item \textbf{Kết luận:} Việc áp dụng kỹ thuật Dropout đã khắc phục thành công hiện tượng Overfitting. Khoảng cách (gap) giữa hai tập dữ liệu gần như bị xóa bỏ, chứng tỏ mô hình đã đạt được khả năng tổng quát hóa rất tốt trên dữ liệu chưa từng gặp.
-\end{itemize}
-
-\subsubsection{Đánh giá kết quả Dự báo}
-\begin{lstlisting}[language=Python]
-print("\n--- 6. Predicting & Evaluating ---")
-trainPredict = model.predict(trainX)
-testPredict = model.predict(testX)
-
-# Inverse transforms
-trainPredict = scaler.inverse_transform(trainPredict)
-trainY_orig = scaler.inverse_transform([trainY])
-testPredict = scaler.inverse_transform(testPredict)
-testY_orig = scaler.inverse_transform([testY])
-
-# Calculate RMSE
-trainScore = math.sqrt(mean_squared_error(trainY_orig[0], trainPredict[:,0]))
-print(f'Train Score: {trainScore:.2f} RMSE')
-testScore = math.sqrt(mean_squared_error(testY_orig[0], testPredict[:,0]))
-print(f'Test Score: {testScore:.2f} RMSE')
-\end{lstlisting}
-
-\paragraph{Giải thích chi tiết:}
-\begin{itemize}
-    \item \textbf{\texttt{inverse\_transform}:} Đưa kết quả dự báo quay lại thang đo gốc (số lượng hành khách).
-    \item \textbf{Chỉ số RMSE:} Căn bậc hai của sai số bình phương trung bình, giúp ta biết sai số trung bình là bao nhiêu hành khách. Đây là chỉ số quan trọng nhất trong dự báo chuỗi thời gian, đơn vị của nó khớp với đơn vị gốc của dữ liệu.
-\end{itemize}
+Kết quả phân tích đặc trưng giá cổ phiếu:
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{images/44.png}
-    \caption{Kết quả dự báo lượng hành khách trên tập Train và Test với look\_back = 12}
-    \label{fig:placeholder}
+    \includegraphics[width=0.75\textwidth]{../code/ch4_lstm/plots/google_stock_time_series.png}
+    \caption{Chuỗi thời gian giá cổ phiếu: Trực quan hóa biến động giá trong một khoảng thời gian dài, xác định xu hướng tăng trưởng tổng thể.}
 \end{figure}
 
-\subsection{Phân tích kết quả thực nghiệm và Đánh giá dự báo}
+\textbf{Giải thích chi tiết:} Visualization giúp nhận thấy trend tăng tổng thể và các dao động ngắn hạn. LSTM cần học cả hai yếu tố để dự báo chính xác, đặc biệt với dữ liệu tài chính có noise cao.
 
-Kết quả dự báo lượng hành khách hàng không bằng mô hình LSTM cho thấy khả năng nắm bắt quy luật thời gian ấn tượng của mạng nơ-ron hồi tiếp cải tiến này.
-
-\subsubsection{Phân tích chỉ số RMSE (Root Mean Squared Error)}
-Chỉ số RMSE là thước đo tiêu chuẩn trong các bài toán hồi quy chuỗi thời gian:
-\begin{itemize}
-    \item \textbf{Ý nghĩa:} RMSE đo lường độ lệch trung bình giữa giá trị hành khách dự báo và giá trị hành khách thực tế. Với dữ liệu hàng không, một giá trị RMSE thấp cho thấy mô hình có sai số rất nhỏ so với biên độ tổng lượng hành khách hàng tháng.
-    \item \textbf{Tính tổng quát hóa:} Việc RMSE trên tập Train và tập Test duy trì ở mức ổn định, không quá chênh lệch chứng tỏ mô hình LSTM đã học được "quy luật" cốt lõi của chuỗi dữ liệu chứ không rơi vào tình trạng ghi nhớ máy móc (Overfitting).
-\end{itemize}
-
-\subsubsection{Đánh giá trực quan qua biểu đồ dự báo}
-Biểu đồ so sánh trực tiếp dữ liệu thực tế (Actual Data - màu xanh dương) với kết quả dự báo trên tập huấn luyện (Train Prediction - màu cam) và tập kiểm tra (Test Prediction - màu xanh lá):
-\begin{itemize}
-    \item \textbf{Khớp dữ liệu quá khứ (Train):} Đường màu cam bám rất sát với đường thực tế. Mô hình đã nhận diện xuất sắc cả xu hướng tăng trưởng tuyến tính (Trend) và chu kỳ dao động lặp lại (Seasonality).
-    \item \textbf{Dự báo tương lai (Test):} Trên tập dữ liệu chưa từng gặp (phần đường màu xanh lá ở cuối đồ thị), mô hình vẫn bám sát hoàn hảo các biến động. Đặc biệt, LSTM đã dự báo vô cùng chính xác các đỉnh cực đại (vượt ngưỡng 600 hành khách) và đáy của chu kỳ mở rộng.
-    \item \textbf{Kết luận:} Mô hình không hề bị trễ pha (lagging) - một lỗi rất phổ biến khi dùng mạng Neural dự báo chuỗi thời gian. Điều này khẳng định cấu trúc LSTM kết hợp Dropout đã mang lại khả năng dự báo ngoại suy xuất sắc cho dữ liệu phi tuyến tính.
-\end{itemize}
-
-\subsection{Thử nghiệm tham số: Tầm quan trọng của look\_back}
-
-Tham số \texttt{look\_back} xác định số lượng bước thời gian trong quá khứ được dùng làm ngữ cảnh để dự báo tương lai. Thực nghiệm tiến hành đánh giá ba cấu hình:
-
-\begin{itemize}
-    \item \textbf{Cấu hình 1 (look\_back = 1):} Chỉ sử dụng dữ liệu 1 tháng liền trước.
-    \item \textbf{Cấu hình 2 (look\_back = 3):} Sử dụng chuỗi dữ liệu 3 tháng gần nhất (1 quý).
-    \item \textbf{Cấu hình 3 (look\_back = 12):} Sử dụng toàn bộ chuỗi dữ liệu 12 tháng gần nhất (1 năm).
-\end{itemize}
-
-\subsubsection{Bảng so sánh sai số RMSE:}
-
-\begin{table}[H]
+\begin{figure}[H]
     \centering
-    \begin{tabular}{|l|c|c|}
-        \hline
-        \textbf{Cấu hình} & \textbf{Train RMSE} & \textbf{Test RMSE} \\ \hline
-        \textbf{look\_back = 1} & 24.21 & 65.41 \\ \hline
-        \textbf{look\_back = 3} & 22.16 & 55.22 \\ \hline
-        \textbf{look\_back = 12} & 12.62 & 22.06 \\ \hline
-    \end{tabular}
-    \caption{So sánh sai số dự báo theo tham số look\_back}
-\end{table}
+    \includegraphics[width=0.75\textwidth]{../code/ch4_lstm/plots/google_stock_rolling_stats.png}
+    \caption{Thống kê cuộn (Rolling Statistics): Sử dụng đường trung bình động để loại bỏ nhiễu và làm nổi bật các chu kỳ biến động ngắn hạn.}
+\end{figure}
 
-\subsubsection{Phân tích:} 
-Việc mở rộng \texttt{look\_back} từ $1$ lên $3$ giúp mạng LSTM nắm bắt tốt hơn "đà" (momentum) biến động của dữ liệu. Đặc biệt, khi tăng \texttt{look\_back = 12}, sai số giảm mang tính đột phá trên cả hai tập. Điều này hoàn toàn phù hợp với đặc thù dữ liệu hàng không: tính mùa vụ lặp lại theo chu kỳ đúng 12 tháng. Cửa sổ thời gian 1 năm giúp mô hình "nhìn" thấy được toàn cảnh quy luật của năm trước (tháng cao điểm, tháng thấp điểm) để ánh xạ và dự báo cực kỳ chính xác cho năm tiếp theo.
+\textbf{Giải thích chi tiết:} Rolling mean giảm nhiễu và làm rõ xu hướng thực sự. Đây là một kỹ thuật phổ biến để tiền xử lý time series trước khi đưa vào mô hình.
 
-\subsection{Kết luận chung}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch4_lstm/plots/google_stock_price_distribution.png}
+    \caption{Phân phối giá: Kiểm tra tính chuẩn mực của dữ liệu giá, hỗ trợ việc lựa chọn phương pháp chuẩn hóa (Scaling) phù hợp.}
+\end{figure}
 
-Nhờ cơ chế cổng nhớ thông minh (memory gates) và việc thiết lập tham số cửa sổ thời gian (\texttt{look\_back}) bám sát chu kỳ thực tế, mô hình LSTM đã chứng minh năng lực xuất sắc. Nó không chỉ duy trì được bộ nhớ về xu hướng dài hạn (Long-term Trend) mà còn thích ứng hoàn hảo với tính mùa vụ (Seasonality) của ngành hàng không. Mức sai số RMSE thấp trên tập kiểm thử khẳng định LSTM là một phương pháp tiếp cận mạnh mẽ và tối ưu cho bài toán dự báo chuỗi thời gian phi tuyến tính.
+\textbf{Giải thích chi tiết:} Phân phối giá giúp xác định nếu dữ liệu bị lệch mạnh. Nếu giá có phân phối không chuẩn, scaling hoặc log transform có thể giúp cải thiện hiệu suất huấn luyện.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch4_lstm/plots/google_stock_autocorrelation.png}
+    \caption{Hàm tự tương quan (ACF): Phân tích mức độ ảnh hưởng của các mức giá trong quá khứ đối với giá hiện tại, xác định độ trễ (lag) tối ưu cho mô hình.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Autocorrelation cho thấy giá trong quá khứ có liên hệ như thế nào với giá hiện tại. Nếu ACF mạnh ở các lag nhất định, ta nên sử dụng những lag đó trong input sequence.
+
+Thiết kế và huấn luyện các kiến trúc LSTM cho dự báo tài chính.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/4.png}
+    \caption{Xây dựng mô hình LSTM cơ bản: Thiết kế lớp LSTM với cơ chế cổng để ghi nhớ các biến động giá quan trọng.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Mô hình này thể hiện cách LSTM lọc thông tin quan trọng qua các cổng. Cell state lưu giữ xu hướng dài hạn, trong khi hidden state cung cấp ngữ cảnh tại mỗi bước thời gian.
+
+\textbf{Hiện thực hóa cơ chế Cổng:} Lớp \texttt{LSTM} trong Keras tự động triển khai các cổng quên, cổng vào và cổng ra (mục 4.2.2). Trong bài toán tài chính này, \textbf{Forget Gate} đóng vai trò then chốt khi nó giúp mô hình loại bỏ những biến động giá "nhiễu" trong quá khứ và chỉ giữ lại những xu hướng thực sự quan trọng trong \textbf{Cell State}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/5.png}
+    \caption{Quá trình huấn luyện: Sử dụng tối ưu hóa Adam và theo dõi sai số tuyệt đối trung bình (MAE) để đánh giá độ lệch giá.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Adam là optimizer phổ biến cho mô hình chuỗi vì nó tự điều chỉnh learning rate. MAE phù hợp với dữ liệu giá vì nó thể hiện sai số trung bình dưới cùng đơn vị giá trị.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/6.png}
+    \caption{Kiến trúc Stacked LSTM: Xếp chồng nhiều lớp LSTM để tăng khả năng học các đặc trưng tài chính phức tạp và sâu sắc hơn.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Stacked LSTM cho phép mạng học các yếu tố thời gian ở nhiều mức độ khác nhau. Lớp đầu học các mẫu ngắn hạn, lớp sâu hơn tổng hợp thông tin này để nhận diện xu hướng dài hạn.
+
+\textbf{Lý giải Stacked LSTM:} Việc xếp chồng các lớp LSTM cho phép mạng xây dựng một hệ thống phân cấp các đặc trưng thời gian. Lớp đầu tiên có thể học các biến động giá theo từng ngày, trong khi lớp thứ hai sẽ tổng hợp các thông tin đó để nhận diện xu hướng theo tuần hoặc theo tháng, giúp tăng độ chính xác cho dự báo dài hạn.
+
+Đánh giá kết quả dự báo giá cổ phiếu:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch4_lstm/plots/google_stock_lstm_training_history.png}
+    \caption{Lịch sử hội tụ: Hàm mất mát giảm ổn định trên cả tập Train và Validation, cho thấy mô hình không bị quá khớp.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Lịch sử huấn luyện này chỉ ra rằng cả train và validation loss cùng giảm, biểu hiện mô hình học tốt mà không overfit. Đây là tín hiệu tích cực khi huấn luyện LSTM.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch4_lstm/plots/google_stock_predictions.png}
+    \caption{Hiệu quả dự báo: Đường dự báo phản ánh chính xác xu hướng biến động của giá cổ phiếu trên tập dữ liệu kiểm tra.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} So sánh dự báo và giá thực tế giúp đánh giá trực quan chất lượng mô hình. Nếu đường dự báo bám sát trend chính, mô hình có khả năng tạo ra dự báo hữu ích.
+
+\subsubsection{Bài toán 2: Dự báo thời tiết nhiệt độ}
+Dữ liệu thời tiết mang tính chu kỳ rõ rệt theo giờ và theo ngày, yêu cầu mô hình phải ghi nhớ được các quy luật lặp lại này.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/7.png}
+    \caption{Sinh dữ liệu nhiệt độ: Mô phỏng sự thay đổi nhiệt độ có tính chu kỳ ngày đêm kết hợp với các biến đổi thời tiết ngẫu nhiên.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Dữ liệu này mô phỏng đặc điểm của chuỗi thời tiết: tuần hoàn ngày đêm và nhiễu ngẫu nhiên. LSTM cần học cả hai yếu tố để dự báo nhiệt độ chính xác.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/8.png}
+    \caption{Mã nguồn EDA cho dữ liệu thời tiết: Khám phá phân phối nhiệt độ và các đặc trưng thời gian (giờ trong ngày).}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} EDA giúp hiểu chu kỳ và mức độ biến đổi nhiệt độ theo thời gian. Các đặc trưng giờ trong ngày rất quan trọng với dự báo thời tiết.
+
+Các kết quả phân tích dữ liệu thời tiết:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch4_lstm/plots/weather_temperature_time_series.png}
+    \caption{Chuỗi nhiệt độ: Trực quan hóa tính chu kỳ hoàn hảo của dữ liệu nhiệt độ được tạo ra cho thực nghiệm.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Biểu đồ này giúp thấy ngay tính chu kỳ và độ nhiễu. LSTM sẽ học pattern tuần hoàn này để dự báo giá trị tiếp theo.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch4_lstm/plots/weather_rolling_stats.png}
+    \caption{Xu hướng nhiệt độ: Sử dụng thống kê cuộn để xác định các đợt thay đổi nhiệt độ kéo dài bất thường.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Rolling statistics giúp phát hiện các giai đoạn bất thường, chẳng hạn đợt nóng hoặc lạnh kéo dài, từ đó hỗ trợ lựa chọn window size phù hợp.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch4_lstm/plots/weather_temperature_distribution.png}
+    \caption{Phân phối nhiệt độ: Phân tích tần suất xuất hiện của các dải nhiệt độ trong tập dữ liệu thực nghiệm.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Phân phối nhiệt độ cho biết mode và độ lệch của dữ liệu. Nếu nhiệt độ không đối xứng, cần suy nghĩ tới scaling hoặc biến đổi log trong preprocessing.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch4_lstm/plots/weather_hourly_pattern.png}
+    \caption{Mẫu hình theo giờ: Cho thấy sự thay đổi nhiệt độ điển hình từ sáng sớm đến đêm muộn, hỗ trợ LSTM học tính tuần hoàn.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Biểu đồ theo giờ minh họa pattern hàng ngày. Điều này giúp xác định xem mô hình cần ghi nhớ bao nhiêu bước thời gian để nắm bắt chu kỳ.
+
+Huấn luyện và nâng cấp mô hình dự báo thời tiết.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/9.png}
+    \caption{Thiết kế mô hình LSTM cho dự báo thời tiết: Tối ưu hóa cấu trúc để xử lý các chuỗi thời gian có độ dài trung bình.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Mô hình này tập trung vào khả năng học các chuỗi thời gian dài vừa phải. Các tham số như hidden units và dropout rate quyết định độ phức tạp và khả năng khái quát hóa.
+
+\textbf{Ứng dụng trong Regression:} Vì dự báo nhiệt độ là một bài toán hồi quy (mục 4.5.2), chúng ta sử dụng lớp \texttt{Dense} cuối cùng với một nơ-ron duy nhất và không dùng hàm kích hoạt phi tuyến tính ở lớp đầu ra, cho phép mô hình dự báo trực tiếp giá trị nhiệt độ thực tế.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/10.png}
+    \caption{Tiến hành huấn luyện: Áp dụng các kỹ thuật như Early Stopping để bảo vệ mô hình khỏi việc học thuộc lòng dữ liệu nhiễu.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Cơ chế Early Stopping theo dõi giá trị Validation Loss trong quá trình huấn luyện. Nếu giá trị này không cải thiện sau một số epoch nhất định (patience), quá trình huấn luyện sẽ tự động dừng lại. Kỹ thuật này bảo vệ mô hình khỏi việc học thuộc lòng các nhiễu trong dữ liệu thời tiết, đảm bảo tính tổng quát hóa tối ưu.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/11.png}
+    \caption{Triển khai Bidirectional LSTM: Sử dụng luồng thông tin hai chiều để nắm bắt các phụ thuộc thời gian phức tạp hơn.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Bidirectional LSTM xử lý chuỗi nhiệt độ theo cả hai chiều: xuôi từ quá khứ đến hiện tại và ngược từ tương lai về quá khứ. Trong dự báo thời tiết, điều này giúp mạng nắm bắt được các hình thái biến động đối xứng (như sự nóng lên buổi sáng và lạnh đi buổi tối), tạo ra một biểu diễn trạng thái đầy đủ hơn cho mỗi bước thời gian.
+
+\textbf{Lợi thế của Bidirectional:} Trong dự báo thời tiết, nhiệt độ tại một thời điểm thường bị ảnh hưởng bởi xu hướng trước đó và cả các điều kiện khí quyển sắp tới. Việc sử dụng Bidirectional LSTM giúp mô hình "nhìn" thấy cả hai chiều thời gian, từ đó nắm bắt tốt hơn các đỉnh và đáy của chu kỳ nhiệt độ ngày đêm.
+
+Kết quả thực nghiệm dự báo thời tiết:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch4_lstm/plots/weather_lstm_training_history.png}
+    \caption{Tiến trình học tập: Sự hội tụ nhanh chóng của hàm Loss minh chứng cho khả năng học quy luật tuần hoàn mạnh mẽ của LSTM.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Biểu đồ lịch sử huấn luyện cho thấy sự hội tụ nhanh chóng của hàm Loss. Do tính chu kỳ của nhiệt độ rất mạnh và ổn định, LSTM dễ dàng học được quy luật cơ bản chỉ sau vài epoch. Khoảng cách hẹp giữa đường Train và Validation chứng tỏ mô hình rất ổn định.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../code/ch4_lstm/plots/weather_predictions.png}
+    \caption{Độ chính xác dự báo: Mô hình dự đoán gần như khớp hoàn toàn với dữ liệu nhiệt độ thực tế, cho sai số rất thấp.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Sự trùng khớp gần như hoàn hảo giữa đường thực tế và dự báo trên tập kiểm tra là minh chứng cho năng lực của LSTM. Ngay cả tại các điểm cực trị (nhiệt độ cao nhất trưa và thấp nhất đêm), mô hình vẫn duy trì được sai số cực thấp, cho thấy các cổng (Gates) đã hoạt động hiệu quả trong việc duy trì Cell State.
+
+Hệ thống quản lý và kết thúc thực nghiệm.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/12.png}
+    \caption{Mã nguồn đánh giá chi tiết: Tính toán các chỉ số lỗi (MSE, RMSE) để định lượng độ tin cậy của mô hình.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Việc tính toán RMSE và MAE cho dữ liệu nhiệt độ cung cấp các chỉ số đo lường thực tế (ví dụ: sai số trung bình là 0.5 độ C). Những con số này cho phép các nhà nghiên cứu định lượng được độ tin cậy của mô hình trước khi đưa vào ứng dụng thực tế.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/13.png}
+    \caption{Tổ chức kết quả: Tự động phân loại và lưu trữ các biểu đồ phân tích vào hệ thống báo cáo chương 4.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Hệ thống tự động hóa quản lý tệp tin giúp duy trì tính nhất quán của báo cáo. Việc tách biệt các biểu đồ của bài toán tài chính và bài toán thời tiết vào các tiểu mục rõ ràng giúp việc tra cứu và đối chiếu kết quả thực nghiệm trở nên thuận tiện và khoa học.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/ch4_lstm/images/15.png}
+    \caption{Hoàn thành chương 4: Tổng kết các kết quả đạt được về kiến trúc LSTM và sẵn sàng cho việc tổng hợp toàn văn báo cáo.}
+\end{figure}
+
+\textbf{Giải thích chi tiết:} Bước tổng kết này đánh dấu sự hoàn thiện của chương nghiên cứu về LSTM. Toàn bộ các mô hình từ Stacked đến Bidirectional đều được lưu trữ trọng số, sẵn sàng cho các phân tích sâu hơn hoặc so sánh với các kiến trúc Transformer trong tương lai.
+
+\subsection{Kết luận Chương 4}
+Kiến trúc LSTM với cơ chế các cổng điều khiển đã giải quyết triệt để vấn đề tiêu biến đạo hàm của RNN truyền thống. Qua hai bài toán thực tế về tài chính và khí tượng, chúng ta đã thấy được khả năng ghi nhớ dài hạn và nắm bắt quy luật tuần hoàn vượt trội của LSTM.
+
+Sự thành công của các mô hình LSTM (đặc biệt là Stacked và Bidirectional LSTM) đã khẳng định vị thế của nó như một công cụ không thể thiếu trong việc xử lý các dữ liệu chuỗi thời gian có độ phức tạp cao.

@@ -1,22 +1,296 @@
 \paragraph{Phân tích bộ dữ liệu Used Car Price} \hfill \\
-Bài toán dự báo giá xe cũ (Regression) dựa trên các thuộc tính như năm sản xuất, quãng đường đã đi, nhiên liệu, v.v.
+Dataset chứa thông tin về hơn 8,000 xe ô tô cũ với 13 đặc trưng. Mục tiêu là xây dựng mô hình hồi quy để dự báo giá bán (\texttt{selling\_price}).
 
-\paragraph{Kỹ thuật xử lý: Feature Derivation và Robust Scaling} \hfill \\
-Chúng ta tạo ra biến mới "Car Age" để phản ánh trực tiếp độ cũ của xe thay vì chỉ dùng năm sản xuất. Đồng thời, áp dụng RobustScaler để chuẩn hóa dữ liệu vì giá xe và quãng đường đi được thường có phân phối lệch (skewed) và chứa nhiều giá trị ngoại lai.
-
-\paragraph{Kết quả thực nghiệm} \hfill \\
+\paragraph{Phân tích khám phá dữ liệu (EDA)} \hfill \\
+Trước khi xử lý, chúng ta thực hiện quan sát cấu trúc dữ liệu:
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{Chương_1/results/used_car/price_boxplot_before.png}
-    \caption{Phân phối giá bán với nhiều giá trị ngoại lai (Outliers)}
-    \label{fig:car_outliers}
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/used_car/01_missing_and_price_dist.png}
+    \caption{Tỷ lệ dữ liệu thiếu và phân phối giá bán (Lệch trái mạnh)}
 \end{figure}
 
-Việc sử dụng RobustScaler giúp mô hình hồi quy tuyến tính hoạt động ổn định hơn, không bị chệch hướng bởi các dòng xe hạng sang có giá cực cao.
+Hình 1.14 cho thấy dữ liệu có một lượng nhỏ giá trị thiếu ở các cột như `mileage`, `engine`. Đặc biệt, phân phối giá xe bị lệch trái mạnh, với hầu hết các mẫu nằm ở tầm giá thấp và trung bình, đòi hỏi các phép biến đổi logarit hoặc chuẩn hóa mạnh mẽ để mô hình không bị thiên kiến.
+
+Biểu đồ cho thấy giá xe tập trung chủ yếu ở phân khúc thấp, nhưng có một số xe hạng sang đẩy đuôi phân phối đi rất xa (Skewed distribution). Tiếp theo, chúng ta quan sát các biến hạng mục:
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{Chương_1/results/used_car/actual_vs_pred.png}
-    \caption{So sánh giữa giá thực tế và giá dự báo}
-    \label{fig:car_regression}
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/used_car/02_categorical_distribution.png}
+    \caption{Phân phối các loại nhiên liệu, người bán và hộp số}
+\end{figure}
+
+Hình 1.15 chỉ ra rằng xe chạy bằng dầu (Diesel) và xăng (Petrol) chiếm ưu thế tuyệt đối. Hầu hết các xe là số sàn (Manual), phản ánh đặc thù thị trường xe cũ tại Ấn Độ (nguồn gốc bộ dữ liệu).
+
+Dữ liệu cho thấy xe Diesel và Petrol chiếm đa số, và hầu hết là xe số sàn (Manual). Sự tương quan giữa các biến này với giá bán được thể hiện qua biểu đồ Boxplot:
+
+\paragraph{Tiền xử lý và Kỹ thuật đặc trưng} \hfill \\
+Để máy tính có thể hiểu được các đặc trưng vật lý, chúng ta cần chuyển đổi các chuỗi văn bản thành giá trị số.
+
+\begin{lstlisting}[language=Python, caption=Tach so va trich xuat dac trung]
+# Tach so tu chuoi (vi du: '23.4 kmpl' -> 23.4)
+def extract_num(text):
+    if pd.isna(text): return np.nan
+    res = re.findall(r'(\d+\.?\d*)', str(text))
+    return float(res[0]) if res else np.nan
+
+df['mileage'] = df['mileage'].apply(extract_num)
+df['engine'] = df['engine'].apply(extract_num)
+df['max_power'] = df['max_power'].apply(extract_num)
+
+# Trich xuat Brand tu ten xe
+df['brand'] = df['name'].str.split().str[0]
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/used_car/03_price_by_category.png}
+    \caption{Mối quan hệ giữa các biến hạng mục và giá bán}
+\end{figure}
+
+Hình 1.16 minh họa sự chênh lệch giá bán giữa các nhóm. Xe số tự động (Automatic) và xe Diesel thường có giá bán cao hơn hẳn và có nhiều giá trị ngoại lai (outliers) ở phân khúc hạng sang.
+
+\paragraph{Kỹ thuật xử lý: Feature Derivation và Outliers} \hfill \\
+Chúng ta tạo biến \texttt{Car\_Age} và quan sát mối quan hệ giữa Năm sản xuất, Số km đã đi với Giá bán:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/used_car/04_scatter_year_km_price.png}
+    \caption{Biểu đồ phân tán giữa năm, quãng đường và giá}
+\end{figure}
+
+Hình 1.17 cho thấy mối tương quan nghịch rõ rệt giữa quãng đường đã đi và giá bán, đồng thời là mối tương quan thuận giữa năm sản xuất và giá. Các xe đời mới hơn thường duy trì giá trị tốt hơn.
+
+Để bảo vệ mô hình khỏi các giá trị cực đoan, chúng ta sử dụng \textbf{RobustScaler}. Hiệu quả của việc xử lý outliers được minh họa qua Boxplot:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/used_car/05_outlier_boxplots.png}
+    \caption{So sánh dữ liệu trước và sau khi chuẩn hóa bằng RobustScaler}
+\end{figure}
+
+Hình 1.18 minh chứng sức mạnh của RobustScaler. Thay vì bị kéo lệch bởi các giá trị cực đoan như StandardScaler, RobustScaler sử dụng trung vị (Median) và khoảng tứ phân vị (IQR), giúp thu hẹp phạm vi giá trị và giữ cho các đặc trưng có thang đo tương đồng mà không làm mất đi tính chất phân phối.
+
+Sự tương quan giữa các biến số sau khi tiền xử lý:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/used_car/06_correlation_heatmap.png}
+    \caption{Ma trận tương quan Heatmap}
+\end{figure}
+
+Hình 1.19 xác nhận công suất máy (\texttt{max\_power}) là biến có tương quan mạnh nhất với giá bán (0.75). Điều này hoàn toàn phù hợp với thực tế rằng các xe có hiệu năng cao thường đắt tiền hơn.
+
+\paragraph{Kết quả thực nghiệm và Đánh giá} \hfill \\
+Chúng ta tiến hành thử nghiệm với 3 thuật toán: Linear Regression, Ridge và Random Forest.
+
+\begin{lstlisting}[language=Python, caption=Huan luyen mo hinh Random Forest]
+# Pipeline chuan hoa va huan luyen
+scaler = RobustScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Random Forest Regressor dat hieu nang cao nhat
+model = RandomForestRegressor(n_estimators=100, random_state=42)
+model.fit(X_train_scaled, y_train)
+\end{lstlisting}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|c|}
+    \hline
+    \textbf{Mô hình} & \textbf{R2 Score} & \textbf{MAE (VND)} & \textbf{RMSE} \\ \hline
+    Linear Regression & 0.7943 & 115,372 & 150,171 \\ \hline
+    Ridge Regression & 0.7945 & 115,337 & 150,078 \\ \hline
+    \textbf{Random Forest} & \textbf{0.9326} & \textbf{54,902} & \textbf{85,968} \\ \hline
+    \end{tabular}
+    \caption{Bảng so sánh hiệu năng các mô hình}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/used_car/07_model_benchmarking.png}
+    \caption{Trực quan hóa sai số giữa các mô hình}
+\end{figure}
+
+Hình 1.20 so sánh trực quan sai số MAE và RMSE. Random Forest có mức sai số thấp nhất, chứng tỏ khả năng học được các mối quan hệ phi tuyến phức tạp trong dữ liệu xe cũ tốt hơn các mô hình tuyến tính.
+
+Random Forest cho kết quả vượt trội với R2 đạt 93.26\%. Sai lệch giữa giá thực tế và giá dự báo rất thấp:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/used_car/08_actual_vs_pred_residuals.png}
+    \caption{Biểu đồ sai số (Residuals) của mô hình Random Forest}
+\end{figure}
+
+Hình 1.21 cho thấy các điểm sai số phân bổ khá tập trung xung quanh đường y=x, minh chứng cho độ tin cậy cao của dự báo. Các trường hợp sai số lớn chủ yếu nằm ở phân khúc xe hạng sang có giá trị cực cao.
+
+Cuối cùng, phân tích các yếu tố quan trọng nhất ảnh hưởng đến giá xe:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_1/results/used_car/09_feature_importance.png}
+    \caption{Tầm quan trọng của các đặc trưng (Max Power và Car Age là then chốt)}
+\end{figure}
+
+Hình 1.22 chốt lại các yếu tố quan trọng nhất: Công suất máy, Tuổi xe và Quãng đường đã đi. Đây chính là "bộ ba" quyết định giá trị còn lại của một chiếc xe ô tô cũ trên thị trường.
+
+\paragraph{Phụ lục: Chi tiết quá trình thực hiện thực nghiệm Used Car Price} \hfill \\
+Đây là phần trình bày chi tiết các bước triển khai mã nguồn và kết quả thực nghiệm thông qua các ảnh chụp màn hình từ Jupyter Notebook.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/1.png}
+    \caption{Thiết lập môi trường: Import các thư viện cần thiết và cấu hình Seed để đảm bảo tính tái lập.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/2.png}
+    \caption{Tải dữ liệu: Đọc file CSV và kiểm tra 5 dòng đầu tiên để hiểu cấu trúc các cột.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/3.png}
+    \caption{Kiểm tra kiểu dữ liệu và giá trị thiếu: Thống kê số lượng giá trị null và kiểu dữ liệu của từng cột.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/4.png}
+    \caption{Thống kê mô tả: Tổng quan về các chỉ số thống kê (mean, std, min, max) của các biến số.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/5.png}
+    \caption{Trực quan hóa dữ liệu thiếu và Phân phối giá bán: Nhận diện các vùng dữ liệu trống và độ lệch của biến mục tiêu.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/6.png}
+    \caption{Tiền xử lý chuỗi: Mã nguồn trích xuất giá trị số từ các cột có đơn vị (mileage, engine, max\_power).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/7.png}
+    \caption{Dữ liệu sau khi làm sạch: Các cột đặc trưng vật lý đã được chuyển đổi sang dạng số thực.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/8.png}
+    \caption{Phân phối các biến hạng mục: Trực quan hóa số lượng mẫu theo Loại nhiên liệu, Người bán và Hộp số.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/9.png}
+    \caption{Mã nguồn phân tích Giá bán theo hạng mục: Sử dụng Boxplot để tìm mối liên hệ giữa các biến định tính và giá.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/10.png}
+    \caption{Kết quả Boxplot: Sự chênh lệch giá rõ rệt giữa xe Số tự động và Số sàn, cũng như các loại nhiên liệu.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/11.png}
+    \caption{Phân tích tương quan Year/KM vs Price: Mã nguồn vẽ biểu đồ phân tán (Scatter plot).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/12.png}
+    \caption{Kết quả Scatter plot: Mối quan hệ tuyến tính giữa năm sản xuất và giá bán xe.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/13.png}
+    \caption{Kỹ thuật trích xuất đặc trưng mới: Tính toán Car Age (Tuổi xe) và Mileage per Year (Quãng đường đi mỗi năm).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/14.png}
+    \caption{Kiểm tra dữ liệu sau khi trích xuất: Xem xét các cột mới vừa được tạo ra.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/15.png}
+    \caption{Phát hiện và xử lý Outliers: Mã nguồn sử dụng phương pháp IQR để cắt bỏ các giá trị cực đoan.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/16.png}
+    \caption{Kết quả xử lý Outliers: Biểu đồ Boxplot so sánh dữ liệu trước và sau khi xử lý.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/17.png}
+    \caption{Mã hóa Label Encoding: Chuyển đổi các biến phân loại sang dạng số để đưa vào mô hình.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/18.png}
+    \caption{Xem trước dữ liệu đã xử lý xong: Toàn bộ dataset đã sẵn sàng cho quá trình huấn luyện.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/19.png}
+    \caption{Mã nguồn vẽ Ma trận tương quan (Heatmap): Đánh giá mối quan hệ giữa các đặc trưng sau tiền xử lý.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/20.png}
+    \caption{Kết quả Heatmap: Nhận diện các biến có ảnh hưởng mạnh nhất tới Giá bán (max\_power, car\_age).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/21.png}
+    \caption{Chuẩn bị dữ liệu huấn luyện: Chia tập Train/Test và áp dụng RobustScaler.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/22.png}
+    \caption{Huấn luyện và Đánh giá mô hình: Kết quả so sánh giữa Linear Regression, Ridge và Random Forest.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/23.png}
+    \caption{Trực quan hóa so sánh mô hình: Biểu đồ cột thể hiện các chỉ số MAE và RMSE.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/24.png}
+    \caption{Phân tích mô hình tốt nhất (Random Forest): Mã nguồn vẽ biểu đồ Actual vs Predicted.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/25.png}
+    \caption{Biểu đồ dự báo và sai số: Sự hội tụ của các điểm dự báo sát với đường thực tế y=x.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/26.png}
+    \caption{Mã nguồn phân tích Tầm quan trọng đặc trưng: Trích xuất feature\_importances\_ từ Random Forest.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/27.png}
+    \caption{Kết quả Feature Importance: Xác nhận Công suất máy và Tuổi xe là những yếu tố quyết định giá trị xe.}
 \end{figure}

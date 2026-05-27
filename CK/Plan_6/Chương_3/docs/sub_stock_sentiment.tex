@@ -1,0 +1,141 @@
+\paragraph{Thực nghiệm với Stock Market Sentiment} \hfill \\
+Bộ dữ liệu gồm các tiêu đề tin tức tài chính được gán nhãn cảm xúc (Tích cực/Tiêu cực). Đây là bài toán phân loại văn bản ngắn, thách thức ở việc nắm bắt các thuật ngữ chuyên ngành tài chính.
+
+\paragraph{Mô hình Vanilla RNN} \hfill \\
+Chúng ta sử dụng kiến trúc RNN cơ bản (SimpleRNN) để đánh giá khả năng học chuỗi của mô hình truyền thống. Mô hình có tổng cộng \textbf{652,449} tham số.
+
+\paragraph{Phân tích Dữ liệu và Trực quan hóa} \hfill \\
+Trước khi huấn luyện, chúng ta quan sát sự phân bổ độ dài văn bản và các từ khóa phổ biến thông qua WordCloud.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Chương_3/results/stock_sentiment/01_label_textlen_dist.png}
+        \caption{Phân bổ nhãn và độ dài tiêu đề tin tức}
+        \label{fig:stock_dist}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Chương_3/results/stock_sentiment/02_wordclouds.png}
+        \caption{WordCloud của các nhãn cảm xúc}
+        \label{fig:stock_wc}
+    \end{minipage}
+\end{figure}
+
+\paragraph{Kết quả huấn luyện và Đánh giá} \hfill \\
+Mô hình đạt độ chính xác kiểm định tốt nhất là \textbf{52.09\%}. Kết quả này cho thấy hạn chế của RNN truyền thống đối với các câu văn có cấu trúc phức tạp.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Chương_3/results/stock_sentiment/03_training_history.png}
+        \caption{Lịch sử huấn luyện Vanilla RNN}
+        \label{fig:stock_history}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Chương_3/results/stock_sentiment/04_confusion_matrix.png}
+        \caption{Ma trận nhầm lẫn phân loại tin tức}
+        \label{fig:stock_cm}
+    \end{minipage}
+\end{figure}
+
+Ngoài ra, chúng ta sử dụng t-SNE để trực quan hóa không gian nhúng (Embedding space), cho thấy cách mô hình gom cụm các từ vựng có ngữ nghĩa tương đồng.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Chương_3/results/stock_sentiment/05_embedding_tsne.png}
+    \caption{Trực quan hóa Embedding bằng t-SNE}
+    \label{fig:stock_tsne}
+\end{figure}
+
+\paragraph{Phụ lục: Quy trình thực nghiệm chi tiết} \hfill \\
+Dưới đây là các bước triển khai chi tiết trên môi trường Jupyter Notebook:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/1.png}
+    \caption{Thiết lập môi trường: Khai báo các thư viện (TensorFlow, Scikit-learn) và cấu hình Hyperparameters cho bài toán Stock Sentiment.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/2.png}
+    \caption{Tiền xử lý văn bản: Mã nguồn làm sạch dữ liệu, loại bỏ ký tự đặc biệt và chuyển về chữ thường trước khi đưa vào mô hình.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/3.png}
+    \caption{Thống kê nhãn: Kiểm tra phân bổ lớp Tích cực (1) và Tiêu cực (-1) trong bộ dữ liệu chứng khoán.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/4.png}
+    \caption{Kết quả EDA: Trực quan hóa phân bổ nhãn và độ dài tiêu đề tin tức để xác định chiều dài tối đa của chuỗi (`MAX\_LEN`).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/5.png}
+    \caption{Phân tích từ vựng: WordCloud hiển thị các từ khóa xuất hiện nhiều trong cả hai lớp cảm xúc.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/7.png}
+    \caption{Tokenization: Mã nguồn sử dụng `Tokenizer` của Keras để chuyển văn bản thành các chuỗi số nguyên.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/8.png}
+    \caption{Kiểm tra Padding: Trực quan hóa một batch dữ liệu sau khi được thêm padding để đảm bảo độ dài đồng nhất.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/9.png}
+    \caption{Kết quả Tokenization: Danh sách 20 từ khóa đầu tiên trong từ điển và hình thái của chuỗi số tương ứng.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/11.png}
+    \caption{Kiến trúc Vanilla RNN: Thiết kế mô hình với lớp Embedding, các lớp SimpleRNN xếp chồng và Dropout.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/12.png}
+    \caption{Quá trình huấn luyện: Theo dõi sự thay đổi của Loss và Accuracy qua từng Epoch.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/13.png}
+    \caption{Kết quả Training History: Biểu đồ cho thấy sự hội tụ của mô hình RNN truyền thống trên tập dữ liệu Stock.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/14.png}
+    \caption{Đánh giá CM: Ma trận nhầm lẫn giúp xác định các trường hợp dự báo sai giữa các lớp cảm xúc.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/15.png}
+    \caption{Phân tích Embedding: Mã nguồn sử dụng t-SNE để giảm chiều không gian vector từ 64 xuống 2 chiều.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/16.png}
+    \caption{Trực quan hóa Word Embedding: Các từ có ngữ nghĩa tương đồng bắt đầu được gom nhóm trong không gian vector.}
+\end{figure}
