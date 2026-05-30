@@ -375,7 +375,7 @@ weighted avg       0.89      0.89      0.89     10000
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/results/imdb_stacked_bilstm/04_confusion_matrix.png}
+    \includegraphics[width=\linewidth]{Chương_4/results/imdb_stacked_bilstm/04_confusion_matrix.png}
     \caption{Ma trận Nhầm lẫn: Số lượng thực (trái) và Tỷ lệ chuẩn hóa (phải)}
 \end{figure}
 
@@ -446,6 +446,7 @@ Dự án này đã tiến hành thực nghiệm song song 3 kiến trúc mạng 
 
 \begin{table}[H]
     \centering
+    \resizebox{\linewidth}{!}{
     \begin{tabular}{|l|c|c|l|}
     \hline
     \textbf{Kiến trúc Mô hình} & \textbf{Tổng tham số (Params)} & \textbf{Độ chính xác (Accuracy)} & \textbf{Tốc độ / Hiệu năng} \\ \hline
@@ -453,6 +454,7 @@ Dự án này đã tiến hành thực nghiệm song song 3 kiến trúc mạng 
     2. BiGRU & 2,099,073 & 89.72\% & Rất tốt (Nhanh, nhẹ) \\ \hline
     3. BiLSTM & 2,996,865 & 89.13\% & Tốt (Phức tạp, nặng) \\ \hline
     \end{tabular}
+    }
     \caption{Bảng so sánh hiệu năng của 3 mô hình học sâu trên tập IMDB Reviews}
     \label{tab:imdb_comparison}
 \end{table}

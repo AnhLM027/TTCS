@@ -16,7 +16,7 @@ df = df.dropna(subset=['pm2.5'])
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth]{Chương_4/results/beijing_air_quality/01_time_series_eda.png}
+    \includegraphics[width=1\linewidth]{Chương_4/results/beijing_air_quality/01_time_series_eda.png}
     \caption{Phân phối và Chu kỳ của nồng độ PM2.5 theo thời gian}
 \end{figure}
 
@@ -37,7 +37,7 @@ plt.savefig('02_correlation_heatmap.png')
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{Chương_4/results/beijing_air_quality/02_correlation_heatmap.png}
+    \includegraphics[width=1\linewidth]{Chương_4/results/beijing_air_quality/02_correlation_heatmap.png}
     \caption{Ma trận tương quan giữa PM2.5 và các yếu tố thời tiết}
 \end{figure}
 
@@ -75,7 +75,7 @@ Thay vì bị sụp đổ bởi Triệt tiêu đạo hàm (Vanishing Gradient) n
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/results/beijing_air_quality/03_training_history.png}
+    \includegraphics[width=1\linewidth]{Chương_4/results/beijing_air_quality/03_training_history.png}
     \caption{Đồ thị Training Loss và MAE}
 \end{figure}
 
@@ -93,18 +93,18 @@ R2   : 0.9373
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth]{Chương_4/results/beijing_air_quality/04_forecast_vs_actual.png}
+    \includegraphics[width=1\linewidth]{Chương_4/results/beijing_air_quality/04_forecast_vs_actual.png}
     \caption{Dự báo so với thực tế và Phân phối Sai số (Error Distribution)}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}{0.48\textwidth}
+    \begin{minipage}{0.6\textwidth}
         \includegraphics[width=\linewidth]{Chương_4/results/beijing_air_quality/05_scatter_actual_vs_pred.png}
         \caption{Biểu đồ phân tán Scatter giữa Actual và Predicted}
     \end{minipage}
     \hfill
-    \begin{minipage}{0.48\textwidth}
+    \begin{minipage}{0.6\textwidth}
         \vspace{10pt}
         \textbf{Phân tích độ tin cậy:} \\
         Chỉ số \textbf{R-squared ($R^2$) đạt mức xuất sắc 0.9373}, cho thấy mô hình đã giải thích được hơn 93.7\% sự biến thiên của dữ liệu thực tế. Biểu đồ Scatter cho thấy các điểm phân bố bám rất sát vào đường chéo lý tưởng (Perfect Forecast). Dù ở những mức độ ô nhiễm cực đoan (Peak) trên 300 $\mu g/m^3$, độ lệch có hơi nhích lên, nhưng với bài toán thời tiết nhiễu động như PM2.5, sai số trung bình (MAE) ở mức $13.88 \mu g/m^3$ là một thành tựu ấn tượng của mạng LSTM.

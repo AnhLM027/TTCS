@@ -1,55 +1,88 @@
-\subsection{Từ LSTM đến Cơ chế Chú ý (Attention)}
-Mặc dù LSTM đã giải quyết tốt vấn đề tiêu biến đạo hàm, nó vẫn gặp khó khăn khi xử lý các chuỗi cực dài. Cơ chế Chú ý (Attention Mechanism) cho phép mô hình tập trung vào những phần quan trọng nhất của chuỗi đầu vào tại mỗi bước dự báo, thay vì nén toàn bộ thông tin vào một vector trạng thái duy nhất.
+\subsection{Tổng quan về Kiến trúc Long Short-Term Memory (LSTM)}
+Long Short-Term Memory (LSTM) là một bước đột phá trong lịch sử Mạng nơ-ron hồi quy, được Sepp Hochreiter và Jürgen Schmidhuber công bố vào năm 1997. Vấn đề lớn nhất của RNN truyền thống là sự sụp đổ của luồng gradient khi truyền ngược qua các chuỗi quá dài (Vanishing Gradient). LSTM giải quyết triệt để vấn đề này bằng cách đưa vào một cấu trúc lõi gọi là "Cell State" ($C_t$) hoạt động như một băng chuyền thông tin độc lập, kết hợp cùng 3 cơ chế Cổng (Gates) thông minh sử dụng hàm kích hoạt Sigmoid ($\sigma$) để quyết định luồng dữ liệu:
 
-\subsection{Dự báo chuỗi thời gian (Time Series Forecasting)}
-Khác với phân loại văn bản, dự báo chuỗi thời gian yêu cầu mô hình nắm bắt được tính mùa vụ (seasonality), xu hướng (trend) và các biến động phi tuyến tính từ dữ liệu số.
+\begin{enumerate}
+    \item \textbf{Cổng Quên (Forget Gate) $f_t$:} Quyết định những thông tin nào từ quá khứ (trạng thái ẩn trước đó $h_{t-1}$) và hiện tại ($x_t$) đã trở nên thừa thãi và cần bị xóa khỏi Cell State. 
+    Phương trình: $f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)$
+    
+    \item \textbf{Cổng Đầu vào (Input Gate) $i_t$ và Trạng thái Ứng viên $\tilde{C}_t$:} Cổng $i_t$ lọc thông tin mới có giá trị, trong khi hàm \textit{tanh} tạo ra vector ứng viên $\tilde{C}_t$ chứa nội dung mới để chuẩn bị cập nhật.
+    Phương trình: $i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$ và $\tilde{C}_t = \tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$
+    
+    \item \textbf{Cập nhật Trạng thái Tế bào (Cell State Update) $C_t$:} Trạng thái cũ $C_{t-1}$ được nhân với Cổng Quên để xóa đi dữ liệu cũ, sau đó cộng với thông tin mới từ Cổng Đầu vào. Phép cộng tuyến tính này chính là "chìa khóa vàng" giúp gradient lan truyền ngược xuyên suốt hàng ngàn bước thời gian mà không bị triệt tiêu.
+    Phương trình: $C_t = f_t * C_{t-1} + i_t * \tilde{C}_t$
+    
+    \item \textbf{Cổng Đầu ra (Output Gate) $o_t$ và Trạng thái Ẩn $h_t$:} Cổng Đầu ra quyết định phần nào của Cell State sẽ được đẩy ra ngoài để làm Hidden State cho tầng nơ-ron tiếp theo hoặc làm giá trị dự báo.
+    Phương trình: $o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)$ và $h_t = o_t * \tanh(C_t)$
+\end{enumerate}
+
+Sự phối hợp nhịp nhàng của các cổng toán học này biến LSTM thành "tiêu chuẩn vàng" không thể thay thế cho các bài toán phân tích chuỗi thời gian số (Time Series) cực kỳ phức tạp hoặc xử lý ngôn ngữ tự nhiên quy mô lớn, điều mà chúng ta sẽ trực tiếp kiểm chứng qua hàng loạt các Datasets trong chương này.
+
+\subsection{Bài toán Dự báo Chuỗi thời gian (Time Series Forecasting)}
+Dự báo chuỗi thời gian là bài toán phân tích các điểm dữ liệu được thu thập liên tiếp theo trình tự thời gian (như giá cổ phiếu, lượng điện tiêu thụ, nhiệt độ thời tiết). Không giống như dữ liệu văn bản, chuỗi thời gian số ẩn chứa những đặc tính phức tạp như:
+\begin{itemize}
+    \item \textbf{Tính xu hướng (Trend):} Sự gia tăng hoặc suy giảm ổn định trong dài hạn.
+    \item \textbf{Tính mùa vụ (Seasonality):} Những chu kỳ biến động lặp đi lặp lại theo quy luật thời gian nhất định (ví dụ: lượng điện tăng đột biến vào mùa hè).
+    \item \textbf{Tính bất định (Volatility):} Những cú sốc ngẫu nhiên, nhiễu loạn phi tuyến tính không thể lường trước (phổ biến trong thị trường chứng khoán).
+\end{itemize}
+LSTM với bộ nhớ dài hạn chính là mảnh ghép hoàn hảo để nắm bắt đồng thời cả xu hướng vĩ mô lẫn những dao động vi mô của chuỗi thời gian.
+
+\subsection{Sự kết hợp mạnh mẽ: Conv1D, Bi-directional và Cơ chế Attention}
+Để đẩy hiệu năng của LSTM lên mức tối đa, các thực nghiệm trong chương này sẽ kết hợp LSTM với các kỹ thuật tối tân nhất:
+\begin{itemize}
+    \item \textbf{Conv1D + LSTM:} Sử dụng mạng tích chập 1 chiều (Conv1D) để quét và lọc nhiễu các mẫu hình cục bộ sắc nét trước khi đưa vào LSTM học xu hướng dài hạn.
+    \item \textbf{Bi-directional LSTM/GRU:} Đọc chuỗi dữ liệu theo cả 2 chiều (từ trái sang phải và từ phải sang trái), giúp mô hình nắm bắt bối cảnh toàn diện.
+    \item \textbf{Cơ chế Chú ý (Attention Mechanism):} Thay vì bắt LSTM nén toàn bộ thông tin của một chuỗi dài 50 bước vào một vector duy nhất, Attention cho phép mô hình linh hoạt "nhìn lại" và tập trung trọng số (weights) vào những bước thời gian quan trọng nhất ở quá khứ ngay tại thời điểm dự báo. Kỹ thuật này không chỉ tăng vọt độ chính xác mà còn tạo ra các mô hình trí tuệ nhân tạo có thể giải thích được (Explainable AI - XAI).
+\end{itemize}
 
 \subsection{Thực nghiệm chuyên sâu trên 5 Datasets \& 5 Models}
 
-\subsubsection{Dataset 1: Beijing Air Quality (LSTM + Multi-variate)}
+\subsubsection{Dataset 1: Beijing Air Quality (LSTM Multi-variate)}
 \textbf{Kiến trúc:} LSTM đa biến.
-\textbf{Mục tiêu:} Dự báo nồng độ bụi mịn PM2.5 dựa trên nhiều yếu tố khí tượng như nhiệt độ, độ ẩm, gió.
+\textbf{Mục tiêu:} Dự báo nồng độ bụi mịn PM2.5 dựa trên nhiều yếu tố khí tượng (nhiệt độ, độ ẩm, áp suất, gió).
 \input{Chương_4/docs/sub_air_quality.tex}
 
 \subsubsection{Dataset 2: Google Stock Price (Conv1D + LSTM)}
-\textbf{Kiến trúc:} Kết hợp Convolutional 1D và LSTM.
-\textbf{Mục tiêu:} Sử dụng Conv1D để trích xuất đặc trưng cục bộ và LSTM để học xu hướng dài hạn của giá cổ phiếu.
+\textbf{Kiến trúc:} Mạng lai Hybrid (Convolutional 1D kết hợp LSTM).
+\textbf{Mục tiêu:} Sử dụng Conv1D để lọc nhiễu và trích xuất biến động ngắn hạn, kết hợp LSTM học xu hướng giá cổ phiếu dài hạn.
 \input{Chương_4/docs/sub_stock_price.tex}
 
 \subsubsection{Dataset 3: Energy Consumption (LSTM + Attention)}
 \textbf{Kiến trúc:} LSTM kết hợp Cơ chế Chú ý (Attention).
-\textbf{Mục tiêu:} Dự báo phụ tải điện năng, giải quyết tính mùa vụ mạnh và trích xuất trọng số giải thích (Explainable AI).
+\textbf{Mục tiêu:} Dự báo phụ tải điện năng giải quyết tính mùa vụ mạnh, trích xuất ma trận trọng số Attention để giải thích mô hình (Explainable AI).
 \input{Chương_4/docs/sub_energy_attention.tex}
 
 \subsubsection{Dataset 4: Human Activity Recognition (BiGRU)}
 \textbf{Kiến trúc:} Bidirectional GRU (BiGRU).
-\textbf{Mục tiêu:} Nhận diện hành động con người từ tín hiệu chuỗi thời gian của cảm biến gia tốc và con quay hồi chuyển.
+\textbf{Mục tiêu:} Nhận diện 6 hành động của con người từ tín hiệu đa chiều của cảm biến gia tốc và con quay hồi chuyển trên Smartphone.
 \input{Chương_4/docs/sub_har_bigru.tex}
 
 \subsubsection{Dataset 5: Phân tích Cảm xúc IMDB Reviews (BiLSTM)}
 \textbf{Kiến trúc:} Bidirectional LSTM (BiLSTM) xếp chồng 2 tầng.
-\textbf{Mục tiêu:} Phân tích cảm xúc đánh giá phim, nắm bắt ngữ nghĩa ngữ cảnh theo cả hai chiều của câu và tự động phân loại cảm xúc tích cực hoặc tiêu cực.
+\textbf{Mục tiêu:} Phân loại cảm xúc văn bản siêu dài, so sánh sức mạnh trực tiếp với các mô hình RNN ở Chương 3.
 \input{Chương_4/docs/sub_imdb_bilstm.tex}
 
 \subsection{So sánh và Đánh giá tổng hợp (Benchmarking)}
-Bảng dưới đây tổng hợp kết quả của các mô hình bộ nhớ dài hạn trên các bài toán dự báo chuỗi thời gian và xử lý ngôn ngữ tự nhiên (NLP):
+Bảng dưới đây tổng hợp kết quả của các kiến trúc bộ nhớ dài hạn tinh hoa trên đa dạng các bài toán:
 
 \begin{table}[H]
     \centering
+    \resizebox{\linewidth}{!}{
     \begin{tabular}{|l|l|l|l|l|}
     \hline
     \textbf{Dataset} & \textbf{Model} & \textbf{R² / Accuracy} & \textbf{Params} & \textbf{Kỹ thuật chính} \\ \hline
-    Beijing Air & MV-LSTM & 0.9457 (R²) & 121K & Multivariate Context \\ \hline
+    Beijing Air & MV-LSTM & 0.9373 (R²) & 121K & Multivariate Context \\ \hline
     Google Stock & Conv1D-LSTM & 0.9342 (R²) & 110K & Feature Filtering \\ \hline
-    Energy Demand & LSTM-Attention & 0.9884 (R²) & 136K & Attention Mechanism \\ \hline
-    HAR Sensors & BiGRU & 0.8600 (Acc) & 233K & Bidirectional Sequence \\ \hline
+    Energy Demand & LSTM-Attention & 0.9888 (R²) & 127K & Attention Mechanism \\ \hline
+    HAR Sensors & BiGRU & 0.8600 (Acc) & 234K & Bidirectional Sequence \\ \hline
     IMDB Reviews & BiLSTM & 0.8900 (Acc) & 2.99M & Bidirectional Context \\ \hline
     \end{tabular}
-    \caption{Bảng so sánh hiệu năng các mô hình trong Chương 4}
+    }
+    \caption{Bảng so sánh hiệu năng các mô hình Bộ nhớ dài hạn trong Chương 4}
     \label{tab:lstm_comparison}
 \end{table}
 
-Thực nghiệm cho thấy các mô hình dự báo chuỗi thời gian số (Regression) đạt độ chính xác cực cao ($R^2 > 0.93$). Việc kết hợp LSTM với các kỹ thuật lọc nhiễu (Conv1D) hoặc xử lý đa biến giúp tăng cường độ ổn định cho các bài toán môi trường và tài chính. Bên cạnh đó, đối với dữ liệu phân loại chuỗi và văn bản (HAR, IMDB), các kiến trúc học hai chiều (BiGRU, BiLSTM) thể hiện khả năng nắm bắt ngữ cảnh vượt trội với độ chính xác dao động từ $86\%$ đến $89\%$.
+\textbf{Đánh giá kết quả:}
+Thực nghiệm chứng minh năng lực áp đảo của họ mô hình LSTM/GRU trên mọi mặt trận dữ liệu chuỗi. Ở các bài toán Hồi quy (Regression), độ chính xác (R²) đều vượt mức xuất sắc ($> 0.93$). Đặc biệt, sự xuất hiện của \textbf{Cơ chế Attention} trên tập dữ liệu Năng lượng đã đẩy R² lên mức gần như hoàn hảo ($0.9888$) với một số lượng tham số cực kỳ nhỏ gọn (127K). Đối với dữ liệu phân loại chuỗi (HAR, IMDB), các kiến trúc học hai chiều (Bi-directional) thể hiện khả năng phán đoán ngữ cảnh tuyệt vời, duy trì Accuracy ổn định từ $86\%$ đến $89\%$.
 
 \subsection{Tổng kết Chương 4}
-Việc kết hợp LSTM với Attention và Conv1D mang lại độ chính xác cao vượt trội cho các bài toán chuỗi thời gian phức tạp. Cơ chế bộ nhớ dài hạn đã chứng minh tính hiệu quả từ việc dự báo các chỉ số môi trường, tài chính cho đến nhận diện hành động con người. Đây là nền tảng quan trọng giúp chúng ta tiến tới hiểu rõ hơn về các kiến trúc Transformer hiện đại trong tương lai.
+Chương này đánh dấu bước chuyển mình mạnh mẽ từ các thuật toán đơn lẻ sang nghệ thuật dung hợp (Hybrid) các kiến trúc học sâu: Conv1D lọc nhiễu, Bi-directional củng cố ngữ cảnh, và đỉnh cao là Attention Mechanism để tối ưu hóa sự tập trung. Những thành tựu rực rỡ từ việc áp dụng Attention không chỉ giải quyết triệt để nút thắt cổ chai của RNN mà còn là nền tảng cốt lõi đưa chúng ta bước vào kỷ nguyên bùng nổ của các siêu mô hình ngôn ngữ lớn (Transformers và LLMs).

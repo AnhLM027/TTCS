@@ -93,20 +93,21 @@ plt.savefig(f'{SAVE_DIR}/01_b_textlen_dist.png'); plt.show()
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}{0.48\textwidth}
-        \includegraphics[width=\linewidth]{Chương_3/results/stock_sentiment/01_a_label_dist.png}
-        \caption{Biểu đồ số lượng nhãn: Sự chênh lệch đáng kể giữa Positive (1) và Negative (0)}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.48\textwidth}
-        \includegraphics[width=\linewidth]{Chương_3/results/stock_sentiment/01_b_textlen_dist.png}
-        \caption{Phân phối mật độ số từ. Đa số câu đều ngắn hơn ngưỡng cắt \texttt{MAX\_LEN=50}}
-    \end{minipage}
+    \includegraphics[width=1\linewidth]{Chương_3/results/stock_sentiment/01_a_label_dist.png}
+    \caption{Biểu đồ số lượng nhãn: Sự chênh lệch đáng kể giữa Positive (1) và Negative (0)}
 \end{figure}
 
-\textbf{Phân tích Phân phối:} 
-- Biểu đồ nhãn cho thấy sự mất cân bằng ($3685$ tích cực so với $2106$ tiêu cực). Điều này buộc chúng ta phải áp dụng kỹ thuật \texttt{class\_weights} trong quá trình học.
-- Độ dài câu chủ yếu rơi vào khoảng 10-30 từ. Việc chọn tham số \texttt{MAX\_LEN = 50} là hoàn toàn an toàn (bao phủ hơn 99\% các câu) để thực hiện Zero-Padding.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Chương_3/results/stock_sentiment/01_b_textlen_dist.png}
+    \caption{Phân phối mật độ số từ. Đa số câu đều ngắn hơn ngưỡng cắt \texttt{MAX\_LEN=50}}
+\end{figure}
+
+\textbf{Phân tích Khám phá Dữ liệu (EDA):}
+\begin{itemize}
+    \item \textbf{Phân phối nhãn (Label Distribution):} Biểu đồ cho thấy sự mất cân bằng rõ rệt ($3685$ tích cực so với $2106$ tiêu cực). Việc dữ liệu bị lệch (imbalanced) buộc chúng ta phải áp dụng kỹ thuật bù trừ trọng số \texttt{class\_weights} trong quá trình huấn luyện để tránh mô hình bị thiên vị.
+    \item \textbf{Phân phối độ dài (Text Length):} Hầu hết các câu (tweets/tin tức) đều rất ngắn, tập trung chủ yếu trong khoảng 10-30 từ. Do đó, việc thiết lập tham số \texttt{MAX\_LEN = 50} là lựa chọn hoàn hảo, giúp bao phủ hơn 99\% số lượng mẫu mà không làm lãng phí bộ nhớ khi thực hiện Zero-Padding.
+\end{itemize}
 
 \paragraph{Kỹ thuật Tiền xử lý nhiễu Tài chính (Domain-Specific Text Cleaning)} \hfill \\
 
@@ -165,10 +166,12 @@ plt.savefig(f'{SAVE_DIR}/02_wordclouds.png'); plt.show()
     \caption{Phân bố các từ vựng cốt lõi chi phối cảm xúc sau khi lọc nhiễu}
 \end{figure}
 
-\textbf{Đánh giá Ngữ nghĩa (Semantic Analysis):}
-- \textbf{Negative (Màu đỏ):} Các từ nổi bật nhất là \textit{short} (bán khống), \textit{lower} (giảm), \textit{down}, \textit{loss}, \textit{fall}. Đây là những tín hiệu mạnh mẽ của thị trường gấu (Bearish).
-- \textbf{Positive (Màu xanh):} Tràn ngập các từ biểu thị sự tăng trưởng như \textit{long} (mua dài hạn), \textit{buy}, \textit{high}, \textit{growth}, \textit{up}.
-WordCloud chứng tỏ quá trình làm sạch văn bản (Data Cleaning) đã giữ lại được linh hồn của dữ liệu tài chính.
+\textbf{Đánh giá Ngữ nghĩa (Semantic Analysis) qua WordCloud:}
+\begin{itemize}
+    \item \textbf{Negative (Màu đỏ):} Bức tranh tiêu cực bị chi phối bởi các từ khóa mang tính rủi ro như \textit{short} (bán khống), \textit{lower} (giảm), \textit{down}, \textit{loss}, \textit{fall}. Đây là những tín hiệu cảnh báo kinh điển của thị trường gấu (Bearish).
+    \item \textbf{Positive (Màu xanh):} Tràn ngập các từ biểu thị sự lạc quan và tăng trưởng như \textit{long} (mua dài hạn), \textit{buy}, \textit{high}, \textit{growth}, \textit{up}.
+    \item \textbf{Kết luận:} Biểu đồ WordCloud chứng tỏ bộ lọc tài chính tùy chỉnh (Custom Stopwords) đã hoạt động xuất sắc, giữ lại được nguyên vẹn "linh hồn" ngôn ngữ của thị trường tài chính trước khi đưa vào mô hình học sâu.
+\end{itemize}
 
 \paragraph{Kỹ thuật Vector hóa (Tokenization) và Word Embedding} \hfill \\
 
@@ -296,7 +299,7 @@ print(classification_report(y_test, y_pred, target_names=target_names))
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\linewidth]{Chương_3/results/stock_sentiment/04_confusion_matrix.png}
+    \includegraphics[width=1\linewidth]{Chương_3/results/stock_sentiment/04_confusion_matrix.png}
     \caption{Ma trận nhầm lẫn trên tập Test (1159 mẫu văn bản)}
 \end{figure}
 
@@ -309,7 +312,11 @@ print(classification_report(y_test, y_pred, target_names=target_names))
    macro avg       0.75      0.72      0.73      1159
 \end{lstlisting}
 
-Mô hình đạt độ chính xác (Accuracy) tổng thể là \textbf{76\%}. Tuy nhiên, Recall của lớp Tiêu cực (Negative) khá thấp (56\%), nghĩa là mạng RNN cơ bản khá khó khăn và dễ bị bỏ sót các tín hiệu dự báo thị trường giảm điểm. Lỗi phân loại này có thể do giới hạn về "bộ nhớ ngắn hạn" của SimpleRNN.
+\textbf{Đánh giá Confusion Matrix và Báo cáo Hiệu năng:}
+\begin{itemize}
+    \item \textbf{Accuracy Tổng thể:} Mô hình đạt độ chính xác \textbf{76\%}, một con số khá khiêm tốn. 
+    \item \textbf{Điểm yếu ở Recall Nhãn Tiêu cực:} Đặc biệt, chỉ số Recall của lớp Tiêu cực (Negative) rất thấp (chỉ 56\%). Mạng RNN cơ bản đã bỏ sót rất nhiều tín hiệu dự báo thị trường giảm điểm (dự đoán sai thành Tích cực). Lỗi phân loại này bắt nguồn từ điểm yếu chí mạng của SimpleRNN: \textbf{Bộ nhớ ngắn hạn (Short-term Memory)}. Nó không đủ khả năng liên kết thông tin giữa các từ ở đầu và cuối câu để hiểu được những ý nghĩa châm biếm hoặc đảo ngược cảm xúc.
+\end{itemize}
 
 Cuối cùng, để đánh giá xem lớp `Embedding` học được ngữ nghĩa từ vựng tài chính như thế nào, ta chiếu Vector 64 chiều của các từ khóa xuống mặt phẳng 2D bằng thuật toán \textbf{t-SNE} (t-Distributed Stochastic Neighbor Embedding):
 
@@ -340,4 +347,8 @@ plt.savefig(f'{SAVE_DIR}/05_embedding_tsne.png'); plt.show()
     \caption{Phân phối các từ vựng cốt lõi trên Không gian 2D sau khi bị nén bởi t-SNE}
 \end{figure}
 
-\textbf{Giải thích bản đồ Không gian nhúng t-SNE:} Các từ có cùng tính chất tài chính sẽ có xu hướng gom cụm (cluster) lại với nhau. Ví dụ, nhóm các mã ticker công ty hoặc nhóm các động từ xu hướng (trend verbs) sẽ kết nối khoảng cách rất gần với nhau, minh chứng mạng nơ-ron không chỉ học các ký tự vô hồn, mà đã thực sự hình thành được \textit{Không gian ngữ nghĩa (Semantic Space)} của thị trường chứng khoán trong quá trình tối ưu hóa. Tuy nhiên để đạt được F1-Score xuất sắc hơn cho mảng tài chính, cấu trúc SimpleRNN vẫn còn yếu và buộc chúng ta phải cân nhắc tới các kiến trúc phức tạp hơn như LSTM hay GRU.
+\textbf{Giải thích bản đồ Không gian nhúng t-SNE:}
+\begin{itemize}
+    \item \textbf{Khả năng học Ngữ nghĩa (Semantic Clustering):} Bản đồ t-SNE chứng minh lớp \texttt{Embedding} không hề học vẹt. Các từ có cùng đặc điểm tài chính có xu hướng gom thành từng cụm (cluster) nối liền nhau. Ví dụ, nhóm các mã ticker công ty hoặc nhóm các động từ xu hướng (trend verbs) hội tụ ở những tọa độ rất sát nhau. Mô hình đã tự động xây dựng được một \textit{Không gian ngữ nghĩa (Semantic Space)} đa chiều từ con số 0.
+    \item \textbf{Giới hạn của Cấu trúc (Architectural Limit):} Mặc dù không gian nhúng từ rất xuất sắc, nhưng do lõi tính toán bên dưới chỉ là SimpleRNN (dễ bị triệt tiêu đạo hàm), mô hình không thể tối ưu hóa được chuỗi suy luận dài. Để giải quyết triệt để vấn đề này, các cấu trúc sử dụng cơ chế Cổng kiểm soát (Gates) như \textbf{LSTM} hay \textbf{GRU} là sự nâng cấp bắt buộc.
+\end{itemize}

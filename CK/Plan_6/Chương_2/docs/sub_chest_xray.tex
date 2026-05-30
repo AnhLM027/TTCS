@@ -84,7 +84,7 @@ plt.show()
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/results/chest_xray/01_class_distribution.png}
+    \includegraphics[width=1\linewidth]{Chương_2/results/chest_xray/01_class_distribution.png}
     \caption{Phân phối dữ liệu cho thấy sự mất cân bằng giữa bệnh nhân Viêm phổi và người khỏe mạnh}
 \end{figure}
 
@@ -113,7 +113,7 @@ plt.show()
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/results/chest_xray/02_sample_images.png}
+    \includegraphics[width=1\linewidth]{Chương_2/results/chest_xray/02_sample_images.png}
     \caption{Hình ảnh y tế đơn sắc mang nhiều chi tiết mờ, khó phân biệt bằng mắt thường}
 \end{figure}
 
@@ -235,13 +235,13 @@ for tr, vl, title, file in [('accuracy', 'val_accuracy', 'Accuracy', '03_accurac
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}{0.32\textwidth}
+    \begin{minipage}{0.4\textwidth}
         \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/03_accuracy.png}
     \end{minipage}
-    \begin{minipage}{0.32\textwidth}
+    \begin{minipage}{0.4\textwidth}
         \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/04_loss.png}
     \end{minipage}
-    \begin{minipage}{0.32\textwidth}
+    \begin{minipage}{0.4\textwidth}
         \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/05_auc.png}
     \end{minipage}
     \caption{Từ trái qua phải: Đồ thị Độ chính xác, Hàm suy hao, và Chỉ số ROC-AUC}
@@ -285,12 +285,12 @@ print(f'ROC-AUC: {roc_auc:.4f}')
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}{0.48\textwidth}
+    \begin{minipage}{0.6\textwidth}
         \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/06_confusion_matrix.png}
         \caption{Ma trận nhầm lẫn dự đoán viêm phổi}
     \end{minipage}
     \hfill
-    \begin{minipage}{0.48\textwidth}
+    \begin{minipage}{0.6\textwidth}
         \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/07_roc_curve.png}
         \caption{Đường cong đặc trưng hoạt động (ROC)}
     \end{minipage}

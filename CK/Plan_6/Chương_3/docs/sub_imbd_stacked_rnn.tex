@@ -1,8 +1,8 @@
-\vspace{10pt}\noindent\textbf{Thực nghiệm: Xếp chồng các lớp Hồi quy (Stacked Bidirectional RNN)} \hfill \\
+\paragraph{Thực nghiệm: Xếp chồng các lớp Hồi quy (Stacked Bidirectional RNN)} \hfill\mbox{}
 
 Để tăng cường khả năng học các biểu diễn phức tạp và trừu tượng (Hierarchical Features), một kỹ thuật phổ biến trong Deep Learning là xếp chồng (Stack) nhiều lớp ẩn lên nhau. Ở thực nghiệm này, chúng ta sẽ xây dựng kiến trúc \textbf{Stacked Bidirectional RNN}, gồm 2 lớp SimpleRNN hai chiều nối tiếp nhau, đồng thời sử dụng lớp nhúng từ (Embedding Layer) tự học từ đầu thay vì mượn trọng số GloVe như bài trước.
 
-\vspace{10pt}\noindent\textbf{1. Tiền xử lý Dữ liệu} \hfill \\
+\paragraph{Tiền xử lý Dữ liệu} \hfill\mbox{}
 
 Tương tự như thực nghiệm trước, bộ dữ liệu IMDB gồm 50.000 mẫu hoàn toàn cân bằng (25.000 Tích cực, 25.000 Tiêu cực). Chúng ta áp dụng kỹ thuật loại bỏ Tạp âm miền (như các từ \textit{movie}, \textit{film}) và chuẩn hóa chiều dài câu ở mức 500 từ.
 
@@ -26,16 +26,21 @@ BATCH_SIZE  = 128
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}{0.48\textwidth}
-        \includegraphics[width=\linewidth]{Chương_3/results/imdb_stacked_rnn/01_eda_overview.png}
-        \caption{Phân phối nhãn và độ dài văn bản}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.48\textwidth}
-        \includegraphics[width=\linewidth]{Chương_3/results/imdb_stacked_rnn/02_wordclouds.png}
-        \caption{WordCloud sau khi loại bỏ Tạp âm miền}
-    \end{minipage}
+    \includegraphics[width=1\linewidth]{Chương_3/results/imdb_stacked_rnn/01_eda_overview.png}
+    \caption{Phân phối nhãn và độ dài văn bản}
 \end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Chương_3/results/imdb_stacked_rnn/02_wordclouds.png}
+    \caption{WordCloud sau khi loại bỏ Tạp âm miền}
+\end{figure}
+
+% \textbf{Đánh giá Khám phá Dữ liệu (EDA) và WordCloud:}
+% \begin{itemize}
+%     \item \textbf{Cân bằng nhãn và Độ dài (EDA):} Biểu đồ phân phối cho thấy bộ dữ liệu hoàn toàn cân bằng tuyệt đối với $25,000$ mẫu cho mỗi nhãn (Tích cực/Tiêu cực). Phần lớn đánh giá có độ dài tập trung dưới 500 từ, do đó việc đặt ngưỡng cắt \texttt{MAX\_LEN=500} là lựa chọn tối ưu, đảm bảo giữ lại hơn 90\% thông tin quan trọng mà không làm phình to ma trận bộ nhớ.
+%     \item \textbf{Phân hóa từ vựng (WordCloud):} Biểu đồ WordCloud khẳng định hiệu quả của kỹ thuật làm sạch. Nhóm nhận xét tiêu cực (màu đỏ) bị chi phối mạnh mẽ bởi các từ như \textit{bad}, \textit{worst}, \textit{awful}, \textit{terrible}. Ngược lại, nhóm tích cực (màu xanh) ngập tràn các từ mang sắc thái khen ngợi như \textit{great}, \textit{excellent}, \textit{best}, \textit{love}. Điều này chứng tỏ dữ liệu đã đạt độ "sạch" lý tưởng để đưa vào huấn luyện mô hình học sâu.
+% \end{itemize}
 
 \begin{lstlisting}[style=pythoncode, caption={Vector hóa văn bản với Tokenizer tự học}]
 X_train, X_test, y_train, y_test = train_test_split(df['clean'].values, df['label'].values, test_size=0.2, random_state=42, stratify=df['label'].values)
@@ -47,7 +52,7 @@ X_train_pad = pad_sequences(tokenizer.texts_to_sequences(X_train), maxlen=MAX_LE
 X_test_pad  = pad_sequences(tokenizer.texts_to_sequences(X_test), maxlen=MAX_LEN, padding='post', truncating='post')
 \end{lstlisting}
 
-\vspace{10pt}\noindent\textbf{2. Xây dựng Kiến trúc Stacked BiRNN} \hfill \\
+\paragraph{Xây dựng Kiến trúc Stacked BiRNN} \hfill\mbox{}
 
 Trong Keras, để xếp chồng các lớp RNN, lớp RNN đứng trước bắt buộc phải trả về toàn bộ chuỗi đầu ra ở mỗi bước thời gian để làm đầu vào cho lớp RNN tiếp theo. Điều này được thực hiện bằng cách đặt \texttt{return\_sequences=True}.
 
@@ -80,7 +85,7 @@ Non-trainable params: 512
 \end{lstlisting}
 Với việc tự học toàn bộ lớp Embedding kích thước 128 chiều và 2 tầng RNN, mô hình sở hữu đến hơn 2.6 triệu tham số huấn luyện (lớn hơn nhiều so với 99 ngàn tham số thực học của BiGRU dùng GloVe).
 
-\vspace{10pt}\noindent\textbf{3. Quá trình Huấn luyện và Sự Gục ngã (Vanishing Gradient)} \hfill \\
+\paragraph{Quá trình Huấn luyện và Sự Gục ngã (Vanishing Gradient)} \hfill\mbox{}
 
 \begin{lstlisting}[style=pythoncode, caption={Huấn luyện mô hình với EarlyStopping}]
 history = model.fit(
@@ -94,7 +99,7 @@ history = model.fit(
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_3/results/imdb_stacked_rnn/03_training_history.png}
+    \includegraphics[width=1\linewidth]{Chương_3/results/imdb_stacked_rnn/03_training_history.png}
     \caption{Lịch sử Huấn luyện: Accuracy thấp và Validation Loss trồi sụt bất thường}
 \end{figure}
 
@@ -102,7 +107,7 @@ history = model.fit(
 Dù mô hình sâu hơn và có lượng tham số khổng lồ, hiệu suất lại \textbf{kém một cách thảm hại}. Độ chính xác trên tập Validation chỉ lẹt đẹt ở mức dưới 70\%. 
 Nguyên nhân gốc rễ chính là hiện tượng Triệt tiêu Đạo hàm (Vanishing Gradient). Khi văn bản quá dài (500 từ), cộng thêm việc đạo hàm phải truyền ngược qua \textbf{nhiều tầng RNN xếp chồng} (chứ không phải 1 tầng), giá trị Gradient gần như bị nhân với 0 và biến mất hoàn toàn ở các trọng số đầu. Mô hình không thể học được sự phụ thuộc xa trong ngữ cảnh điện ảnh.
 
-\vspace{10pt}\noindent\textbf{4. Đánh giá Confusion Matrix} \hfill \\
+\paragraph{Đánh giá Confusion Matrix} \hfill\mbox{}
 
 \begin{lstlisting}[style=pythoncode, caption={Đánh giá hiệu năng bằng Confusion Matrix}]
 y_pred_prob = model.predict(X_test_pad, verbose=0).flatten()
@@ -123,7 +128,7 @@ plt.savefig(f'{SAVE_DIR}/04_confusion_matrix.png'); plt.show()
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/results/imdb_stacked_rnn/04_confusion_matrix.png}
+    \includegraphics[width=1\linewidth]{Chương_3/results/imdb_stacked_rnn/04_confusion_matrix.png}
     \caption{Ma trận nhầm lẫn: Tỷ lệ đoán đúng chỉ tương đương với đoán mò có tính toán}
 \end{figure}
 

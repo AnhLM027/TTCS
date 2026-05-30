@@ -81,7 +81,7 @@ plt.tight_layout(); plt.savefig(f'{SAVE_DIR}/01_class_distribution.png'); plt.sh
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_2/results/natural_images/01_class_distribution.png}
+    \includegraphics[width=1\linewidth]{Chương_2/results/natural_images/01_class_distribution.png}
     \caption{Biểu đồ phân phối tần suất của bộ dữ liệu Natural Images}
 \end{figure}
 
@@ -106,7 +106,7 @@ plt.tight_layout(); plt.savefig(f'{SAVE_DIR}/02_sample_images.png'); plt.show()
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_2/results/natural_images/02_sample_images.png}
+    \includegraphics[width=1\linewidth]{Chương_2/results/natural_images/02_sample_images.png}
     \caption{Lưới hình ảnh trực quan thể hiện 8 lớp đối tượng tự nhiên}
 \end{figure}
 
@@ -166,7 +166,7 @@ plt.tight_layout(); plt.savefig(f'{SAVE_DIR}/03_train_batch_visualization.png');
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_2/results/natural_images/03_train_batch_visualization.png}
+    \includegraphics[width=1\linewidth]{Chương_2/results/natural_images/03_train_batch_visualization.png}
     \caption{Các bức ảnh trong Batch đã được xoay, cắt xén và thêm nhiễu nhằm tăng tính kháng nhiễu}
 \end{figure}
 
@@ -257,7 +257,7 @@ print(f'Best val accuracy: {max(history.history["val_accuracy"]):.4f}')
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/results/natural_images/04_training_history.png}
+    \includegraphics[width=1\linewidth]{Chương_2/results/natural_images/04_training_history.png}
     \caption{Biểu đồ History chứng minh độ hội tụ gần như tuyệt đối của EfficientNetB0}
 \end{figure}
 
@@ -284,7 +284,7 @@ print(classification_report(y_true, y_pred, target_names=classes))
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{Chương_2/results/natural_images/05_confusion_matrix.png}
+    \includegraphics[width=1\linewidth]{Chương_2/results/natural_images/05_confusion_matrix.png}
     \caption{Ma trận nhầm lẫn với đường chéo hoàn hảo (100\% F1-Score)}
 \end{figure}
 
@@ -376,7 +376,7 @@ plt.tight_layout(); plt.savefig(f'{SAVE_DIR}/06_gradcam_visualization.png'); plt
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/results/natural_images/06_gradcam_visualization.png}
+    \includegraphics[width=0.6\linewidth]{Chương_2/results/natural_images/06_gradcam_visualization.png}
     \caption{Cơ chế XAI - Bản đồ nhiệt chứng minh mô hình nhìn chính xác vào đặc điểm vật thể}
 \end{figure}
 

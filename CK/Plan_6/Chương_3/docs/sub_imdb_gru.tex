@@ -1,8 +1,8 @@
-\vspace{10pt}\noindent\textbf{Thực nghiệm: Đánh giá Phim IMDB với mạng Hồi quy có cổng (BiGRU)} \hfill \\
+\paragraph{Thực nghiệm: Đánh giá Phim IMDB với mạng Hồi quy có cổng (BiGRU)} \hfill\mbox{}
 
 Trái ngược với văn bản ngắn gọn như tin tức chứng khoán, các bài đánh giá phim trên IMDB thường có độ dài rất lớn, cấu trúc phức tạp và ẩn chứa nhiều cảm xúc lồng ghép. Mạng SimpleRNN truyền thống không thể nhớ được những từ quan trọng ở đầu câu khi đọc đến cuối câu (hiện tượng Vanishing Gradient). Để giải quyết triệt để, chúng tôi áp dụng kiến trúc \textbf{Gated Recurrent Unit (GRU)} tích hợp hai chiều (Bidirectional) kết hợp cùng kỹ thuật nhúng từ vựng được huấn luyện trước \textbf{GloVe (Global Vectors for Word Representation)}.
 
-\vspace{10pt}\noindent\textbf{1. Thiết lập Môi trường và Đọc Dữ liệu} \hfill \\
+\paragraph{Thiết lập Môi trường và Đọc Dữ liệu} \hfill\mbox{}
 
 \begin{lstlisting}[style=pythoncode, caption={Khởi tạo môi trường thư viện cho cấu trúc GRU}]
 import pandas as pd
@@ -60,7 +60,7 @@ label
 Name: count, dtype: int64
 \end{lstlisting}
 
-\vspace{10pt}\noindent\textbf{2. Khám phá Phân phối Dữ liệu (EDA)} \hfill \\
+\paragraph{Khám phá Phân phối Dữ liệu (EDA)} \hfill\mbox{}
 
 \begin{lstlisting}[style=pythoncode, caption={Tính toán và vẽ biểu đồ Thống kê Độ dài văn bản}]
 df['text_len'] = df['text'].apply(lambda x: len(str(x).split()))
@@ -95,7 +95,7 @@ plt.tight_layout(); plt.savefig(f'{SAVE_DIR}/01_eda_overview.png'); plt.show()
 - Tập dữ liệu cân bằng hoàn hảo (50\% Positive, 50\% Negative), triệt tiêu hoàn toàn nỗi lo Bias.
 - Đồ thị Percentile cho thấy 90\% số lượng bình luận có độ dài dưới 500 từ. Vậy việc quyết định cắt ngọn hoặc Padding ở mức \texttt{MAX\_LEN = 500} là một chiến lược bảo toàn dữ liệu lý tưởng mà không làm phình to ma trận bộ nhớ.
 
-\vspace{10pt}\noindent\textbf{3. Tinh chỉnh Stopwords (Domain-Specific Filter)} \hfill \\
+\paragraph{Tinh chỉnh Stopwords (Domain-Specific Filter)} \hfill\mbox{}
 
 Khi vẽ WordCloud cho văn bản đánh giá phim, những từ như \textit{movie}, \textit{film}, \textit{character} xuất hiện dày đặc ở cả 2 phe (khen và chê). Những từ này là Tạp âm miền (Domain Noise), không đóng góp giá trị cảm xúc nào nhưng lại lấp đầy bộ nhớ mô hình. Chúng ta sẽ lọc bỏ hoàn toàn chúng.
 
@@ -132,20 +132,23 @@ plt.savefig(f'{SAVE_DIR}/02_wordclouds_cleaned.png'); plt.show()
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}{0.48\textwidth}
-        \includegraphics[width=\linewidth]{Chương_3/results/imdb_bigru/02_wordclouds_before_clean_text.png}
-        \caption{Trước khi lọc nhiễu: Tràn ngập từ \textit{Movie}, \textit{Film}}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.48\textwidth}
-        \includegraphics[width=\linewidth]{Chương_3/results/imdb_bigru/02_wordclouds_cleaned.png}
-        \caption{Sau khi lọc: Cảm xúc thật sự nổi bật rõ rệt}
-    \end{minipage}
+    \includegraphics[width=1\linewidth]{Chương_3/results/imdb_bigru/02_wordclouds_before_clean_text.png}
+    \caption{Trước khi lọc nhiễu: Tràn ngập từ \textit{Movie}, \textit{Film}}
 \end{figure}
 
-Việc loại bỏ HTML Tag \texttt{<br />} và \texttt{movie/film} đã gột rửa dữ liệu cực sạch. Nhóm màu Đỏ (Tiêu cực) hiện rõ các từ \textit{bad}, \textit{acting}, \textit{worst}, \textit{plot} (chê diễn xuất, cốt truyện). Nhóm màu Xanh (Tích cực) nổi bật các từ \textit{good}, \textit{great}, \textit{love}, \textit{best}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Chương_3/results/imdb_bigru/02_wordclouds_cleaned.png}
+    \caption{Sau khi lọc: Cảm xúc thật sự nổi bật rõ rệt}
+\end{figure}
 
-\vspace{10pt}\noindent\textbf{4. Khởi tạo GloVe Word Embedding} \hfill \\
+\textbf{Đánh giá tác động của Tiền xử lý nhiễu (WordCloud):}
+\begin{itemize}
+    \item \textbf{Trước khi lọc nhiễu:} Biểu đồ bị thống trị hoàn toàn bởi các từ vựng chung chung như \textit{movie}, \textit{film} ở cả hai phe. Sự xuất hiện dày đặc của tạp âm miền (Domain Noise) này sẽ lấp đầy bộ nhớ mô hình nhưng không đem lại giá trị phân loại cảm xúc.
+    \item \textbf{Sau khi lọc nhiễu:} Quá trình làm sạch đã gột rửa dữ liệu một cách ngoạn mục. Nhóm màu Đỏ (Tiêu cực) hiện rõ các từ \textit{bad}, \textit{acting}, \textit{worst}, \textit{plot} (chê diễn xuất, cốt truyện). Nhóm màu Xanh (Tích cực) nổi bật sự khen ngợi qua các từ \textit{good}, \textit{great}, \textit{love}, \textit{best}.
+\end{itemize}
+
+\paragraph{Khởi tạo GloVe Word Embedding} \hfill\mbox{}
 
 Thay vì để mô hình nhúng từ (Embedding Layer) tự học ngẫu nhiên từ đầu, chúng ta tận dụng một bách khoa toàn thư đã học sẵn: \textbf{GloVe 100d}. Mỗi từ vựng sẽ được ánh xạ trực tiếp thành một Vector 100 chiều dồi dào ngữ nghĩa.
 
@@ -178,7 +181,7 @@ GloVe hit rate: 18778/20,000 words (93.9%)
 \end{lstlisting}
 Gần 94\% số lượng từ vựng trong IMDB đã được tìm thấy sẵn trong từ điển GloVe.
 
-\vspace{10pt}\noindent\textbf{5. Kiến trúc BiGRU và Hiệu suất} \hfill \\
+\paragraph{Kiến trúc BiGRU và Hiệu suất} \hfill\mbox{}
 
 Mạng GRU có kiến trúc tinh gọn hơn LSTM nhưng vẫn sở hữu Update Gate và Reset Gate, giúp quyết định giữ lại hay xóa bỏ thông tin đường dài. 
 
@@ -240,7 +243,7 @@ plt.savefig(f'{SAVE_DIR}/03_training_history.png'); plt.show()
 
 \textbf{Đánh giá:} Nếu SimpleRNN mắc lỗi Overfitting ngay từ Epoch 4, thì BiGRU đã chứng tỏ sự vững chắc khủng khiếp. Biểu đồ đường Train và Validation gần như hòa làm một (Loss cùng giảm sâu xuống 0.25, Accuracy cùng tăng đều lên 90\%) mà không hề bị tách bạch (Diverge). Kiến trúc Cổng Ghi nhớ của GRU là vũ khí vô địch để giữ vững ngữ cảnh văn bản dài.
 
-\vspace{10pt}\noindent\textbf{6. Đánh giá Confusion Matrix và ROC-AUC} \hfill \\
+\paragraph{Đánh giá Confusion Matrix và ROC-AUC} \hfill\mbox{}
 
 \begin{lstlisting}[style=pythoncode, caption={Đánh giá toàn diện Confusion Matrix và đường ROC}]
 y_pred_prob = model.predict(X_test_pad, verbose=0).flatten()
@@ -265,9 +268,15 @@ plt.tight_layout(); plt.savefig(f'{SAVE_DIR}/04_confusion_roc.png'); plt.show()
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/results/imdb_bigru/04_confusion_roc.png}
+    \includegraphics[width=1\linewidth]{Chương_3/results/imdb_bigru/04_confusion_roc.png}
     \caption{Ma trận nhầm lẫn và đường cong biểu diễn năng lực phân loại ROC Curve}
 \end{figure}
+
+\textbf{Đánh giá Confusion Matrix và ROC Curve:}
+\begin{itemize}
+    \item \textbf{Confusion Matrix:} Mô hình dự đoán vô cùng ổn định trên tập Test 10,000 mẫu. BiGRU đưa ra các dự đoán True Positive (4550) và True Negative (4350) rất cao. Sai số False Positive và False Negative thấp, chứng tỏ không có sự thiên vị (Bias) cố hữu nào với một nhãn cụ thể.
+    \item \textbf{ROC Curve:} Diện tích dưới đường cong ROC-AUC đạt mức tiệm cận tối đa \textbf{0.9392}. Đây là con số xuất sắc, minh chứng năng lực phân tách rạch ròi cảm xúc của người dùng bất chấp độ dài và cấu trúc ngữ pháp phức tạp của các bài đánh giá phim.
+\end{itemize}
 
 \begin{lstlisting}[style=consoleoutput, caption={Output: Báo cáo hiệu năng Precision và Recall}]
               precision    recall  f1-score   support

@@ -1,41 +1,70 @@
 \subsection{Tổng quan về Mạng nơ-ron hồi quy (RNN)}
-Mạng nơ-ron hồi quy (Recurrent Neural Networks - RNN) là một loại kiến trúc mạng nơ-ron được thiết kế đặc biệt để xử lý dữ liệu dạng chuỗi (sequential data). Điểm khác biệt cốt lõi của RNN là nó có các kết nối phản hồi, cho phép thông tin từ các bước thời gian trước đó được lưu trữ và sử dụng cho các bước tiếp theo thông qua "Hidden State".
+Mạng nơ-ron hồi quy (Recurrent Neural Networks - RNN) là một lớp các mạng nơ-ron nhân tạo được thiết kế chuyên biệt để xử lý dữ liệu có tính chất tuần tự (sequential data) hoặc chuỗi thời gian (time-series). Khác với mạng nơ-ron truyền thẳng (Feedforward Neural Networks) truyền thống chỉ xử lý các đầu vào độc lập, RNN sở hữu cơ chế "bộ nhớ" thông qua các kết nối phản hồi (feedback loops). 
 
-\subsection{Ưu điểm và Hạn chế của RNN truyền thống}
-\textbf{Ưu điểm:} Có khả năng xử lý dữ liệu có độ dài biến thiên và nắm bắt được ngữ cảnh cục bộ.
-\textbf{Hạn chế:} Vấn đề tiêu biến đạo hàm (Vanishing Gradient) khiến mạng khó có thể học được các phụ thuộc xa (long-term dependencies) trong chuỗi dài.
+Tại mỗi bước thời gian $t$, mạng RNN nhận hai luồng thông tin: đầu vào hiện tại $x_t$ và trạng thái ẩn từ bước thời gian trước $h_{t-1}$. Trạng thái ẩn mới $h_t$ được tính toán thông qua một hàm kích hoạt phi tuyến tính (thường là $\tanh$ hoặc $\text{ReLU}$):
+\begin{equation}
+    h_t = \tanh(W_{hh} h_{t-1} + W_{xh} x_t + b_h)
+\end{equation}
+Nhờ cơ chế này, RNN có khả năng lưu giữ thông tin về các sự kiện đã xảy ra trong quá khứ, khiến nó trở thành công cụ đắc lực cho các bài toán Xử lý Ngôn ngữ Tự nhiên (NLP) như phân tích cảm xúc (Sentiment Analysis) hay dịch máy.
 
-\subsection{Kỹ thuật Nhúng từ (Word Embeddings)}
-Trong xử lý ngôn ngữ tự nhiên (NLP), Word Embeddings (như Word2Vec hoặc GloVe) được sử dụng để chuyển đổi các từ thành các vector số thực có số chiều thấp, sao cho các từ có ngữ nghĩa tương đồng sẽ nằm gần nhau trong không gian vector.
+\subsection{Lịch sử phát triển và các kiến trúc kinh điển}
+Lịch sử của RNN là một quá trình liên tục tìm kiếm các giải pháp nhằm lưu giữ trí nhớ dài hạn và cải thiện khả năng học của mô hình:
+\begin{itemize}
+    \item \textbf{Hopfield Network (1982):} Kiến trúc mạng nơ-ron có kết nối phản hồi đầu tiên do John Hopfield giới thiệu, đóng vai trò như một bộ nhớ liên tưởng, đặt nền móng cho RNN.
+    \item \textbf{Simple RNN / Elman Network (1990):} Jeffrey Elman giới thiệu khái niệm "trạng thái ẩn" (hidden state) để lưu trữ bộ nhớ ngắn hạn, mở ra khả năng xử lý chuỗi thực thụ.
+    \item \textbf{LSTM (1997):} Sepp Hochreiter và Jürgen Schmidhuber ra mắt kiến trúc Long Short-Term Memory, một đột phá vĩ đại giải quyết triệt để vấn đề "nhớ trước quên sau" của RNN truyền thống.
+    \item \textbf{Bi-RNN (1997):} Mạng hồi quy hai chiều được giới thiệu, cho phép mô hình nhìn nhận ngữ cảnh từ cả quá khứ và tương lai cùng lúc thay vì chỉ trôi theo một chiều.
+    \item \textbf{GRU (2014):} Kyunghyun Cho đề xuất Gated Recurrent Unit, một phiên bản tinh gọn và tăng tốc của LSTM nhưng vẫn giữ nguyên sức mạnh xử lý chuỗi dài.
+\end{itemize}
 
-\subsection{Thực nghiệm chuyên sâu trên 2 Datasets \& 2 Models}
+\subsection{Vấn đề Tiêu biến Đạo hàm và Giải pháp Cổng (Gates)}
+Mặc dù Simple RNN mang lại giải pháp đột phá cho dữ liệu chuỗi, cấu trúc cơ bản này lại vướng phải \textbf{Vấn đề tiêu biến đạo hàm (Vanishing Gradient Problem)}. Khi huấn luyện bằng thuật toán Lan truyền ngược qua thời gian (BPTT), đạo hàm được nhân liên tiếp qua nhiều bước. Việc nhân chuỗi các giá trị nhỏ hơn 1 khiến gradient tiến về 0 một cách theo cấp số nhân, làm mô hình không thể cập nhật trọng số và học được các mối liên hệ xa.
+
+Để khắc phục, các biến thể hiện đại như \textbf{GRU} và \textbf{LSTM} sử dụng cơ chế "Cổng" (Gates) thông minh để kiểm soát luồng thông tin:
+\begin{itemize}
+    \item \textbf{Cổng Cập nhật (Update / Forget Gate):} Quyết định giữ lại hoặc xóa bỏ bao nhiêu phần trăm ký ức từ quá khứ để tránh làm nhiễu dữ liệu hiện tại.
+    \item \textbf{Cổng Đầu ra (Output / Reset Gate):} Chọn lọc những thông tin quan trọng nhất để xuất ra ở trạng thái ẩn tiếp theo.
+\end{itemize}
+Cơ chế này tạo ra một "đường cao tốc" cho phép luồng gradient đi xuyên suốt chuỗi mà không bị tiêu biến, mang lại hiệu năng vượt trội cho NLP.
+
+\subsection{Kỹ thuật Nhúng từ vựng (Word Embeddings và GloVe)}
+Để mạng RNN có thể phát huy tối đa sức mạnh phân tích ngôn ngữ tự nhiên, dữ liệu văn bản đầu vào bắt buộc phải được chuyển hóa thành các vector số học có ý nghĩa. Phương pháp \textbf{Word Embeddings} ra đời để ánh xạ mỗi từ vào một không gian vector liên tục (dense vector) có số chiều thấp. Ở không gian này, các từ có ý nghĩa tương đồng sẽ tự động hội tụ lại gần nhau.
+
+Đặc biệt trong báo cáo này, có sử dụng \textbf{GloVe (Global Vectors for Word Representation)} – một thuật toán học nhúng từ của Đại học Stanford. Bằng cách khai thác ma trận đồng xuất hiện từ vựng toàn cục (global co-occurrence matrix) từ hàng tỷ văn bản, GloVe cung cấp sẵn cho mạng RNN một hệ thống tri thức ngữ nghĩa sâu sắc ngay cả trước khi mô hình bắt đầu tự học.
+\subsection{Thực nghiệm chuyên sâu trên 2 Datasets \& 3 Models}
 
 \subsubsection{Dataset 1: Stock Market Sentiment (Vanilla RNN)}
 \textbf{Kiến trúc:} Mạng RNN cơ bản.
 \textbf{Mục tiêu:} Phân tích cảm xúc từ các tiêu đề tin tức chứng khoán để dự báo xu hướng thị trường.
 \input{Chương_3/docs/sub_stock_sentiment.tex}
 
-\subsubsection{Dataset 2: IMDB Movie Reviews (Bidirectional GRU)}
+\subsubsection{Dataset 2: IMDB Movie Reviews (Stacked RNN)}
+\textbf{Kiến trúc:} Mạng RNN cơ bản xếp chồng 2 tầng (Stacked RNN).
+\textbf{Mục tiêu:} Đánh giá khả năng học đặc trưng cấp độ sâu hơn của Vanilla RNN trên dữ liệu văn bản dài và kiểm nghiệm hiện tượng tiêu biến đạo hàm.
+\input{Chương_3/docs/sub_imbd_stacked_rnn.tex}
+
+\subsubsection{Dataset 2 (Tiếp theo): IMDB Movie Reviews (Bidirectional GRU)}
 \textbf{Kiến trúc:} Gated Recurrent Unit (GRU) hai chiều.
-\textbf{Mục tiêu:} Sử dụng GRU để cải tiến khả năng học chuỗi và cơ chế hai chiều (Bidirectional) để nắm bắt ngữ cảnh từ cả phía trước và phía sau của câu.
+\textbf{Mục tiêu:} Sử dụng GRU để khắc phục hạn chế của RNN truyền thống và áp dụng cơ chế hai chiều (Bidirectional) kết hợp GloVe để nắm bắt ngữ cảnh từ cả phía trước lẫn phía sau của câu.
 \input{Chương_3/docs/sub_imdb_gru.tex}
 
 \subsection{So sánh và Đánh giá tổng hợp (Benchmarking)}
-Bảng dưới đây so sánh hiệu năng của các mô hình RNN đã thực nghiệm:
+Bảng dưới đây so sánh hiệu năng của 3 mô hình RNN đã thực nghiệm:
 
 \begin{table}[H]
     \centering
     \begin{tabular}{|l|l|l|l|l|}
     \hline
     \textbf{Dataset} & \textbf{Model} & \textbf{Accuracy} & \textbf{Params} & \textbf{Kỹ thuật chính} \\ \hline
-    Stock Sentiment & Vanilla RNN & 52.09\% & 0.65M & SimpleRNN \\ \hline
-    IMDB Reviews & Bi-GRU & 86.67\% & 2.10M & Bidirectional Context \\ \hline
+    Stock Sentiment & Vanilla RNN & 74.11\% & 0.65M & SimpleRNN \\ \hline
+    IMDB Reviews & Stacked RNN & 72.58\% & 2.67M & 2-Layer Stacked RNN \\ \hline
+    IMDB Reviews & Bi-GRU & 89.72\% & 2.10M & Bidirectional + GloVe \\ \hline
     \end{tabular}
     \caption{Bảng so sánh hiệu năng các mô hình RNN trong Chương 3}
     \label{tab:rnn_comparison}
 \end{table}
 
-Kết quả thực nghiệm cho thấy sự vượt trội rõ rệt của kiến trúc có cổng (Gated) như GRU so với RNN truyền thống. Đặc biệt, kiến trúc Bidirectional giúp tăng đáng kể độ chính xác nhờ việc nắm bắt ngữ cảnh từ cả hai phía của câu.
+Kết quả thực nghiệm cho thấy sự vượt trội tuyệt đối của kiến trúc có cổng (Gated) như GRU so với RNN truyền thống. Việc xếp chồng lớp (Stacked RNN) không những không giúp tăng hiệu năng đáng kể mà còn làm mô hình vướng vào điểm yếu tiêu biến đạo hàm (Vanishing Gradient) khi xử lý chuỗi dài. Ngược lại, kiến trúc Bidirectional kết hợp với nhúng từ GloVe giúp mô hình GRU học nhanh hơn, ít tham số hơn và đạt độ chính xác ấn tượng xấp xỉ 90\%.
 
 \subsection{Tổng kết Chương 3}
-Chương này đã minh chứng khả năng của các biến thể RNN trong việc xử lý ngôn ngữ tự nhiên. Việc chuyển từ RNN truyền thống sang các cấu trúc có cổng như GRU và LSTM là cần thiết để xử lý các văn bản dài và phức tạp. Thành công từ việc áp dụng Bidirectional GRU trên tập IMDB mở ra hướng đi cho việc tối ưu hóa các mô hình ngôn ngữ sâu hơn.
+Chương này đã minh chứng khả năng của các biến thể RNN trong việc xử lý ngôn ngữ tự nhiên. Việc chuyển từ RNN truyền thống sang các cấu trúc có cổng như GRU và LSTM là bắt buộc để xử lý các văn bản dài và phức tạp. Thành công từ việc áp dụng Bidirectional GRU trên tập IMDB mở ra hướng đi cho việc tối ưu hóa các mô hình ngôn ngữ sâu hơn (như LSTM, Attention) trong các chương tiếp theo.

@@ -1,5 +1,5 @@
 \babel@toc {vietnamese}{}\relax 
-\contentsline {section}{\numberline {I}TRÍ TUỆ NHÂN TẠO VÀ TIỀN XỬ LÝ DỮ LIỆU (ADVANCED PREPROCESSING)}{6}{section.1}%
+\contentsline {section}{\numberline {I}TRÍ TUỆ NHÂN TẠO VÀ TIỀN XỬ LÝ DỮ LIỆU}{6}{section.1}%
 \contentsline {subsection}{\numberline {1}Tổng quan về Trí tuệ nhân tạo và Học máy}{6}{subsection.1.1}%
 \contentsline {subsection}{\numberline {2}Vai trò cốt lõi của Tiền xử lý dữ liệu (Data Preprocessing)}{6}{subsection.1.2}%
 \contentsline {subsection}{\numberline {3}Các kỹ thuật Tiền xử lý Cơ bản}{6}{subsection.1.3}%
@@ -11,130 +11,145 @@
 \contentsline {paragraph}{\numberline {5.1.3}Phân tích Khám phá Dữ liệu (EDA)}{11}{paragraph.1.5.1.3}%
 \contentsline {paragraph}{\numberline {5.1.4}Kỹ thuật Đặc trưng và Tiền xử lý (Feature Engineering \& Preprocessing)}{15}{paragraph.1.5.1.4}%
 \contentsline {paragraph}{\numberline {5.1.5}Huấn luyện Mô hình và Đánh giá}{20}{paragraph.1.5.1.5}%
-\contentsline {subsubsection}{\numberline {5.2}Dataset 2: Telco Churn (Tabular - Class Imbalance \& SMOTE)}{25}{subsubsection.1.5.2}%
-\contentsline {paragraph}{\numberline {5.2.1}Phân tích bộ dữ liệu Telco Customer Churn}{25}{paragraph.1.5.2.1}%
-\contentsline {paragraph}{\numberline {5.2.2}Thiết lập Môi trường và Tải Dữ liệu}{25}{paragraph.1.5.2.2}%
-\contentsline {paragraph}{\numberline {5.2.3}Phân tích Khám phá Dữ liệu (EDA)}{27}{paragraph.1.5.2.3}%
-\contentsline {paragraph}{\numberline {5.2.4}Tiền xử lý và Cân bằng Dữ liệu (SMOTE)}{29}{paragraph.1.5.2.4}%
-\contentsline {paragraph}{\numberline {5.2.5}Huấn luyện và Đánh giá Mô hình}{31}{paragraph.1.5.2.5}%
-\contentsline {subsubsection}{\numberline {5.3}Dataset 3: Credit Card Fraud (Anomaly - Precision-Recall Focus)}{34}{subsubsection.1.5.3}%
-\contentsline {paragraph}{\numberline {5.3.1}Phân tích bộ dữ liệu Credit Card Fraud Detection}{34}{paragraph.1.5.3.1}%
-\contentsline {paragraph}{\numberline {5.3.2}Thiết lập Môi trường và Tải Dữ liệu}{35}{paragraph.1.5.3.2}%
-\contentsline {paragraph}{\numberline {5.3.3}Phân tích Khám phá Dữ liệu (EDA)}{35}{paragraph.1.5.3.3}%
-\contentsline {paragraph}{\numberline {5.3.4}Tiền xử lý và Cân bằng Trọng số (Class Weights)}{39}{paragraph.1.5.3.4}%
-\contentsline {paragraph}{\numberline {5.3.5}Huấn luyện Mô hình và Đánh giá (Modeling)}{39}{paragraph.1.5.3.5}%
-\contentsline {subsubsection}{\numberline {5.4}Dataset 4: Adult Census (Categorical - Target Encoding)}{41}{subsubsection.1.5.4}%
-\contentsline {paragraph}{\numberline {5.4.1}Phân tích bộ dữ liệu Adult Census Income}{41}{paragraph.1.5.4.1}%
-\contentsline {paragraph}{\numberline {5.4.2}Thiết lập Môi trường và Tải Dữ liệu}{42}{paragraph.1.5.4.2}%
-\contentsline {paragraph}{\numberline {5.4.3}Phân tích Khám phá Dữ liệu (EDA)}{42}{paragraph.1.5.4.3}%
-\contentsline {paragraph}{\numberline {5.4.4}Kỹ thuật Target Encoding cho biến High Cardinality}{44}{paragraph.1.5.4.4}%
-\contentsline {paragraph}{\numberline {5.4.5}Huấn luyện Mô hình và Đánh giá}{46}{paragraph.1.5.4.5}%
-\contentsline {subsection}{\numberline {6}Tổng kết Chương 1}{47}{subsection.1.6}%
-\contentsline {section}{\numberline {II}MẠNG NƠ-RON TÍCH CHẬP (CNN - DEEP VISION)}{48}{section.2}%
-\contentsline {subsection}{\numberline {1}Tổng quan về Mạng Nơ-ron Tích chập (CNN)}{48}{subsection.2.1}%
-\contentsline {subsubsection}{\numberline {1.1}Cấu trúc cơ bản của CNN}{48}{subsubsection.2.1.1}%
-\contentsline {subsection}{\numberline {2}Lịch sử phát triển và các kiến trúc kinh điển}{48}{subsection.2.2}%
-\contentsline {subsection}{\numberline {3}Kỹ thuật Học chuyển đổi (Transfer Learning)}{49}{subsection.2.3}%
-\contentsline {subsection}{\numberline {4}Thực nghiệm chuyên sâu trên 4 Datasets \& 4 Models}{49}{subsection.2.4}%
-\contentsline {subsubsection}{\numberline {4.1}Dataset 1: Intel Image Classification (Custom CNN)}{49}{subsubsection.2.4.1}%
-\contentsline {paragraph}{\numberline {4.1.1}Phân loại cảnh quan tự nhiên (Intel Image Classification)}{49}{paragraph.2.4.1.1}%
-\contentsline {paragraph}{\numberline {4.1.2}Thiết lập Môi trường và Dữ liệu}{49}{paragraph.2.4.1.2}%
-\contentsline {paragraph}{\numberline {4.1.3}Khám phá Phân phối Tập dữ liệu (EDA)}{50}{paragraph.2.4.1.3}%
-\contentsline {paragraph}{\numberline {4.1.4}Data Augmentation và Image Data Generators}{52}{paragraph.2.4.1.4}%
-\contentsline {paragraph}{\numberline {4.1.5}Xây dựng Kiến trúc Mạng Custom CNN}{54}{paragraph.2.4.1.5}%
-\contentsline {paragraph}{\numberline {4.1.6}Huấn luyện Mô hình và Điều khiển Lịch trình (Callbacks)}{55}{paragraph.2.4.1.6}%
-\contentsline {paragraph}{\numberline {4.1.7}Đánh giá Mô hình (Model Evaluation)}{57}{paragraph.2.4.1.7}%
-\contentsline {subsubsection}{\numberline {4.2}Dataset 2: Flowers-102 (MobileNetV2 - Transfer Learning)}{59}{subsubsection.2.4.2}%
-\contentsline {paragraph}{\numberline {4.2.1}Phân loại các loài hoa bằng Học chuyển giao (Transfer Learning với MobileNetV2)}{59}{paragraph.2.4.2.1}%
-\contentsline {paragraph}{\numberline {4.2.2}Thiết lập Môi trường và Phân tích Dữ liệu (EDA)}{59}{paragraph.2.4.2.2}%
-\contentsline {paragraph}{\numberline {4.2.3}Tiền xử lý và Data Augmentation}{62}{paragraph.2.4.2.3}%
-\contentsline {paragraph}{\numberline {4.2.4}Giai đoạn 1: Trích xuất Đặc trưng (Feature Extraction với Frozen Base)}{63}{paragraph.2.4.2.4}%
-\contentsline {paragraph}{\numberline {4.2.5}Giai đoạn 2: Tinh chỉnh tinh vi (Fine-Tuning)}{64}{paragraph.2.4.2.5}%
-\contentsline {paragraph}{\numberline {4.2.6}Đánh giá Mô hình (Confusion Matrix)}{66}{paragraph.2.4.2.6}%
-\contentsline {subsubsection}{\numberline {4.3}Dataset 3: Chest X-Ray Pneumonia (ResNet-50 - Fine-tuning)}{68}{subsubsection.2.4.3}%
-\contentsline {paragraph}{\numberline {4.3.1}Chẩn đoán Viêm phổi qua Ảnh X-Quang (Chest X-Ray Pneumonia với ResNet50)}{68}{paragraph.2.4.3.1}%
-\contentsline {paragraph}{\numberline {4.3.2}Thiết lập Hệ thống và Khám phá Dữ liệu}{68}{paragraph.2.4.3.2}%
-\contentsline {paragraph}{\numberline {4.3.3}Chuẩn bị Tiền xử lý và Bù đắp Mất cân bằng (Class Weights)}{71}{paragraph.2.4.3.3}%
-\contentsline {paragraph}{\numberline {4.3.4}Kiến trúc ResNet50 (Residual Network)}{72}{paragraph.2.4.3.4}%
-\contentsline {paragraph}{\numberline {4.3.5}Huấn luyện Mô hình Y tế}{72}{paragraph.2.4.3.5}%
-\contentsline {paragraph}{\numberline {4.3.6}Đánh giá Mô hình Y tế (Confusion Matrix \& ROC Curve)}{74}{paragraph.2.4.3.6}%
-\contentsline {subsubsection}{\numberline {4.4}Dataset 4: Natural Images (EfficientNet-B0 \& Grad-CAM)}{76}{subsubsection.2.4.4}%
-\contentsline {paragraph}{\numberline {4.4.1}Phân loại ảnh Tự nhiên (Natural Images) với EfficientNetB0 và Explainable AI (Grad-CAM)}{76}{paragraph.2.4.4.1}%
-\contentsline {paragraph}{\numberline {4.4.2}Thiết lập Cấu hình và Môi trường}{76}{paragraph.2.4.4.2}%
-\contentsline {paragraph}{\numberline {4.4.3}Khám phá và Trực quan hóa Dữ liệu (EDA)}{77}{paragraph.2.4.4.3}%
-\contentsline {paragraph}{\numberline {4.4.4}Data Augmentation nâng cao và Preprocessing}{80}{paragraph.2.4.4.4}%
-\contentsline {paragraph}{\numberline {4.4.5}Kiến trúc EfficientNetB0 (Transfer Learning)}{81}{paragraph.2.4.4.5}%
-\contentsline {paragraph}{\numberline {4.4.6}Chiến lược Huấn luyện 2 Giai đoạn (Two-Phase Training)}{82}{paragraph.2.4.4.6}%
-\contentsline {paragraph}{\numberline {4.4.7}Đánh giá Confusion Matrix}{83}{paragraph.2.4.4.7}%
-\contentsline {paragraph}{\numberline {4.4.8}Explainable AI: Trực quan hóa Giải thích với Grad-CAM}{85}{paragraph.2.4.4.8}%
-\contentsline {subsection}{\numberline {5}So sánh và Đánh giá tổng hợp (Benchmarking)}{88}{subsection.2.5}%
-\contentsline {subsection}{\numberline {6}Tổng kết Chương 2}{88}{subsection.2.6}%
-\contentsline {section}{\numberline {III}MẠNG NƠ-RON HỒI QUY (RNN - TEMPORAL CONTEXT)}{89}{section.3}%
-\contentsline {subsection}{\numberline {1}Tổng quan về Mạng nơ-ron hồi quy (RNN)}{89}{subsection.3.1}%
-\contentsline {subsection}{\numberline {2}Ưu điểm và Hạn chế của RNN truyền thống}{89}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3}Kỹ thuật Nhúng từ (Word Embeddings)}{89}{subsection.3.3}%
-\contentsline {subsection}{\numberline {4}Thực nghiệm chuyên sâu trên 2 Datasets \& 2 Models}{89}{subsection.3.4}%
-\contentsline {subsubsection}{\numberline {4.1}Dataset 1: Stock Market Sentiment (Vanilla RNN)}{89}{subsubsection.3.4.1}%
-\contentsline {paragraph}{\numberline {4.1.1}Thực nghiệm: Dự đoán Cảm xúc Thị trường Chứng khoán (Stock Market Sentiment) bằng mạng Hồi quy (RNN)}{89}{paragraph.3.4.1.1}%
-\contentsline {paragraph}{\numberline {4.1.2}Thiết lập Môi trường và Load dữ liệu}{89}{paragraph.3.4.1.2}%
-\contentsline {paragraph}{\numberline {4.1.3}Khám phá Dữ liệu Văn bản (EDA)}{91}{paragraph.3.4.1.3}%
-\contentsline {paragraph}{\numberline {4.1.4}Kỹ thuật Tiền xử lý nhiễu Tài chính (Domain-Specific Text Cleaning)}{92}{paragraph.3.4.1.4}%
-\contentsline {paragraph}{\numberline {4.1.5}Kỹ thuật Vector hóa (Tokenization) và Word Embedding}{93}{paragraph.3.4.1.5}%
-\contentsline {paragraph}{\numberline {4.1.6}Xây dựng Kiến trúc Bidirectional SimpleRNN}{94}{paragraph.3.4.1.6}%
-\contentsline {paragraph}{\numberline {4.1.7}Đánh giá Quá trình Huấn luyện và Biểu đồ Lịch sử}{95}{paragraph.3.4.1.7}%
-\contentsline {paragraph}{\numberline {4.1.8}Kết quả Confusion Matrix và Phân tích t-SNE Không gian Vector}{96}{paragraph.3.4.1.8}%
-\contentsline {subsubsection}{\numberline {4.2}Dataset 2: IMDB Movie Reviews (Bidirectional GRU)}{98}{subsubsection.3.4.2}%
-\contentsline {subsection}{\numberline {5}So sánh và Đánh giá tổng hợp (Benchmarking)}{106}{subsection.3.5}%
-\contentsline {subsection}{\numberline {6}Tổng kết Chương 3}{106}{subsection.3.6}%
-\contentsline {section}{\numberline {IV}MẠNG LSTM VÀ CƠ CHẾ ATTENTION (LONG-TERM MEMORY)}{107}{section.4}%
-\contentsline {subsection}{\numberline {1}Từ LSTM đến Cơ chế Chú ý (Attention)}{107}{subsection.4.1}%
-\contentsline {subsection}{\numberline {2}Dự báo chuỗi thời gian (Time Series Forecasting)}{107}{subsection.4.2}%
-\contentsline {subsection}{\numberline {3}Thực nghiệm chuyên sâu trên 5 Datasets \& 5 Models}{107}{subsection.4.3}%
-\contentsline {subsubsection}{\numberline {3.1}Dataset 1: Beijing Air Quality (LSTM + Multi-variate)}{107}{subsubsection.4.3.1}%
-\contentsline {paragraph}{\numberline {3.1.1}Thực nghiệm: Dự báo Chất lượng Không khí (PM2.5) Đa biến với Mạng LSTM}{107}{paragraph.4.3.1.1}%
-\contentsline {paragraph}{\numberline {3.1.2}Khám phá Dữ liệu Chuỗi thời gian (Time Series EDA)}{107}{paragraph.4.3.1.2}%
-\contentsline {paragraph}{\numberline {3.1.3}Tương quan Đa biến (Multivariate Correlation)}{108}{paragraph.4.3.1.3}%
-\contentsline {paragraph}{\numberline {3.1.4}Cấu trúc Cửa sổ Trượt (Sliding Window) và LSTM}{109}{paragraph.4.3.1.4}%
-\contentsline {paragraph}{\numberline {3.1.5}Lịch sử Huấn luyện}{110}{paragraph.4.3.1.5}%
-\contentsline {paragraph}{\numberline {3.1.6}Trực quan hóa Kết quả Dự báo và Đánh giá}{110}{paragraph.4.3.1.6}%
-\contentsline {subsubsection}{\numberline {3.2}Dataset 2: Google Stock Price (Conv1D + LSTM)}{111}{subsubsection.4.3.2}%
-\contentsline {paragraph}{\numberline {3.2.1}Thực nghiệm: Dự báo Giá cổ phiếu Google với kiến trúc Hybrid Conv1D-LSTM}{111}{paragraph.4.3.2.1}%
-\contentsline {paragraph}{\numberline {3.2.2}Khai báo thư viện và Cấu hình ban đầu}{112}{paragraph.4.3.2.2}%
-\contentsline {paragraph}{\numberline {3.2.3}Tải và Làm sạch Dữ liệu (Data Preprocessing)}{112}{paragraph.4.3.2.3}%
-\contentsline {paragraph}{\numberline {3.2.4}Phân tích Kỹ thuật và Biến động (Financial EDA)}{113}{paragraph.4.3.2.4}%
-\contentsline {paragraph}{\numberline {3.2.5}Tái cấu trúc Chuỗi thời gian (Look-back Window)}{117}{paragraph.4.3.2.5}%
-\contentsline {paragraph}{\numberline {3.2.6}Kiến trúc lai Hybrid Conv1D và LSTM}{117}{paragraph.4.3.2.6}%
-\contentsline {paragraph}{\numberline {3.2.7}Kết quả Huấn luyện và Đánh giá Mô hình}{118}{paragraph.4.3.2.7}%
-\contentsline {subsubsection}{\numberline {3.3}Dataset 3: Energy Consumption (LSTM + Attention)}{123}{subsubsection.4.3.3}%
-\contentsline {paragraph}{\numberline {3.3.1}Thực nghiệm: Dự báo Tiêu thụ Năng lượng (Energy Consumption) với kiến trúc LSTM và Cơ chế Chú ý (Attention Mechanism)}{123}{paragraph.4.3.3.1}%
-\contentsline {paragraph}{\numberline {3.3.2}Khai báo thư viện và Cấu hình ban đầu}{124}{paragraph.4.3.3.2}%
-\contentsline {paragraph}{\numberline {3.3.3}Tiền xử lý và Khám phá Dữ liệu (EDA)}{124}{paragraph.4.3.3.3}%
-\contentsline {paragraph}{\numberline {3.3.4}Chuẩn bị Dữ liệu Huấn luyện}{130}{paragraph.4.3.3.4}%
-\contentsline {paragraph}{\numberline {3.3.5}Xây dựng Kiến trúc Mô hình (LSTM + Attention)}{131}{paragraph.4.3.3.5}%
-\contentsline {paragraph}{\numberline {3.3.6}Huấn luyện Mô hình}{132}{paragraph.4.3.3.6}%
-\contentsline {paragraph}{\numberline {3.3.7}Đánh giá Kết quả Dự báo}{133}{paragraph.4.3.3.7}%
-\contentsline {paragraph}{\numberline {3.3.8}Khả năng Giải thích của Mô hình (Explainable AI - XAI)}{134}{paragraph.4.3.3.8}%
-\contentsline {subsubsection}{\numberline {3.4}Dataset 4: Human Activity Recognition (BiGRU)}{137}{subsubsection.4.3.4}%
-\contentsline {paragraph}{\numberline {3.4.1}Thực nghiệm: Phân loại Hành động Con người (HAR) với Mạng Bidirectional GRU}{137}{paragraph.4.3.4.1}%
-\contentsline {paragraph}{\numberline {3.4.2}Khai báo thư viện và Cấu hình ban đầu}{137}{paragraph.4.3.4.2}%
-\contentsline {paragraph}{\numberline {3.4.3}Tiền xử lý và Khám phá Dữ liệu (EDA)}{138}{paragraph.4.3.4.3}%
-\contentsline {paragraph}{\numberline {3.4.4}Chuẩn bị Dữ liệu Huấn luyện (Data Preparation)}{142}{paragraph.4.3.4.4}%
-\contentsline {paragraph}{\numberline {3.4.5}Xây dựng Kiến trúc Mô hình (BiGRU - Bidirectional GRU)}{143}{paragraph.4.3.4.5}%
-\contentsline {paragraph}{\numberline {3.4.6}Huấn luyện Mô hình}{144}{paragraph.4.3.4.6}%
-\contentsline {paragraph}{\numberline {3.4.7}Đánh giá Mô hình và Phân tích Sự Nhầm lẫn}{145}{paragraph.4.3.4.7}%
-\contentsline {paragraph}{\numberline {3.4.8}Phân phối Độ tự tin (Confidence Distribution)}{148}{paragraph.4.3.4.8}%
-\contentsline {subsubsection}{\numberline {3.5}Dataset 5: Phân tích Cảm xúc IMDB Reviews (BiLSTM)}{150}{subsubsection.4.3.5}%
-\contentsline {paragraph}{\numberline {3.5.1}Thực nghiệm: Phân tích Cảm xúc Đánh giá Phim (IMDB) với Mạng Bidirectional LSTM}{150}{paragraph.4.3.5.1}%
-\contentsline {paragraph}{\numberline {3.5.2}Khai báo thư viện và Cấu hình ban đầu}{150}{paragraph.4.3.5.2}%
-\contentsline {paragraph}{\numberline {3.5.3}Tải dữ liệu và Khám phá ban đầu (EDA)}{151}{paragraph.4.3.5.3}%
-\contentsline {paragraph}{\numberline {3.5.4}Phân tích WordCloud theo Cảm xúc}{153}{paragraph.4.3.5.4}%
-\contentsline {paragraph}{\numberline {3.5.5}Tokenization và Padding chuỗi văn bản}{154}{paragraph.4.3.5.5}%
-\contentsline {paragraph}{\numberline {3.5.6}Xây dựng Kiến trúc Mô hình (Bidirectional LSTM)}{155}{paragraph.4.3.5.6}%
-\contentsline {paragraph}{\numberline {3.5.7}Huấn luyện Mô hình}{156}{paragraph.4.3.5.7}%
-\contentsline {paragraph}{\numberline {3.5.8}Đánh giá Mô hình và Ma trận Nhầm lẫn}{158}{paragraph.4.3.5.8}%
-\contentsline {paragraph}{\numberline {3.5.9}Kiểm tra Suy luận Thực tế (Inference Demo)}{159}{paragraph.4.3.5.9}%
-\contentsline {paragraph}{\numberline {3.5.10}So sánh và Đánh giá 3 kiến trúc học sâu trên tập dữ liệu IMDB}{160}{paragraph.4.3.5.10}%
-\contentsline {subsection}{\numberline {4}So sánh và Đánh giá tổng hợp (Benchmarking)}{161}{subsection.4.4}%
-\contentsline {subsection}{\numberline {5}Tổng kết Chương 4}{161}{subsection.4.5}%
-\contentsline {section}{KẾT LUẬN}{162}{section*.1}%
-\contentsline {section}{TÀI LIỆU THAM KHẢO}{163}{section*.2}%
+\contentsline {subsubsection}{\numberline {5.2}Dataset 2: Telco Churn (Tabular - Class Imbalance \& SMOTE)}{24}{subsubsection.1.5.2}%
+\contentsline {paragraph}{\numberline {5.2.1}Phân tích bộ dữ liệu Telco Customer Churn}{24}{paragraph.1.5.2.1}%
+\contentsline {paragraph}{\numberline {5.2.2}Thiết lập Môi trường và Tải Dữ liệu}{24}{paragraph.1.5.2.2}%
+\contentsline {paragraph}{\numberline {5.2.3}Phân tích Khám phá Dữ liệu (EDA)}{26}{paragraph.1.5.2.3}%
+\contentsline {paragraph}{\numberline {5.2.4}Tiền xử lý và Cân bằng Dữ liệu (SMOTE)}{28}{paragraph.1.5.2.4}%
+\contentsline {paragraph}{\numberline {5.2.5}Huấn luyện và Đánh giá Mô hình}{30}{paragraph.1.5.2.5}%
+\contentsline {subsubsection}{\numberline {5.3}Dataset 3: Credit Card Fraud (Anomaly - Precision-Recall Focus)}{33}{subsubsection.1.5.3}%
+\contentsline {paragraph}{\numberline {5.3.1}Phân tích bộ dữ liệu Credit Card Fraud Detection}{33}{paragraph.1.5.3.1}%
+\contentsline {paragraph}{\numberline {5.3.2}Thiết lập Môi trường và Tải Dữ liệu}{33}{paragraph.1.5.3.2}%
+\contentsline {paragraph}{\numberline {5.3.3}Phân tích Khám phá Dữ liệu (EDA)}{34}{paragraph.1.5.3.3}%
+\contentsline {paragraph}{\numberline {5.3.4}Tiền xử lý và Cân bằng Trọng số (Class Weights)}{37}{paragraph.1.5.3.4}%
+\contentsline {paragraph}{\numberline {5.3.5}Huấn luyện Mô hình và Đánh giá (Modeling)}{38}{paragraph.1.5.3.5}%
+\contentsline {subsubsection}{\numberline {5.4}Dataset 4: Adult Census (Categorical - Target Encoding)}{39}{subsubsection.1.5.4}%
+\contentsline {paragraph}{\numberline {5.4.1}Phân tích bộ dữ liệu Adult Census Income}{39}{paragraph.1.5.4.1}%
+\contentsline {paragraph}{\numberline {5.4.2}Thiết lập Môi trường và Tải Dữ liệu}{40}{paragraph.1.5.4.2}%
+\contentsline {paragraph}{\numberline {5.4.3}Phân tích Khám phá Dữ liệu (EDA)}{40}{paragraph.1.5.4.3}%
+\contentsline {paragraph}{\numberline {5.4.4}Kỹ thuật Target Encoding cho biến High Cardinality}{42}{paragraph.1.5.4.4}%
+\contentsline {paragraph}{\numberline {5.4.5}Huấn luyện Mô hình và Đánh giá}{43}{paragraph.1.5.4.5}%
+\contentsline {subsection}{\numberline {6}Tổng kết Chương 1}{45}{subsection.1.6}%
+\contentsline {section}{\numberline {II}MẠNG NƠ-RON TÍCH CHẬP (CNN - DEEP VISION)}{46}{section.2}%
+\contentsline {subsection}{\numberline {1}Tổng quan về Mạng Nơ-ron Tích chập (CNN)}{46}{subsection.2.1}%
+\contentsline {subsubsection}{\numberline {1.1}Cấu trúc cơ bản của CNN}{46}{subsubsection.2.1.1}%
+\contentsline {subsection}{\numberline {2}Lịch sử phát triển và các kiến trúc kinh điển}{46}{subsection.2.2}%
+\contentsline {subsection}{\numberline {3}Kỹ thuật Học chuyển đổi (Transfer Learning)}{47}{subsection.2.3}%
+\contentsline {subsection}{\numberline {4}Thực nghiệm chuyên sâu trên 4 Datasets \& 4 Models}{47}{subsection.2.4}%
+\contentsline {subsubsection}{\numberline {4.1}Dataset 1: Intel Image Classification (Custom CNN)}{47}{subsubsection.2.4.1}%
+\contentsline {paragraph}{\numberline {4.1.1}Phân loại cảnh quan tự nhiên (Intel Image Classification)}{47}{paragraph.2.4.1.1}%
+\contentsline {paragraph}{\numberline {4.1.2}Thiết lập Môi trường và Dữ liệu}{47}{paragraph.2.4.1.2}%
+\contentsline {paragraph}{\numberline {4.1.3}Khám phá Phân phối Tập dữ liệu (EDA)}{48}{paragraph.2.4.1.3}%
+\contentsline {paragraph}{\numberline {4.1.4}Data Augmentation và Image Data Generators}{50}{paragraph.2.4.1.4}%
+\contentsline {paragraph}{\numberline {4.1.5}Xây dựng Kiến trúc Mạng Custom CNN}{52}{paragraph.2.4.1.5}%
+\contentsline {paragraph}{\numberline {4.1.6}Huấn luyện Mô hình và Điều khiển Lịch trình (Callbacks)}{53}{paragraph.2.4.1.6}%
+\contentsline {paragraph}{\numberline {4.1.7}Đánh giá Mô hình (Model Evaluation)}{54}{paragraph.2.4.1.7}%
+\contentsline {subsubsection}{\numberline {4.2}Dataset 2: Flowers-102 (MobileNetV2 - Transfer Learning)}{56}{subsubsection.2.4.2}%
+\contentsline {paragraph}{\numberline {4.2.1}Phân loại các loài hoa bằng Học chuyển giao (Transfer Learning với MobileNetV2)}{56}{paragraph.2.4.2.1}%
+\contentsline {paragraph}{\numberline {4.2.2}Thiết lập Môi trường và Phân tích Dữ liệu (EDA)}{57}{paragraph.2.4.2.2}%
+\contentsline {paragraph}{\numberline {4.2.3}Tiền xử lý và Data Augmentation}{60}{paragraph.2.4.2.3}%
+\contentsline {paragraph}{\numberline {4.2.4}Giai đoạn 1: Trích xuất Đặc trưng (Feature Extraction với Frozen Base)}{60}{paragraph.2.4.2.4}%
+\contentsline {paragraph}{\numberline {4.2.5}Giai đoạn 2: Tinh chỉnh tinh vi (Fine-Tuning)}{61}{paragraph.2.4.2.5}%
+\contentsline {paragraph}{\numberline {4.2.6}Đánh giá Mô hình (Confusion Matrix)}{63}{paragraph.2.4.2.6}%
+\contentsline {subsubsection}{\numberline {4.3}Dataset 3: Chest X-Ray Pneumonia (ResNet-50 - Fine-tuning)}{65}{subsubsection.2.4.3}%
+\contentsline {paragraph}{\numberline {4.3.1}Chẩn đoán Viêm phổi qua Ảnh X-Quang (Chest X-Ray Pneumonia với ResNet50)}{65}{paragraph.2.4.3.1}%
+\contentsline {paragraph}{\numberline {4.3.2}Thiết lập Hệ thống và Khám phá Dữ liệu}{65}{paragraph.2.4.3.2}%
+\contentsline {paragraph}{\numberline {4.3.3}Chuẩn bị Tiền xử lý và Bù đắp Mất cân bằng (Class Weights)}{68}{paragraph.2.4.3.3}%
+\contentsline {paragraph}{\numberline {4.3.4}Kiến trúc ResNet50 (Residual Network)}{69}{paragraph.2.4.3.4}%
+\contentsline {paragraph}{\numberline {4.3.5}Huấn luyện Mô hình Y tế}{69}{paragraph.2.4.3.5}%
+\contentsline {paragraph}{\numberline {4.3.6}Đánh giá Mô hình Y tế (Confusion Matrix \& ROC Curve)}{71}{paragraph.2.4.3.6}%
+\contentsline {subsubsection}{\numberline {4.4}Dataset 4: Natural Images (EfficientNet-B0 \& Grad-CAM)}{74}{subsubsection.2.4.4}%
+\contentsline {paragraph}{\numberline {4.4.1}Phân loại ảnh Tự nhiên (Natural Images) với EfficientNetB0 và Explainable AI (Grad-CAM)}{74}{paragraph.2.4.4.1}%
+\contentsline {paragraph}{\numberline {4.4.2}Thiết lập Cấu hình và Môi trường}{74}{paragraph.2.4.4.2}%
+\contentsline {paragraph}{\numberline {4.4.3}Khám phá và Trực quan hóa Dữ liệu (EDA)}{75}{paragraph.2.4.4.3}%
+\contentsline {paragraph}{\numberline {4.4.4}Data Augmentation nâng cao và Preprocessing}{79}{paragraph.2.4.4.4}%
+\contentsline {paragraph}{\numberline {4.4.5}Kiến trúc EfficientNetB0 (Transfer Learning)}{80}{paragraph.2.4.4.5}%
+\contentsline {paragraph}{\numberline {4.4.6}Chiến lược Huấn luyện 2 Giai đoạn (Two-Phase Training)}{81}{paragraph.2.4.4.6}%
+\contentsline {paragraph}{\numberline {4.4.7}Đánh giá Confusion Matrix}{82}{paragraph.2.4.4.7}%
+\contentsline {paragraph}{\numberline {4.4.8}Explainable AI: Trực quan hóa Giải thích với Grad-CAM}{84}{paragraph.2.4.4.8}%
+\contentsline {subsection}{\numberline {5}So sánh và Đánh giá tổng hợp (Benchmarking)}{87}{subsection.2.5}%
+\contentsline {subsection}{\numberline {6}Tổng kết Chương 2}{87}{subsection.2.6}%
+\contentsline {section}{\numberline {III}MẠNG NƠ-RON HỒI QUY (RNN - TEMPORAL CONTEXT)}{88}{section.3}%
+\contentsline {subsection}{\numberline {1}Tổng quan về Mạng nơ-ron hồi quy (RNN)}{88}{subsection.3.1}%
+\contentsline {subsection}{\numberline {2}Lịch sử phát triển và các kiến trúc kinh điển}{88}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3}Vấn đề Tiêu biến Đạo hàm và Giải pháp Cổng (Gates)}{88}{subsection.3.3}%
+\contentsline {subsection}{\numberline {4}Kỹ thuật Nhúng từ vựng (Word Embeddings và GloVe)}{89}{subsection.3.4}%
+\contentsline {subsection}{\numberline {5}Thực nghiệm chuyên sâu trên 2 Datasets \& 3 Models}{89}{subsection.3.5}%
+\contentsline {subsubsection}{\numberline {5.1}Dataset 1: Stock Market Sentiment (Vanilla RNN)}{89}{subsubsection.3.5.1}%
+\contentsline {paragraph}{\numberline {5.1.1}Thực nghiệm: Dự đoán Cảm xúc Thị trường Chứng khoán (Stock Market Sentiment) bằng mạng Hồi quy (RNN)}{89}{paragraph.3.5.1.1}%
+\contentsline {paragraph}{\numberline {5.1.2}Thiết lập Môi trường và Load dữ liệu}{89}{paragraph.3.5.1.2}%
+\contentsline {paragraph}{\numberline {5.1.3}Khám phá Dữ liệu Văn bản (EDA)}{91}{paragraph.3.5.1.3}%
+\contentsline {paragraph}{\numberline {5.1.4}Kỹ thuật Tiền xử lý nhiễu Tài chính (Domain-Specific Text Cleaning)}{92}{paragraph.3.5.1.4}%
+\contentsline {paragraph}{\numberline {5.1.5}Kỹ thuật Vector hóa (Tokenization) và Word Embedding}{94}{paragraph.3.5.1.5}%
+\contentsline {paragraph}{\numberline {5.1.6}Xây dựng Kiến trúc Bidirectional SimpleRNN}{95}{paragraph.3.5.1.6}%
+\contentsline {paragraph}{\numberline {5.1.7}Đánh giá Quá trình Huấn luyện và Biểu đồ Lịch sử}{95}{paragraph.3.5.1.7}%
+\contentsline {paragraph}{\numberline {5.1.8}Kết quả Confusion Matrix và Phân tích t-SNE Không gian Vector}{97}{paragraph.3.5.1.8}%
+\contentsline {subsubsection}{\numberline {5.2}Dataset 2: IMDB Movie Reviews (Stacked RNN)}{100}{subsubsection.3.5.2}%
+\contentsline {paragraph}{\numberline {5.2.1}Thực nghiệm: Xếp chồng các lớp Hồi quy (Stacked Bidirectional RNN)}{100}{paragraph.3.5.2.1}%
+\contentsline {paragraph}{\numberline {5.2.2}Tiền xử lý Dữ liệu}{100}{paragraph.3.5.2.2}%
+\contentsline {paragraph}{\numberline {5.2.3}Xây dựng Kiến trúc Stacked BiRNN}{101}{paragraph.3.5.2.3}%
+\contentsline {paragraph}{\numberline {5.2.4}Quá trình Huấn luyện và Sự Gục ngã (Vanishing Gradient)}{102}{paragraph.3.5.2.4}%
+\contentsline {paragraph}{\numberline {5.2.5}Đánh giá Confusion Matrix}{103}{paragraph.3.5.2.5}%
+\contentsline {subsubsection}{\numberline {5.3}Dataset 2 (Tiếp theo): IMDB Movie Reviews (Bidirectional GRU)}{104}{subsubsection.3.5.3}%
+\contentsline {paragraph}{\numberline {5.3.1}Thực nghiệm: Đánh giá Phim IMDB với mạng Hồi quy có cổng (BiGRU)}{104}{paragraph.3.5.3.1}%
+\contentsline {paragraph}{\numberline {5.3.2}Thiết lập Môi trường và Đọc Dữ liệu}{104}{paragraph.3.5.3.2}%
+\contentsline {paragraph}{\numberline {5.3.3}Khám phá Phân phối Dữ liệu (EDA)}{106}{paragraph.3.5.3.3}%
+\contentsline {paragraph}{\numberline {5.3.4}Tinh chỉnh Stopwords (Domain-Specific Filter)}{106}{paragraph.3.5.3.4}%
+\contentsline {paragraph}{\numberline {5.3.5}Khởi tạo GloVe Word Embedding}{108}{paragraph.3.5.3.5}%
+\contentsline {paragraph}{\numberline {5.3.6}Kiến trúc BiGRU và Hiệu suất}{109}{paragraph.3.5.3.6}%
+\contentsline {paragraph}{\numberline {5.3.7}Đánh giá Confusion Matrix và ROC-AUC}{110}{paragraph.3.5.3.7}%
+\contentsline {subsection}{\numberline {6}So sánh và Đánh giá tổng hợp (Benchmarking)}{112}{subsection.3.6}%
+\contentsline {subsection}{\numberline {7}Tổng kết Chương 3}{112}{subsection.3.7}%
+\contentsline {section}{\numberline {IV}MẠNG LSTM VÀ CƠ CHẾ ATTENTION (LONG-TERM MEMORY)}{113}{section.4}%
+\contentsline {subsection}{\numberline {1}Tổng quan về Kiến trúc Long Short-Term Memory (LSTM)}{113}{subsection.4.1}%
+\contentsline {subsection}{\numberline {2}Bài toán Dự báo Chuỗi thời gian (Time Series Forecasting)}{113}{subsection.4.2}%
+\contentsline {subsection}{\numberline {3}Sự kết hợp mạnh mẽ: Conv1D, Bi-directional và Cơ chế Attention}{114}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4}Thực nghiệm chuyên sâu trên 5 Datasets \& 5 Models}{114}{subsection.4.4}%
+\contentsline {subsubsection}{\numberline {4.1}Dataset 1: Beijing Air Quality (LSTM Multi-variate)}{114}{subsubsection.4.4.1}%
+\contentsline {paragraph}{\numberline {4.1.1}Thực nghiệm: Dự báo Chất lượng Không khí (PM2.5) Đa biến với Mạng LSTM}{114}{paragraph.4.4.1.1}%
+\contentsline {paragraph}{\numberline {4.1.2}Khám phá Dữ liệu Chuỗi thời gian (Time Series EDA)}{114}{paragraph.4.4.1.2}%
+\contentsline {paragraph}{\numberline {4.1.3}Tương quan Đa biến (Multivariate Correlation)}{115}{paragraph.4.4.1.3}%
+\contentsline {paragraph}{\numberline {4.1.4}Cấu trúc Cửa sổ Trượt (Sliding Window) và LSTM}{116}{paragraph.4.4.1.4}%
+\contentsline {paragraph}{\numberline {4.1.5}Lịch sử Huấn luyện}{117}{paragraph.4.4.1.5}%
+\contentsline {paragraph}{\numberline {4.1.6}Trực quan hóa Kết quả Dự báo và Đánh giá}{117}{paragraph.4.4.1.6}%
+\contentsline {subsubsection}{\numberline {4.2}Dataset 2: Google Stock Price (Conv1D + LSTM)}{119}{subsubsection.4.4.2}%
+\contentsline {paragraph}{\numberline {4.2.1}Thực nghiệm: Dự báo Giá cổ phiếu Google với kiến trúc Hybrid Conv1D-LSTM}{119}{paragraph.4.4.2.1}%
+\contentsline {paragraph}{\numberline {4.2.2}Khai báo thư viện và Cấu hình ban đầu}{119}{paragraph.4.4.2.2}%
+\contentsline {paragraph}{\numberline {4.2.3}Tải và Làm sạch Dữ liệu (Data Preprocessing)}{120}{paragraph.4.4.2.3}%
+\contentsline {paragraph}{\numberline {4.2.4}Phân tích Kỹ thuật và Biến động (Financial EDA)}{121}{paragraph.4.4.2.4}%
+\contentsline {paragraph}{\numberline {4.2.5}Tái cấu trúc Chuỗi thời gian (Look-back Window)}{124}{paragraph.4.4.2.5}%
+\contentsline {paragraph}{\numberline {4.2.6}Kiến trúc lai Hybrid Conv1D và LSTM}{125}{paragraph.4.4.2.6}%
+\contentsline {paragraph}{\numberline {4.2.7}Kết quả Huấn luyện và Đánh giá Mô hình}{126}{paragraph.4.4.2.7}%
+\contentsline {subsubsection}{\numberline {4.3}Dataset 3: Energy Consumption (LSTM + Attention)}{130}{subsubsection.4.4.3}%
+\contentsline {paragraph}{\numberline {4.3.1}Thực nghiệm: Dự báo Tiêu thụ Năng lượng (Energy Consumption) với kiến trúc LSTM và Cơ chế Chú ý (Attention Mechanism)}{130}{paragraph.4.4.3.1}%
+\contentsline {paragraph}{\numberline {4.3.2}Khai báo thư viện và Cấu hình ban đầu}{131}{paragraph.4.4.3.2}%
+\contentsline {paragraph}{\numberline {4.3.3}Tiền xử lý và Khám phá Dữ liệu (EDA)}{131}{paragraph.4.4.3.3}%
+\contentsline {paragraph}{\numberline {4.3.4}Chuẩn bị Dữ liệu Huấn luyện}{137}{paragraph.4.4.3.4}%
+\contentsline {paragraph}{\numberline {4.3.5}Xây dựng Kiến trúc Mô hình (LSTM + Attention)}{137}{paragraph.4.4.3.5}%
+\contentsline {paragraph}{\numberline {4.3.6}Huấn luyện Mô hình}{138}{paragraph.4.4.3.6}%
+\contentsline {paragraph}{\numberline {4.3.7}Đánh giá Kết quả Dự báo}{139}{paragraph.4.4.3.7}%
+\contentsline {paragraph}{\numberline {4.3.8}Khả năng Giải thích của Mô hình (Explainable AI - XAI)}{141}{paragraph.4.4.3.8}%
+\contentsline {subsubsection}{\numberline {4.4}Dataset 4: Human Activity Recognition (BiGRU)}{143}{subsubsection.4.4.4}%
+\contentsline {paragraph}{\numberline {4.4.1}Thực nghiệm: Phân loại Hành động Con người (HAR) với Mạng Bidirectional GRU}{143}{paragraph.4.4.4.1}%
+\contentsline {paragraph}{\numberline {4.4.2}Khai báo thư viện và Cấu hình ban đầu}{144}{paragraph.4.4.4.2}%
+\contentsline {paragraph}{\numberline {4.4.3}Tiền xử lý và Khám phá Dữ liệu (EDA)}{144}{paragraph.4.4.4.3}%
+\contentsline {paragraph}{\numberline {4.4.4}Chuẩn bị Dữ liệu Huấn luyện (Data Preparation)}{149}{paragraph.4.4.4.4}%
+\contentsline {paragraph}{\numberline {4.4.5}Xây dựng Kiến trúc Mô hình (BiGRU - Bidirectional GRU)}{149}{paragraph.4.4.4.5}%
+\contentsline {paragraph}{\numberline {4.4.6}Huấn luyện Mô hình}{150}{paragraph.4.4.4.6}%
+\contentsline {paragraph}{\numberline {4.4.7}Đánh giá Mô hình và Phân tích Sự Nhầm lẫn}{151}{paragraph.4.4.4.7}%
+\contentsline {paragraph}{\numberline {4.4.8}Phân phối Độ tự tin (Confidence Distribution)}{154}{paragraph.4.4.4.8}%
+\contentsline {subsubsection}{\numberline {4.5}Dataset 5: Phân tích Cảm xúc IMDB Reviews (BiLSTM)}{156}{subsubsection.4.4.5}%
+\contentsline {paragraph}{\numberline {4.5.1}Thực nghiệm: Phân tích Cảm xúc Đánh giá Phim (IMDB) với Mạng Bidirectional LSTM}{156}{paragraph.4.4.5.1}%
+\contentsline {paragraph}{\numberline {4.5.2}Khai báo thư viện và Cấu hình ban đầu}{156}{paragraph.4.4.5.2}%
+\contentsline {paragraph}{\numberline {4.5.3}Tải dữ liệu và Khám phá ban đầu (EDA)}{157}{paragraph.4.4.5.3}%
+\contentsline {paragraph}{\numberline {4.5.4}Phân tích WordCloud theo Cảm xúc}{159}{paragraph.4.4.5.4}%
+\contentsline {paragraph}{\numberline {4.5.5}Tokenization và Padding chuỗi văn bản}{160}{paragraph.4.4.5.5}%
+\contentsline {paragraph}{\numberline {4.5.6}Xây dựng Kiến trúc Mô hình (Bidirectional LSTM)}{161}{paragraph.4.4.5.6}%
+\contentsline {paragraph}{\numberline {4.5.7}Huấn luyện Mô hình}{162}{paragraph.4.4.5.7}%
+\contentsline {paragraph}{\numberline {4.5.8}Đánh giá Mô hình và Ma trận Nhầm lẫn}{163}{paragraph.4.4.5.8}%
+\contentsline {paragraph}{\numberline {4.5.9}Kiểm tra Suy luận Thực tế (Inference Demo)}{164}{paragraph.4.4.5.9}%
+\contentsline {paragraph}{\numberline {4.5.10}So sánh và Đánh giá 3 kiến trúc học sâu trên tập dữ liệu IMDB}{165}{paragraph.4.4.5.10}%
+\contentsline {subsection}{\numberline {5}So sánh và Đánh giá tổng hợp (Benchmarking)}{166}{subsection.4.5}%
+\contentsline {subsection}{\numberline {6}Tổng kết Chương 4}{167}{subsection.4.6}%
+\contentsline {section}{KẾT LUẬN}{168}{section*.1}%
+\contentsline {section}{TÀI LIỆU THAM KHẢO}{169}{section*.2}%
