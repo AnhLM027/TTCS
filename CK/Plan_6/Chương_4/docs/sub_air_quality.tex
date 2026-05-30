@@ -1,137 +1,112 @@
-\paragraph{Thực nghiệm với Beijing Air Quality} \hfill \\
-Đây là bài toán dự báo đa biến (Multivariate Time Series Forecasting). Mục tiêu là dự báo nồng độ bụi mịn PM2.5 dựa trên các yếu tố lịch sử và khí tượng như nhiệt độ, áp suất, tốc độ gió.
+\paragraph{Thực nghiệm: Dự báo Chất lượng Không khí (PM2.5) Đa biến với Mạng LSTM} \hfill \\
 
-\paragraph{Mô hình Multivariate LSTM} \hfill \\
-Mô hình sử dụng cơ chế cửa sổ trượt (sliding window) với độ dài 24 giờ (\textbf{LOOK\_BACK = 24}) để dự báo giá trị cho giờ tiếp theo. Tổng số tham số là \textbf{121,665}.
+Chuỗi thời gian thực tế thường hiếm khi đứng độc lập mà chịu sự chi phối của hàng loạt các yếu tố môi trường (Đa biến - Multivariate). Trong bài toán này, chúng ta sẽ dự báo nồng độ bụi mịn PM2.5 tại Bắc Kinh dựa trên lịch sử của chính nó kết hợp với các biến số khí tượng học như Nhiệt độ, Áp suất, Điểm sương, và Tốc độ gió. Mạng \textbf{Long Short-Term Memory (LSTM)} với cơ chế Memory Cell (Tế bào ghi nhớ) sẽ được sử dụng để bắt lấy các mẫu hình (patterns) thay đổi theo mùa và ngày.
 
-\paragraph{Kết quả thực nghiệm} \hfill \\
-Mô hình đạt độ chính xác cực cao với \textbf{R² score là 0.9457}. Chỉ số \textbf{Test RMSE là 21.1601 µg/m³}.
+\paragraph{Khám phá Dữ liệu Chuỗi thời gian (Time Series EDA)} \hfill \\
+
+\begin{lstlisting}[style=pythoncode, caption={Load dữ liệu PM2.5 và khởi tạo Datetime Index}]
+# Load and combine if multiple files
+dfs = [pd.read_csv(f) for f in csv_files]
+df = pd.concat(dfs, ignore_index=True) if len(dfs) > 1 else dfs[0]
+
+# Build datetime index directly
+df.index = pd.to_datetime(df[['year', 'month', 'day', 'hour']])
+df = df.dropna(subset=['pm2.5'])
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_4/results/beijing_air_quality/01_time_series_eda.png}
-        \caption{Biến thiên nồng độ PM2.5 theo thời gian}
-        \label{fig:air_eda}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_4/results/beijing_air_quality/02_correlation_heatmap.png}
-        \caption{Tương quan giữa các yếu tố khí tượng}
-        \label{fig:air_corr}
-    \end{minipage}
+    \includegraphics[width=\linewidth]{Chương_4/results/beijing_air_quality/01_time_series_eda.png}
+    \caption{Phân phối và Chu kỳ của nồng độ PM2.5 theo thời gian}
+\end{figure}
+
+Biểu đồ EDA cho thấy nồng độ PM2.5 có sự biến động cực kỳ dữ dội, dao động từ mức rất thấp cho đến những đỉnh ô nhiễm cực đoan (lên tới gần 1000 $\mu g/m^3$). Ngoài ra, trung bình theo giờ cũng phản ánh chu kỳ hoạt động sinh hoạt trong ngày.
+
+\paragraph{Tương quan Đa biến (Multivariate Correlation)} \hfill \\
+
+\begin{lstlisting}[style=pythoncode, caption={Vẽ Heatmap tương quan giữa các biến khí tượng và PM2.5}]
+feature_cols = ['pm2.5', 'DEWP', 'TEMP', 'PRES', 'Iws', 'Is', 'Ir']
+df_feat = df[feature_cols].copy().fillna(method='ffill').fillna(0)
+
+fig, ax = plt.subplots(figsize=(10, 8))
+corr = df_feat.corr()
+mask = np.triu(np.ones_like(corr, dtype=bool))
+sns.heatmap(corr, mask=mask, annot=True, fmt='.2f', cmap='RdBu_r', center=0)
+plt.savefig('02_correlation_heatmap.png')
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Chương_4/results/beijing_air_quality/02_correlation_heatmap.png}
+    \caption{Ma trận tương quan giữa PM2.5 và các yếu tố thời tiết}
+\end{figure}
+
+Nhìn vào Heatmap, ta thấy PM2.5 có tương quan dương với Điểm sương (DEWP) và tương quan âm với Tốc độ gió (Iws). Gió mạnh giúp làm xua tan sương mù và bụi mịn, điều này hoàn toàn trùng khớp với các quy luật vật lý. Việc đưa các biến số này vào mô hình sẽ cung cấp cho LSTM góc nhìn toàn diện hơn.
+
+\paragraph{Cấu trúc Cửa sổ Trượt (Sliding Window) và LSTM} \hfill \\
+
+Để dự báo, chúng ta sử dụng kỹ thuật \textit{Sliding Window} với \texttt{LOOK\_BACK = 24} (dùng 24 giờ quá khứ của toàn bộ 7 biến số để dự đoán lượng PM2.5 cho 1 giờ tiếp theo). Toàn bộ dữ liệu được chuẩn hóa bằng \texttt{MinMaxScaler}.
+
+\begin{lstlisting}[style=pythoncode, caption={Khởi tạo tập dữ liệu đa biến và mô hình 2 tầng LSTM}]
+def create_multivariate_dataset(data, look_back, target_idx):
+    X, y = [], []
+    for i in range(len(data) - look_back):
+        X.append(data[i:i+look_back, :])        # 24 steps of 7 features
+        y.append(data[i+look_back, target_idx]) # PM2.5 of the next step
+    return np.array(X), np.array(y)
+
+X_all, y_all = create_multivariate_dataset(data_scaled, LOOK_BACK=24, target_idx=0)
+
+model = models.Sequential([
+    layers.LSTM(128, return_sequences=True, input_shape=(24, 7)),
+    layers.BatchNormalization(),
+    layers.Dropout(0.3),
+    layers.LSTM(64, return_sequences=False),
+    layers.Dropout(0.3),
+    layers.Dense(32, activation='relu'),
+    layers.Dense(1)
+])
+model.compile(optimizer=tf.keras.optimizers.Adam(1e-3), loss='mse', metrics=['mae'])
+\end{lstlisting}
+
+Thay vì bị sụp đổ bởi Triệt tiêu đạo hàm (Vanishing Gradient) như SimpleRNN, kiến trúc LSTM sở hữu bộ \textit{Forget Gate} (Cửa quên) và \textit{Input Gate} (Cửa đầu vào), cho phép mô hình duy trì luồng thông tin liên tục qua 24 bước thời gian mà không bị phai nhạt.
+
+\paragraph{Lịch sử Huấn luyện} \hfill \\
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_4/results/beijing_air_quality/03_training_history.png}
+    \caption{Đồ thị Training Loss và MAE}
+\end{figure}
+
+Với LSTM, quá trình hội tụ diễn ra vô cùng mượt mà. Ngay từ Epoch thứ 5, hàm Loss (MSE) đã tiệm cận về mức rất thấp. Việc sử dụng EarlyStopping kết hợp ReduceLROnPlateau đã giữ cho Validation Loss bám sát hoàn hảo với Training Loss, loại bỏ hoàn toàn hiện tượng Overfitting.
+
+\paragraph{Trực quan hóa Kết quả Dự báo và Đánh giá} \hfill \\
+
+Sau khi có kết quả dự báo ở thang đo chuẩn hóa (0-1), ta sử dụng hàm \texttt{inverse\_transform} để đưa dữ liệu quay về đơn vị $\mu g/m^3$ thực tế nhằm tính toán sai số.
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Các chỉ số hồi quy Regression Metrics}]
+RMSE : 22.7316 ug/m3
+MAE  : 13.8820 ug/m3
+R2   : 0.9373
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{Chương_4/results/beijing_air_quality/04_forecast_vs_actual.png}
+    \caption{Dự báo so với thực tế và Phân phối Sai số (Error Distribution)}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}{0.31\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_4/results/beijing_air_quality/03_training_history.png}
-        \caption{Lịch sử huấn luyện}
-        \label{fig:air_history}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.31\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_4/results/beijing_air_quality/04_forecast_vs_actual.png}
-        \caption{Dự báo vs Thực tế}
-        \label{fig:air_forecast}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.31\textwidth}
-        \centering
+    \begin{minipage}{0.48\textwidth}
         \includegraphics[width=\linewidth]{Chương_4/results/beijing_air_quality/05_scatter_actual_vs_pred.png}
-        \caption{Actual vs Predicted}
-        \label{fig:air_scatter}
+        \caption{Biểu đồ phân tán Scatter giữa Actual và Predicted}
     \end{minipage}
-\end{figure}
-
-
-\paragraph{Phụ lục: Quy trình thực nghiệm chi tiết} \hfill \\
-Dưới đây là các bước triển khai chi tiết trên môi trường Jupyter Notebook:
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/1.png}
-    \caption{Tải dữ liệu: Đọc file CSV chứa các chỉ số chất lượng không khí tại Bắc Kinh từ 2010-2014.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/2.png}
-    \caption{Kiểm tra dữ liệu thiếu: Xác định nồng độ PM2.5 bị thiếu tại một số thời điểm (NaN).}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/3.png}
-    \caption{Xử lý giá trị thiếu: Sử dụng phương pháp nội suy tuyến tính (Interpolation) để lấp đầy các khoảng trống dữ liệu.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/4.png}
-    \caption{EDA chuỗi thời gian: Trực quan hóa biến động PM2.5 qua các năm để thấy rõ tính mùa vụ và xu hướng.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/5.png}
-    \caption{Trích xuất đặc trưng thời gian: Chuyển đổi các cột Year, Month, Day thành các đặc trưng số học hỗ trợ mô hình.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/6.png}
-    \caption{Chuẩn hóa dữ liệu: Sử dụng MinMaxScaler để đưa các biến khí tượng về khoảng [0, 1] nhằm tối ưu hóa hội tụ.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/7.png}
-    \caption{Chuyển đổi sang học có giám sát: Tạo cấu trúc cửa sổ trượt (sliding window) với `LOOK\_BACK = 24` giờ.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/8.png}
-    \caption{Phân tách dữ liệu: Chia tập Train/Test theo trình tự thời gian để đảm bảo tính thực tế của dự báo.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/9.png}
-    \caption{Kiến trúc Multivariate LSTM: Định nghĩa mô hình với các lớp LSTM và Dense để xử lý dữ liệu đa biến.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/10.png}
-    \caption{Nhật ký huấn luyện: Theo dõi quá trình giảm hàm mất mát (Loss) qua từng Epoch trên cả hai tập dữ liệu.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/11.png}
-    \caption{Lịch sử hội tụ: Đồ thị MSE và MAE khẳng định mô hình học ổn định và hội tụ nhanh chóng.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/12.png}
-    \caption{Mã nguồn đánh giá: Triển khai các hàm vẽ biểu đồ so sánh Dự báo vs Thực tế và phân tích sai số.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/13.png}
-    \caption{Kết quả dự báo chi tiết: Đồ thị đường bám sát giá trị thực tế và biểu đồ phân phối sai số tập trung quanh mức 0.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/14.png}
-    \caption{Biểu đồ phân tán (Scatter Plot): Sự tương quan chặt chẽ giữa giá trị thực tế và dự đoán ($R^2 = 0.9457$).}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \vspace{10pt}
+        \textbf{Phân tích độ tin cậy:} \\
+        Chỉ số \textbf{R-squared ($R^2$) đạt mức xuất sắc 0.9373}, cho thấy mô hình đã giải thích được hơn 93.7\% sự biến thiên của dữ liệu thực tế. Biểu đồ Scatter cho thấy các điểm phân bố bám rất sát vào đường chéo lý tưởng (Perfect Forecast). Dù ở những mức độ ô nhiễm cực đoan (Peak) trên 300 $\mu g/m^3$, độ lệch có hơi nhích lên, nhưng với bài toán thời tiết nhiễu động như PM2.5, sai số trung bình (MAE) ở mức $13.88 \mu g/m^3$ là một thành tựu ấn tượng của mạng LSTM.
+    \end{minipage}
 \end{figure}

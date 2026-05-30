@@ -61,7 +61,7 @@ __MACOSX/
 *.pkl
 *.npy
 *.npz
-**/results/
+# **/results/
 **/output/
 
 # Logs
@@ -80,5 +80,5 @@ Thumbs.db
 *.toc
 *.out
 *.synctex.gz
-*.pdf
+**
 

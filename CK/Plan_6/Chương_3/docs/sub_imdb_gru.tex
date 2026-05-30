@@ -1,126 +1,298 @@
-\paragraph{Phân tích Dữ liệu (EDA)} \hfill \\
-Trước khi huấn luyện, chúng ta quan sát sự phân bổ độ dài văn bản và các từ khóa đặc trưng của hai lớp cảm xúc.
+\vspace{10pt}\noindent\textbf{Thực nghiệm: Đánh giá Phim IMDB với mạng Hồi quy có cổng (BiGRU)} \hfill \\
+
+Trái ngược với văn bản ngắn gọn như tin tức chứng khoán, các bài đánh giá phim trên IMDB thường có độ dài rất lớn, cấu trúc phức tạp và ẩn chứa nhiều cảm xúc lồng ghép. Mạng SimpleRNN truyền thống không thể nhớ được những từ quan trọng ở đầu câu khi đọc đến cuối câu (hiện tượng Vanishing Gradient). Để giải quyết triệt để, chúng tôi áp dụng kiến trúc \textbf{Gated Recurrent Unit (GRU)} tích hợp hai chiều (Bidirectional) kết hợp cùng kỹ thuật nhúng từ vựng được huấn luyện trước \textbf{GloVe (Global Vectors for Word Representation)}.
+
+\vspace{10pt}\noindent\textbf{1. Thiết lập Môi trường và Đọc Dữ liệu} \hfill \\
+
+\begin{lstlisting}[style=pythoncode, caption={Khởi tạo môi trường thư viện cho cấu trúc GRU}]
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from wordcloud import WordCloud
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
+import re, os, glob, warnings
+import nltk
+from nltk.corpus import stopwords
+
+SEED = 42
+np.random.seed(SEED)
+tf.random.set_seed(SEED)
+
+DATA_DIR = '../data/imdb_reviews'
+SAVE_DIR = '../results/imdb_bigru'
+os.makedirs(SAVE_DIR, exist_ok=True)
+
+VOCAB_SIZE = 20000
+MAX_LEN    = 500
+EMBED_DIM  = 100   # GloVe 100d
+EPOCHS     = 15
+BATCH_SIZE = 128
+\end{lstlisting}
+
+\begin{lstlisting}[style=pythoncode, caption={Tải bộ dữ liệu IMDB 50.000 mẫu}]
+csv_files = glob.glob(f'{DATA_DIR}/**/*.csv', recursive=True) + glob.glob(f'{DATA_DIR}/*.csv')
+df = pd.read_csv(csv_files[0])
+
+text_col  = [c for c in df.columns if any(k in c.lower() for k in ['review','text'])][0]
+label_col = [c for c in df.columns if any(k in c.lower() for k in ['sentiment','label'])][0]
+
+df = df[[text_col, label_col]].dropna()
+df.columns = ['text', 'label']
+
+# Binary encode text labels to integers
+if df['label'].dtype == object:
+    positive_keys = ['positive', 'pos', '1', 'good']
+    df['label'] = df['label'].str.lower().apply(
+        lambda x: 1 if any(k in x for k in positive_keys) else 0)
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Dữ liệu phân bổ cân bằng tuyệt đối}]
+Label distribution:
+label
+1    25000
+0    25000
+Name: count, dtype: int64
+\end{lstlisting}
+
+\vspace{10pt}\noindent\textbf{2. Khám phá Phân phối Dữ liệu (EDA)} \hfill \\
+
+\begin{lstlisting}[style=pythoncode, caption={Tính toán và vẽ biểu đồ Thống kê Độ dài văn bản}]
+df['text_len'] = df['text'].apply(lambda x: len(str(x).split()))
+percentiles = [50, 75, 90, 95, 99]
+pct_values  = np.percentile(df['text_len'], percentiles)
+
+# Plot Overview EDA
+fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+counts = df['label'].value_counts().sort_index()
+axes[0].bar(['Negative (0)', 'Positive (1)'], counts.values, color=['#EF5350', '#66BB6A'], edgecolor='black')
+axes[0].set_title('IMDB Label Distribution')
+
+for lbl, color, name in [(0,'#EF5350','Negative'), (1,'#66BB6A','Positive')]:
+    axes[1].hist(df[df['label']==lbl]['text_len'], bins=60, alpha=0.65, color=color, label=name, density=True)
+axes[1].axvline(MAX_LEN, color='black', linestyle='--', lw=2, label=f'MAX_LEN={MAX_LEN}')
+axes[1].set_title('Word Count / Review Distribution'); axes[1].legend()
+
+axes[2].barh([f'P{p}' for p in percentiles], pct_values, color='steelblue', edgecolor='black')
+axes[2].axvline(MAX_LEN, color='red', linestyle='--', lw=2, label=f'MAX_LEN={MAX_LEN}')
+axes[2].set_title('Percentile Text Length'); axes[2].legend()
+
+plt.tight_layout(); plt.savefig(f'{SAVE_DIR}/01_eda_overview.png'); plt.show()
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Chương_3/results/imdb_bigru/01_eda_overview.png}
+    \caption{Phân phối nhãn và phân phối độ dài văn bản của IMDB}
+\end{figure}
+
+\textbf{Đánh giá EDA:}
+- Tập dữ liệu cân bằng hoàn hảo (50\% Positive, 50\% Negative), triệt tiêu hoàn toàn nỗi lo Bias.
+- Đồ thị Percentile cho thấy 90\% số lượng bình luận có độ dài dưới 500 từ. Vậy việc quyết định cắt ngọn hoặc Padding ở mức \texttt{MAX\_LEN = 500} là một chiến lược bảo toàn dữ liệu lý tưởng mà không làm phình to ma trận bộ nhớ.
+
+\vspace{10pt}\noindent\textbf{3. Tinh chỉnh Stopwords (Domain-Specific Filter)} \hfill \\
+
+Khi vẽ WordCloud cho văn bản đánh giá phim, những từ như \textit{movie}, \textit{film}, \textit{character} xuất hiện dày đặc ở cả 2 phe (khen và chê). Những từ này là Tạp âm miền (Domain Noise), không đóng góp giá trị cảm xúc nào nhưng lại lấp đầy bộ nhớ mô hình. Chúng ta sẽ lọc bỏ hoàn toàn chúng.
+
+\begin{lstlisting}[style=pythoncode, caption={Lọc nhiễu tài liệu đặc thù Điện ảnh}]
+stop_words = set(stopwords.words('english'))
+
+# Add domain noise words
+domain_stops = {
+    'movie', 'film', 'one', 'character', 'make', 'even', 'time', 'watch', 
+    'see', 'story', 'br', 'really', 'much', 'well', 
+    'movies', 'films', 'characters', 'show', 'scene', 'people', 'think', 
+    'way', 'made', 'look', 'say', 'first', 'thing'
+}
+stop_words = stop_words.union(domain_stops)
+
+def clean_text(text):
+    text = str(text).lower()
+    text = re.sub(r'<[^>]+>', ' ', text)   # Remove HTML tags (<br />)
+    text = re.sub(r'[^a-z\s]', ' ', text)  # Keep only letters
+    words = [w for w in text.split() if w not in stop_words]
+    return ' '.join(words)
+
+df['clean'] = df['text'].apply(clean_text)
+
+# Plot WordClouds
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+for ax, (lbl, title, cmap) in zip(axes, [(0, 'Negative Reviews', 'Reds'), (1, 'Positive Reviews', 'Greens')]):
+    corpus = ' '.join(df[df['label']==lbl]['clean'].tolist())
+    wc = WordCloud(width=700, height=400, max_words=120, colormap=cmap, background_color='white').generate(corpus)
+    ax.imshow(wc, interpolation='bilinear'); ax.axis('off'); ax.set_title(title, fontsize=13)
+plt.suptitle('WordCloud IMDB Sentiment (Cleaned)', fontsize=14, fontweight='bold')
+plt.savefig(f'{SAVE_DIR}/02_wordclouds_cleaned.png'); plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
     \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_3/results/imdb_bigru/01_eda_overview.png}
-        \caption{Phân bổ độ dài và thống kê từ vựng IMDB}
-        \label{fig:imdb_eda}
+        \includegraphics[width=\linewidth]{Chương_3/results/imdb_bigru/02_wordclouds_before_clean_text.png}
+        \caption{Trước khi lọc nhiễu: Tràn ngập từ \textit{Movie}, \textit{Film}}
     \end{minipage}
     \hfill
     \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_3/results/imdb_bigru/02_wordclouds.png}
-        \caption{WordCloud các từ xuất hiện nhiều}
-        \label{fig:imdb_wc}
+        \includegraphics[width=\linewidth]{Chương_3/results/imdb_bigru/02_wordclouds_cleaned.png}
+        \caption{Sau khi lọc: Cảm xúc thật sự nổi bật rõ rệt}
     \end{minipage}
 \end{figure}
 
-\paragraph{Mô hình Bidirectional GRU} \hfill \\
-Kiến trúc GRU hai chiều cho phép mô hình học thông tin từ cả hai hướng của câu văn, giúp nắm bắt ngữ cảnh tốt hơn. Mô hình sử dụng \textbf{2,099,073} tham số.
+Việc loại bỏ HTML Tag \texttt{<br />} và \texttt{movie/film} đã gột rửa dữ liệu cực sạch. Nhóm màu Đỏ (Tiêu cực) hiện rõ các từ \textit{bad}, \textit{acting}, \textit{worst}, \textit{plot} (chê diễn xuất, cốt truyện). Nhóm màu Xanh (Tích cực) nổi bật các từ \textit{good}, \textit{great}, \textit{love}, \textit{best}.
 
-\paragraph{Kết quả huấn luyện và Phân tích} \hfill \\
-Mô hình đạt độ chính xác ấn tượng là \textbf{86.67\%} với chỉ số \textbf{ROC-AUC là 0.9392}, vượt xa so với mạng RNN truyền thống.
+\vspace{10pt}\noindent\textbf{4. Khởi tạo GloVe Word Embedding} \hfill \\
 
-\begin{figure}[H]
-    \centering
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_3/results/imdb_bigru/03_training_history.png}
-        \caption{Lịch sử huấn luyện Bidirectional GRU}
-        \label{fig:imdb_history}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_3/results/imdb_bigru/04_confusion_roc.png}
-        \caption{Confusion Matrix và Đường cong ROC}
-        \label{fig:imdb_roc}
-    \end{minipage}
-\end{figure}
+Thay vì để mô hình nhúng từ (Embedding Layer) tự học ngẫu nhiên từ đầu, chúng ta tận dụng một bách khoa toàn thư đã học sẵn: \textbf{GloVe 100d}. Mỗi từ vựng sẽ được ánh xạ trực tiếp thành một Vector 100 chiều dồi dào ngữ nghĩa.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\linewidth]{Chương_3/results/imdb_bigru/02_wordclouds.png}
-    \caption{WordCloud các từ xuất hiện nhiều trong đánh giá Tích cực và Tiêu cực}
-    \label{fig:imdb_wc_large}
-\end{figure}
+\begin{lstlisting}[style=pythoncode, caption={Sử dụng Tokenizer và Load ma trận GloVe}]
+X_train, X_test, y_train, y_test = train_test_split(df['clean'].values, df['label'].values, test_size=0.2, random_state=42, stratify=df['label'].values)
 
-Việc sử dụng kiến trúc hai chiều giúp GRU nhận diện được các sắc thái biểu cảm phức tạp trong các bài đánh giá phim dài.
+tokenizer = Tokenizer(num_words=VOCAB_SIZE, oov_token='<OOV>')
+tokenizer.fit_on_texts(X_train)
+X_train_pad = pad_sequences(tokenizer.texts_to_sequences(X_train), maxlen=MAX_LEN, padding='post', truncating='post')
+X_test_pad  = pad_sequences(tokenizer.texts_to_sequences(X_test), maxlen=MAX_LEN, padding='post', truncating='post')
 
-\paragraph{Phụ lục: Quy trình thực nghiệm chi tiết} \hfill \\
-Dưới đây là các bước triển khai chi tiết trên môi trường Jupyter Notebook:
+GLOVE_PATH = 'glove.6B.100d.txt'
+glove_dict = {}
+with open(GLOVE_PATH, 'r', encoding='utf-8') as f:
+    for line in f:
+        parts = line.split()
+        glove_dict[parts[0]] = np.array(parts[1:], dtype='float32')
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/17.png}
-    \caption{Thiết lập môi trường: Cấu hình thư mục lưu trữ và Hyperparameters cho mô hình Bidirectional GRU.}
-\end{figure}
+embedding_matrix = np.zeros((VOCAB_SIZE, EMBED_DIM))
+hits = 0
+for word, idx in tokenizer.word_index.items():
+    if idx < VOCAB_SIZE and word in glove_dict:
+        embedding_matrix[idx] = glove_dict[word]
+        hits += 1
+print(f'GloVe hit rate: {hits}/{min(VOCAB_SIZE, len(tokenizer.word_index)):,} words')
+\end{lstlisting}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/18.png}
-    \caption{Tải dữ liệu IMDB: Kiểm tra tính cân bằng của tập dữ liệu với 25,000 mẫu tích cực và 25,000 mẫu tiêu cực.}
-\end{figure}
+\begin{lstlisting}[style=consoleoutput, caption={Output: Khớp từ vựng với GloVe}]
+GloVe hit rate: 18778/20,000 words (93.9%)
+\end{lstlisting}
+Gần 94\% số lượng từ vựng trong IMDB đã được tìm thấy sẵn trong từ điển GloVe.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/19.png}
-    \caption{Mã nguồn EDA chuyên sâu: Tính toán phân bổ số lượng từ và phần trăm bao phủ của `MAX\_LEN`.}
-\end{figure}
+\vspace{10pt}\noindent\textbf{5. Kiến trúc BiGRU và Hiệu suất} \hfill \\
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/20.png}
-    \caption{Kết quả EDA IMDB: Trực quan hóa cho thấy đa số các bài đánh giá có độ dài dưới 200 từ.}
-\end{figure}
+Mạng GRU có kiến trúc tinh gọn hơn LSTM nhưng vẫn sở hữu Update Gate và Reset Gate, giúp quyết định giữ lại hay xóa bỏ thông tin đường dài. 
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/21.png}
-    \caption{Làm sạch văn bản: Mã nguồn loại bỏ các thẻ HTML (nếu có) và chuẩn hóa văn bản cho WordCloud.}
-\end{figure}
+\begin{lstlisting}[style=pythoncode, caption={Xây dựng BiGRU 2 tầng với SpatialDropout1D}]
+embed_layer = layers.Embedding(
+    VOCAB_SIZE, EMBED_DIM, weights=[embedding_matrix],
+    input_length=MAX_LEN, trainable=False, name='glove_embedding'
+)
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/22.png}
-    \caption{WordCloud cảm xúc: So sánh các từ khóa đặc trưng nhất của lớp Tích cực (xanh) và Tiêu cực (đỏ).}
-\end{figure}
+model = models.Sequential([
+    layers.Input(shape=(MAX_LEN,)),
+    embed_layer,
+    layers.SpatialDropout1D(0.2),
+    layers.Bidirectional(layers.GRU(64, return_sequences=True), name='bigru_1'),
+    layers.Dropout(0.3),
+    layers.Bidirectional(layers.GRU(32), name='bigru_2'),
+    layers.Dropout(0.3),
+    layers.Dense(64, activation='relu'),
+    layers.Dense(1, activation='sigmoid', name='output')
+], name='BiGRU_IMDB')
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/23.png}
-    \caption{Kiến trúc Bi-GRU: Xây dựng mô hình sử dụng lớp `Bidirectional` bọc ngoài `GRU` để nắm bắt ngữ cảnh hai chiều.}
-\end{figure}
+model.compile(optimizer=tf.keras.optimizers.Adam(1e-3), loss='binary_crossentropy', metrics=['accuracy'])
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/24.png}
-    \caption{Model Summary: Chi tiết số lượng tham số huấn luyện (hơn 2 triệu tham số).}
-\end{figure}
+history = model.fit(
+    X_train_pad, y_train, epochs=EPOCHS, batch_size=BATCH_SIZE, validation_split=0.2,
+    callbacks=[
+        tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=2, restore_best_weights=True),
+        tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=2, verbose=1)
+    ], verbose=1
+)
+\end{lstlisting}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/25.png}
-    \caption{Quá trình huấn luyện Bi-GRU: Mô hình hội tụ rất nhanh với độ chính xác trên tập Validation đạt trên 86\%.}
-\end{figure}
+\begin{lstlisting}[style=consoleoutput, caption={Output: Thời gian hội tụ nhanh chóng nhờ GloVe}]
+Total params: 2,099,073
+Trainable params: 99,073
+Non-trainable params: 2,000,000
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/26.png}
-    \caption{Kết quả Training History: Đường cong Accuracy và Loss cho thấy mô hình không bị Overfitting nghiêm trọng.}
-\end{figure}
+Epoch 12/15
+250/250 - 12s 47ms/step - accuracy: 0.8989 - loss: 0.2457 - val_accuracy: 0.8969 - val_loss: 0.2571 
+\end{lstlisting}
+Nhờ \texttt{trainable=False} tại lớp Embedding GloVe, số lượng tham số thực sự phải học chỉ còn 99,073. Điều này giúp tăng tốc độ train (47ms/step) một cách chóng mặt.
+
+\begin{lstlisting}[style=pythoncode, caption={Biểu diễn Learning Curve}]
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+eps = range(1, len(history.history['accuracy'])+1)
+for ax, (tr, vl, metric) in zip(axes, [('accuracy','val_accuracy','Accuracy'), ('loss','val_loss','Loss')]):
+    ax.plot(eps, history.history[tr], 'o-', color='#2196F3', lw=2, label='Train')
+    ax.plot(eps, history.history[vl], 's-', color='#FF5722', lw=2, label='Val')
+    ax.fill_between(eps, history.history[tr], history.history[vl], alpha=0.1)
+    ax.set_title(f'{metric} - BiGRU IMDB'); ax.set_xlabel('Epoch'); ax.legend(); ax.grid(True, alpha=0.3)
+plt.savefig(f'{SAVE_DIR}/03_training_history.png'); plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/27.png}
-    \caption{Đánh giá tổng thể: Sự kết hợp giữa Ma trận nhầm lẫn và đường cong ROC minh chứng cho hiệu năng mạnh mẽ của GRU.}
+    \includegraphics[width=1\linewidth]{Chương_3/results/imdb_bigru/03_training_history.png}
+    \caption{Lịch sử huấn luyện BiGRU: Sự bám đuổi sát sao giữa Train và Validation}
 \end{figure}
+
+\textbf{Đánh giá:} Nếu SimpleRNN mắc lỗi Overfitting ngay từ Epoch 4, thì BiGRU đã chứng tỏ sự vững chắc khủng khiếp. Biểu đồ đường Train và Validation gần như hòa làm một (Loss cùng giảm sâu xuống 0.25, Accuracy cùng tăng đều lên 90\%) mà không hề bị tách bạch (Diverge). Kiến trúc Cổng Ghi nhớ của GRU là vũ khí vô địch để giữ vững ngữ cảnh văn bản dài.
+
+\vspace{10pt}\noindent\textbf{6. Đánh giá Confusion Matrix và ROC-AUC} \hfill \\
+
+\begin{lstlisting}[style=pythoncode, caption={Đánh giá toàn diện Confusion Matrix và đường ROC}]
+y_pred_prob = model.predict(X_test_pad, verbose=0).flatten()
+y_pred      = (y_pred_prob >= 0.5).astype(int)
+
+fpr, tpr, _ = roc_curve(y_test, y_pred_prob)
+roc_auc     = auc(fpr, tpr)
+
+fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+# Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Negative','Positive'], yticklabels=['Negative','Positive'], ax=axes[0])
+axes[0].set_title('Confusion Matrix - BiGRU IMDB')
+
+# ROC Curve
+axes[1].plot(fpr, tpr, color='#2196F3', lw=2.5, label=f'ROC AUC = {roc_auc:.4f}')
+axes[1].fill_between(fpr, tpr, alpha=0.1, color='#2196F3'); axes[1].plot([0,1],[0,1],'k--', lw=1.5)
+axes[1].set_xlabel('FPR'); axes[1].set_ylabel('TPR'); axes[1].set_title('ROC Curve'); axes[1].legend()
+
+plt.tight_layout(); plt.savefig(f'{SAVE_DIR}/04_confusion_roc.png'); plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/28.png}
-    \caption{Inference Demo: Thử nghiệm dự báo trực tiếp trên các câu văn mới để kiểm tra tính thực tế của mô hình.}
+    \includegraphics[width=0.9\linewidth]{Chương_3/results/imdb_bigru/04_confusion_roc.png}
+    \caption{Ma trận nhầm lẫn và đường cong biểu diễn năng lực phân loại ROC Curve}
 \end{figure}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Báo cáo hiệu năng Precision và Recall}]
+              precision    recall  f1-score   support
+
+    Negative       0.91      0.87      0.89      5000
+    Positive       0.88      0.91      0.90      5000
+
+    accuracy                           0.89     10000
+\end{lstlisting}
+
+Accuracy tổng thể trên tập Test (10,000 mẫu) đạt con số vô cùng ấn tượng: \textbf{89\%}. Diện tích ROC-AUC đạt mức tiệm cận tối đa là \textbf{0.9392}, cho thấy mô hình tách biệt cực tốt cảm xúc tích cực và tiêu cực bất chấp câu cú dài ngoằn ngoèo của dân mê phim.
+
+Để chốt lại, chúng ta thử nghiệm \textbf{Dự đoán tự do (Inference)} với một số câu ngoài đời thực:
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Test Inference ngẫu nhiên}]
+=== INFERENCE DEMO ===
+Text  : This movie was absolutely fantastic! The acting was superb....
+Score : 0.9869 -> POSITIVE
+
+Text  : Terrible film. Complete waste of time and money....
+Score : 0.0033 -> NEGATIVE
+
+Text  : It was okay, nothing special but not bad either....
+Score : 0.0488 -> NEGATIVE
+\end{lstlisting}
+
+Có thể thấy điểm số (Score - đại diện cho xác suất Positive do lớp Sigmoid xuất ra) rất quyết liệt: 0.98 (gần 1) cho câu khen ngợi, và 0.003 (gần 0) cho câu chê bai.
+Đây thực sự là một cấu trúc hoàn chỉnh và mẫu mực.

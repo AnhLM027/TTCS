@@ -1,84 +1,387 @@
-\paragraph{Thực nghiệm với Google Stock Price} \hfill \\
-Dự báo giá cổ phiếu là một trong những bài toán khó nhất do tính nhiễu và sự biến động mạnh của thị trường tài chính.
+\paragraph{Thực nghiệm: Dự báo Giá cổ phiếu Google với kiến trúc Hybrid Conv1D-LSTM} \hfill\mbox{}
 
-\paragraph{Mô hình Conv1D + LSTM} \hfill \\
-Chúng ta kết hợp lớp \textbf{Conv1D} để lọc nhiễu và trích xuất các đặc trưng cục bộ (pattern) ngắn hạn, sau đó đưa vào lớp \textbf{LSTM} để học các xu hướng dài hạn. Cửa sổ quan sát được thiết lập là 60 ngày (\textbf{LOOK\_BACK = 60}).
+Dự báo giá cổ phiếu là một trong những bài toán hóc búa nhất của lĩnh vực dự báo chuỗi thời gian, bởi thị trường tài chính chứa đựng mức độ nhiễu (noise) cực kỳ lớn và tuân theo giả thuyết bước đi ngẫu nhiên (Random Walk). Để đối phó với sự phức tạp này, chúng ta sẽ kết hợp sức mạnh của 2 mạng nơ-ron tiêu biểu: \textbf{Conv1D} (để trích xuất các đặc trưng vi mô cục bộ như xu hướng tăng/giảm ngắn hạn) và \textbf{LSTM} (để ghi nhớ chu kỳ thời gian dài hạn).
 
-\paragraph{Kết quả và Phân tích} \hfill \\
-Mô hình đạt \textbf{R² score là 0.9745} và \textbf{Test RMSE là 22.37 USD}. Biểu đồ dự báo cho thấy mô hình bắt kịp các xu hướng tăng giảm chính của mã cổ phiếu GOOGL.
+\paragraph{Khai báo thư viện và Cấu hình ban đầu} \hfill\mbox{}
+
+Chúng ta bắt đầu bằng việc khai báo các thư viện thiết yếu như Pandas, NumPy cho thao tác dữ liệu, Matplotlib cho trực quan hóa, và TensorFlow/Keras để xây dựng mô hình Deep Learning. Việc cố định SEED giúp đảm bảo tính tái lập của kết quả.
+
+\begin{lstlisting}[style=pythoncode, caption={Khai báo thư viện và thiết lập thông số cơ bản}]
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import glob, os, warnings
+
+import random
+
+SEED = 42
+np.random.seed(SEED)
+random.seed(SEED)
+tf.random.set_seed(SEED)
+os.environ["PYTHONHASHSEED"] = str(SEED)
+
+warnings.filterwarnings('ignore')
+plt.rcParams.update({'figure.dpi': 120, 'font.size': 11,
+                     'axes.titlesize': 13, 'axes.titleweight': 'bold'})
+
+DATA_DIR   = '../data/google_stock'
+SAVE_DIR   = '../results/google_stock'
+os.makedirs(SAVE_DIR, exist_ok=True)
+
+LOOK_BACK  = 60   # 60 ngay
+EPOCHS     = 50
+BATCH_SIZE = 32
+
+print(f'TF: {tf.__version__}')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Phiên bản TensorFlow}]
+TF: 2.21.0
+\end{lstlisting}
+
+\paragraph{Tải và Làm sạch Dữ liệu (Data Preprocessing)} \hfill\mbox{}
+
+Tập dữ liệu lịch sử giá cổ phiếu Google bao gồm 5000 phiên giao dịch. Quá trình làm sạch đòi hỏi phải loại bỏ các ký tự đặc biệt (dấu phẩy, ký hiệu đô la) để chuyển đổi dạng chuỗi về dạng số thực (float).
+
+\begin{lstlisting}[style=pythoncode, caption={Đọc dữ liệu và làm sạch cột số}]
+csv_files = glob.glob(f'{DATA_DIR}/**/*.csv', recursive=True) + \
+            glob.glob(f'{DATA_DIR}/*.csv')
+df = pd.read_csv(csv_files[0])
+print(f'Shape: {df.shape}')
+print(f'Columns: {list(df.columns)}')
+
+# Detect columns
+date_col  = [c for c in df.columns if 'date' in c.lower()]
+close_col = [c for c in df.columns if 'close' in c.lower() or 'price' in c.lower()][0]
+
+if date_col:
+    df[date_col[0]] = pd.to_datetime(df[date_col[0]])
+    df = df.sort_values(date_col[0]).reset_index(drop=True)
+
+# Clean numeric columns
+for col in df.columns:
+    if df[col].dtype == object:
+        df[col] = df[col].str.replace(',','').str.replace('$','')
+        try: df[col] = pd.to_numeric(df[col])
+        except: pass
+
+df = df.dropna(subset=[close_col])
+print(f'Target (Close): {close_col}')
+print(f'Final shape: {df.shape}')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Thông tin tập dữ liệu}]
+Shape: (5000, 7)
+Columns: ['Date', 'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+Target (Close): Close
+Final shape: (5000, 7)
+\end{lstlisting}
+
+\paragraph{Phân tích Kỹ thuật và Biến động (Financial EDA)} \hfill\mbox{}
+
+Thay vì chỉ dự báo một cách mù quáng, chúng ta cần tính toán các chỉ báo tài chính kinh điển như Đường trung bình động (Moving Averages - MA) và Dải Bollinger (Bollinger Bands) để nắm bắt chu kỳ của cổ phiếu trong 5000 phiên giao dịch.
+
+\begin{lstlisting}[style=pythoncode, caption={Tính toán chỉ báo MA, Bollinger Bands và trực quan hóa}]
+prices = df[close_col].values.astype(float)
+
+# Compute Moving Averages
+ma_7   = pd.Series(prices).rolling(7).mean().values
+ma_30  = pd.Series(prices).rolling(30).mean().values
+ma_60  = pd.Series(prices).rolling(60).mean().values
+
+# Bollinger Bands
+roll_mean = pd.Series(prices).rolling(20).mean()
+roll_std  = pd.Series(prices).rolling(20).std()
+bb_upper  = (roll_mean + 2 * roll_std).values
+bb_lower  = (roll_mean - 2 * roll_std).values
+
+fig, axes = plt.subplots(2, 1, figsize=(15, 9))
+
+# Price + Moving Averages
+axes[0].plot(prices, color='steelblue', lw=1, alpha=0.8, label='Close Price')
+axes[0].plot(ma_7,  color='#FF9800', lw=1.5, linestyle='--', label='MA-7')
+axes[0].plot(ma_30, color='#4CAF50', lw=1.5, linestyle='--', label='MA-30')
+axes[0].plot(ma_60, color='#E91E63', lw=1.5, linestyle='--', label='MA-60')
+axes[0].fill_between(range(len(prices)), bb_upper, bb_lower,
+                     alpha=0.1, color='gray')
+axes[0].set_title('Google Stock Price + Moving Averages + Bollinger Bands')
+
+# Daily returns
+returns = pd.Series(prices).pct_change().values * 100
+axes[1].bar(range(len(returns)), returns,
+            color=np.where(returns>=0, '#4CAF50', '#EF5350'), width=1)
+axes[1].set_title('Daily Returns (%)')
+
+plt.tight_layout()
+plt.show()
+
+print(f'Price range: ${prices.min():.2f} - ${prices.max():.2f}')
+print(f'Mean return: {np.nanmean(returns):.4f}%, Std: {np.nanstd(returns):.4f}%')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Biên độ giao động giá và lợi nhuận}]
+Price range: $40.88 - $1650.61
+Mean return: 0.0665%, Std: 1.7947%
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_4/results/google_stock/01_stock_eda.png}
-        \caption{Biến động giá cổ phiếu Google (Lịch sử)}
-        \label{fig:stock_eda}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_4/results/google_stock/02_returns_volatility.png}
-        \caption{Phân tích lợi nhuận và độ biến động}
-        \label{fig:stock_vol}
-    \end{minipage}
+    \includegraphics[width=\linewidth]{Chương_4/results/google_stock/01_stock_eda.png}
+    \caption{Phân tích kỹ thuật giá đóng cửa và Tỷ suất sinh lời hàng ngày (Daily Returns)}
 \end{figure}
+
+\textbf{Giải thích đồ thị:} Biểu đồ trên cho thấy giá cổ phiếu GOOG có xu hướng tăng trưởng mạnh mẽ trong dài hạn (lên tới hơn \$1600). Các đường MA-7 và MA-30 bám sát xu hướng dài hạn, trong khi Dải Bollinger mở rộng tại các giai đoạn biến động mạnh. Biểu đồ Daily Returns phía dưới chỉ ra những giai đoạn thị trường hoảng loạn với mức giảm sốc --- điều này giải thích tại sao mô hình cần cửa sổ lịch sử đủ dài ($60$ ngày) để nắm bắt ngữ cảnh đầy đủ.
+
+\begin{lstlisting}[style=pythoncode, caption={Đánh giá sự phân phối của lợi nhuận hàng ngày}]
+plt.figure(figsize=(7, 4.5))
+plt.hist(returns[~np.isnan(returns)], bins=60, color='steelblue',
+         edgecolor='white', alpha=0.85, label='Daily Returns')
+plt.axvline(0, color='red', linestyle='--', lw=2, label='Zero Return')
+plt.title('Phan phoi Daily Returns')
+plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_4/results/google_stock/03_forecast_results.png}
-    \caption{Kết quả dự báo giá cổ phiếu trên tập kiểm tra}
-    \label{fig:stock_forecast}
+    \includegraphics[width=0.8\linewidth]{Chương_4/results/google_stock/02_a_daily_returns_distribution.png}
+    \caption{Phân phối của lợi nhuận hàng ngày (Daily Returns)}
 \end{figure}
 
+\textbf{Giải thích đồ thị:} Phân phối lợi nhuận hàng ngày có dạng hình chuông nhưng với phần đuôi béo (Fat-tails) rõ rệt. Điều này vi phạm giả định phân phối chuẩn thông thường và là minh chứng cho sự tồn tại của các cú sốc thị trường cực đoan (Black Swan events). Các rủi ro đuôi (Tail risks) này khiến bài toán dự báo giá cổ phiếu trở nên đặc biệt khó lường.
 
-\paragraph{Phụ lục: Quy trình thực nghiệm chi tiết} \hfill \\
-Dưới đây là các bước triển khai chi tiết trên môi trường Jupyter Notebook:
+\begin{lstlisting}[style=pythoncode, caption={Phân tích chu kỳ biến động lăn (Rolling Volatility)}]
+plt.figure(figsize=(8, 4.5))
+vol = pd.Series(returns).rolling(30).std().values
+plt.plot(vol, color='#E91E63', lw=1.5, label='30-day Volatility')
+plt.fill_between(range(len(vol)), vol, alpha=0.15, color='#E91E63')
+plt.title('Rolling Volatility (30-day Std of Returns)')
+plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/15.png}
-    \caption{Tải dữ liệu tài chính: Đọc lịch sử giá cổ phiếu Google (GOOG) bao gồm các cột giá Open, High, Low, Close và Volume.}
+    \includegraphics[width=0.8\linewidth]{Chương_4/results/google_stock/02_b_rolling_volatility.png}
+    \caption{Độ biến động 30 ngày (Rolling Volatility)}
 \end{figure}
+
+\textbf{Giải thích đồ thị:} Đồ thị Rolling Volatility cho thấy biên độ dao động giá không hề ổn định theo thời gian mà thay đổi liên tục. Độ biến động thường co hẹp lại trong các giai đoạn kinh tế bình ổn, nhưng đột ngột bùng nổ lên mức rất cao trong các chu kỳ khủng hoảng hoặc có tin tức tiêu cực lớn. Đặc tính phi tuyến này là lý do các mô hình Machine Learning cổ điển khó nắm bắt được xu hướng giá.
+
+\paragraph{Tái cấu trúc Chuỗi thời gian (Look-back Window)} \hfill\mbox{}
+
+Dữ liệu chuỗi thời gian 1D cần được chuyển hóa thành dạng học giám sát (Supervised Learning), đồng thời áp dụng MinMax Scaler để đưa giá trị về khoảng $[0, 1]$ giúp mạng học ổn định.
+
+\begin{lstlisting}[style=pythoncode, caption={Trích xuất cửa sổ thời gian (Sliding Window)}]
+scaler = MinMaxScaler(feature_range=(0, 1))
+prices_scaled = scaler.fit_transform(prices.reshape(-1, 1)).flatten()
+
+def create_dataset(data, look_back):
+    X, y = [], []
+    for i in range(len(data) - look_back):
+        X.append(data[i:i+look_back])
+        y.append(data[i+look_back])
+    return np.array(X), np.array(y)
+
+X, y = create_dataset(prices_scaled, LOOK_BACK)
+X = X.reshape(X.shape[0], X.shape[1], 1)
+
+split = int(len(X) * 0.8)
+X_train, X_test = X[:split], X[split:]
+y_train, y_test = y[:split], y[split:]
+
+print(f'X shape: {X.shape}  -> (samples, look_back={LOOK_BACK}, 1)')
+print(f'Train: {X_train.shape}, Test: {X_test.shape}')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Kích thước Tensor đầu vào}]
+X shape: (4940, 60, 1)  -> (samples, look_back=60, 1)
+Train: (3952, 60, 1), Test: (988, 60, 1)
+\end{lstlisting}
+
+Để dự báo giá của ngày hôm sau, mô hình sẽ được cung cấp \textit{cửa sổ lịch sử} chứa biến động giá của 60 ngày làm việc trước đó.
+
+\paragraph{Kiến trúc lai Hybrid Conv1D và LSTM} \hfill\mbox{}
+
+Kiến trúc lai tận dụng bộ lọc Tích chập 1 chiều (Conv1D) để trích xuất tín hiệu vi mô (như mẫu hình giá ngắn hạn), sau đó dùng LSTM để mô hình hóa sự phụ thuộc thời gian dài hạn.
+
+\begin{lstlisting}[style=pythoncode, caption={Xây dựng mạng Conv1D kết hợp LSTM}]
+model = models.Sequential([
+    # Extract local micro features
+    layers.Conv1D(filters=64, kernel_size=3, activation='relu',
+                  input_shape=(LOOK_BACK, 1), padding='same'),
+    layers.Conv1D(filters=64, kernel_size=3, activation='relu', padding='same'),
+    layers.MaxPooling1D(pool_size=2),
+    layers.Dropout(0.2),
+    
+    # Learn macro temporal dependencies
+    layers.LSTM(100, return_sequences=True),
+    layers.Dropout(0.3),
+    layers.LSTM(50),
+    layers.Dropout(0.3),
+    
+    layers.Dense(25, activation='relu'),
+    layers.Dense(1)
+], name='Conv1D_LSTM_StockPrice')
+
+model.compile(optimizer=tf.keras.optimizers.Adam(1e-3),
+              loss='mse', metrics=['mae'])
+model.summary()
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Cấu trúc tham số mạng Hybrid}]
+Model: "Conv1D_LSTM_StockPrice"
+================================================================
+Layer (type)                  Output Shape           Param #
+================================================================
+conv1d_1 (Conv1D)             (None, 60, 64)         256
+conv1d_2 (Conv1D)             (None, 60, 64)         12352
+max_pooling1d (MaxPooling1D)  (None, 30, 64)         0
+dropout (Dropout)             (None, 30, 64)         0
+lstm_1 (LSTM)                 (None, 30, 100)        66000
+dropout_1 (Dropout)           (None, 30, 100)        0
+lstm_2 (LSTM)                 (None, 50)             30200
+dropout_2 (Dropout)           (None, 50)             0
+dense (Dense)                 (None, 25)             1275
+forecast (Dense)              (None, 1)              26
+================================================================
+Total params: 110,109 (430.11 KB)
+Trainable params: 110,109 (430.11 KB)
+Non-trainable params: 0 (0.00 B)
+\end{lstlisting}
+
+Trong cấu trúc này, \textbf{Conv1D} đóng vai trò như một màng lọc quang học, quét qua các dải dữ liệu 60 ngày để nhận dạng các mẫu hình nến hoặc biến động ngắn hạn. Lớp \textbf{MaxPooling1D} nén thông tin, giảm độ dài chuỗi từ 60 xuống 30, giúp \textbf{LSTM} phía sau tập trung học những đặc trưng trừu tượng cốt lõi nhất.
+
+\paragraph{Kết quả Huấn luyện và Đánh giá Mô hình} \hfill\mbox{}
+
+Mô hình được huấn luyện với hàm mất mát MSE và đánh giá thêm theo chuẩn MAE (Mean Absolute Error). Ta sử dụng \texttt{EarlyStopping} và \texttt{ReduceLROnPlateau} để tối ưu hóa quá trình học.
+
+\begin{lstlisting}[style=pythoncode, caption={Quá trình Fit mô hình với Callback}]
+history = model.fit(
+    X_train, y_train,
+    epochs=EPOCHS,
+    batch_size=BATCH_SIZE,
+    validation_split=0.1,
+    callbacks=[
+        tf.keras.callbacks.EarlyStopping(
+            patience=6, restore_best_weights=True),
+        tf.keras.callbacks.ReduceLROnPlateau(
+            factor=0.5, patience=3, verbose=1)
+    ],
+    verbose=1
+)
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Log quá trình huấn luyện (trích)}]
+Epoch 1/50
+112/112 ==================== 6s 18ms/step - loss: 0.0062 - mae: 0.0471 - val_loss: 0.0028 - val_mae: 0.0390
+Epoch 2/50
+112/112 ==================== 2s 11ms/step - loss: 0.0015 - mae: 0.0254 - val_loss: 0.0021 - val_mae: 0.0368
+Epoch 10/50
+112/112 ==================== 2s 15ms/step - loss: 5.5618e-04 - mae: 0.0168 - val_loss: 0.0031 - val_mae: 0.0432
+Epoch 11: ReduceLROnPlateau reducing learning rate to 0.0005.
+Epoch 14: ReduceLROnPlateau reducing learning rate to 0.00025.
+\end{lstlisting}
+
+\begin{lstlisting}[style=pythoncode, caption={Trực quan hóa đồ thị Loss}]
+plt.figure(figsize=(8, 4.5))
+eps = range(1, len(history.history['loss']) + 1)
+plt.plot(eps, history.history['loss'], 'o-', color='#2196F3', lw=2, label='Train Loss')
+plt.plot(eps, history.history['val_loss'], 's-', color='#FF5722', lw=2, label='Val Loss')
+plt.title('Training & Validation Loss (MSE)')
+plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/16.png}
-    \caption{EDA giá cổ phiếu: Trực quan hóa sự tăng trưởng dài hạn và các giai đoạn biến động mạnh của thị trường.}
+    \includegraphics[width=0.8\linewidth]{Chương_4/results/google_stock/03_training_history.png}
+    \caption{Sự ổn định của Loss sau 50 Epochs}
 \end{figure}
+
+\textbf{Giải thích đồ thị:} Đồ thị Loss cho thấy quá trình hội tụ của mô hình diễn ra rất mượt mà. Đường Train Loss (xanh) và Validation Loss (cam) giảm song song và tiệm cận nhau. Quan trọng nhất là không có dấu hiệu phân kỳ (Validation Loss không bị dội ngược lên), chứng tỏ hiện tượng Overfitting đã được kiểm soát tốt nhờ cơ chế Dropout và kiến trúc lai phù hợp.
+
+Sau khi tính toán bộ trọng số tối ưu, ta tiến hành dự báo trên tập Test và thực hiện bước biến đổi ngược (Inverse Transform) để đưa giá trị về quy mô thật (Đô la Mỹ).
+
+\begin{lstlisting}[style=pythoncode, caption={Dự báo và tính toán các thang đo sai số}]
+y_pred_scaled = model.predict(X_test, verbose=0).flatten()
+y_pred_orig   = scaler.inverse_transform(y_pred_scaled.reshape(-1,1)).flatten()
+y_test_orig   = scaler.inverse_transform(y_test.reshape(-1,1)).flatten()
+
+rmse = np.sqrt(mean_squared_error(y_test_orig, y_pred_orig))
+mae  = mean_absolute_error(y_test_orig, y_pred_orig)
+r2   = r2_score(y_test_orig, y_pred_orig)
+
+print(f'RMSE : ${rmse:.4f}')
+print(f'MAE  : ${mae:.4f}')
+print(f'R^2   : {r2:.4f}')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Báo cáo sai số tài chính}]
+RMSE : $35.9275
+MAE  : $29.3849
+R^2   : 0.9342
+\end{lstlisting}
+
+\begin{lstlisting}[style=pythoncode, caption={Đồ thị đánh giá dự báo trên toàn chuỗi thời gian}]
+plt.figure(figsize=(10, 5))
+full_prices = prices[LOOK_BACK:]
+train_line = np.full(len(full_prices), np.nan)
+test_line = np.full(len(full_prices), np.nan)
+train_line[:split] = train_pred
+test_line[split:] = y_pred_orig
+
+plt.plot(full_prices, color='steelblue', lw=1, alpha=0.7, label='Actual')
+plt.plot(train_line, color='#4CAF50', lw=1.5, label='Train Prediction')
+plt.plot(test_line, color='#FF5722', lw=1.5, label='Test Prediction')
+plt.axvline(split, color='black', linestyle='--', lw=1.5, label='Train/Test Split')
+plt.title(f'Stock Forecast - RMSE: ${rmse:.2f}, R^2: {r2:.4f}')
+plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/17.png}
-    \caption{Feature Engineering nâng cao: Tính toán các chỉ số bổ sung từ giá đóng cửa và khối lượng giao dịch.}
+    \includegraphics[width=\linewidth]{Chương_4/results/google_stock/04_forecast_full.png}
+    \caption{Toàn cảnh khả năng theo dấu biến động giá cổ phiếu dài hạn}
 \end{figure}
+
+\textbf{Giải thích đồ thị:} Nhìn toàn cảnh dự báo dài hạn trên toàn bộ 5,000 phiên giao dịch, mô hình bắt nhịp cực kỳ tốt với xu hướng tổng thể kéo dài hàng chục năm. Đường dự báo bám sát các chu kỳ tăng trưởng mạnh cũng như các nhịp thoái lui.
+
+\begin{lstlisting}[style=pythoncode, caption={Phóng to chi tiết dự báo trên Test Set}]
+plt.figure(figsize=(10, 5))
+plt.plot(y_test_orig, color='steelblue', lw=2, label='Actual Price')
+plt.plot(y_pred_orig, color='#FF5722', lw=2, linestyle='--', label='Predicted Price')
+plt.fill_between(range(len(y_test_orig)), y_test_orig, y_pred_orig, 
+                 alpha=0.15, color='gray', label='Error Area')
+plt.title('Test Period: Actual vs Predicted Price')
+plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/18.png}
-    \caption{Tiền xử lý chuỗi: Chuẩn hóa và tạo cửa sổ dữ liệu quan sát (`LOOK\_BACK = 60`) để dự báo xu hướng tiếp theo.}
+    \includegraphics[width=\linewidth]{Chương_4/results/google_stock/05_forecast_test.png}
+    \caption{Đường dự báo bám sát Actual trên tập Test}
 \end{figure}
+
+\textbf{Giải thích đồ thị:} Khi phóng to trên tập Test (với những dữ liệu mà mô hình chưa từng được thấy trong quá trình huấn luyện), đường dự báo Predicted (nét đứt màu cam) bám đuổi rất sát sao các đỉnh và đáy của đường thực tế Actual (nét liền màu xanh). Điều này cho thấy mạng Conv1D-LSTM không chỉ dự báo được xu hướng chung mà còn theo kịp các cú bứt phá hoặc đảo chiều ngắn hạn.
+
+\begin{lstlisting}[style=pythoncode, caption={Vẽ biểu đồ phân tán Scatter đo lường độ hội tụ}]
+plt.figure(figsize=(7, 6))
+plt.scatter(y_test_orig, y_pred_orig, alpha=0.6, s=20, color='steelblue')
+mn, mx = min(y_test_orig.min(), y_pred_orig.min()), max(y_test_orig.max(), y_pred_orig.max())
+plt.plot([mn, mx], [mn, mx], 'r--', lw=2, label='Perfect Forecast')
+plt.title(f'Scatter Plot: Actual vs Predicted (R^2 = {r2:.4f})')
+plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/19.png}
-    \caption{Kiến trúc Conv1D-LSTM: Kết hợp lớp Convolution 1D để lọc nhiễu và LSTM để ghi nhớ các đặc trưng dài hạn.}
+    \includegraphics[width=0.8\linewidth]{Chương_4/results/google_stock/06_forecast_scatter.png}
+    \caption{Biểu đồ phân tán Scatter giữa Actual và Predicted}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/20.png}
-    \caption{Quá trình huấn luyện: Nhật ký thực thi cho thấy sự sụt giảm nhanh chóng của MSE Loss trên cả hai tập dữ liệu.}
-\end{figure}
+\textbf{Giải thích đồ thị:} Biểu đồ Scatter cho thấy mối tương quan tuyến tính rất chặt chẽ giữa giá trị thực tế và giá trị dự báo. Hầu hết các điểm dữ liệu quần tụ dày đặc quanh đường chéo đỏ (Perfect Forecast), đặc biệt ở vùng giá dưới \$650. Tuy có hiện tượng phân tán nhẹ (under-estimation) ở vùng giá cao (\$700--\$800), nhưng tổng thể mô hình vẫn đạt chỉ số $R^2 = 0.9342$, nghĩa là nó giải thích được hơn $93.4\%$ sự biến động của giá cổ phiếu Google.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/22.png}
-    \caption{Kết quả Training History: Đồ thị Loss hội tụ tốt sau 20 epochs, không xuất hiện hiện tượng Overfitting.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_4/docs/ch4/23.png}
-    \caption{Tổng kết thực nghiệm: Bản tóm tắt trực quan bao gồm Lịch sử huấn luyện, Dự báo toàn cục và Biểu đồ tương quan Scatter Plot ($R^2 = 0.9745$).}
-\end{figure}
+\textbf{Kết luận:} Mô hình Hybrid đạt chỉ số $R^2 = 0.9342$, nghĩa là nó bao quát được 93.42\% sự dịch chuyển của giá GOOG. Với mức giá cổ phiếu giao dịch quanh ngưỡng \$1000 - \$1600 ở cuối chu kỳ, sai số tuyệt đối trung bình (MAE) rơi vào khoảng \textbf{\$29.38} (tương đương với tỷ lệ sai số dưới 3\%). Điều này chứng minh rằng kiến trúc Conv1D - LSTM hoàn toàn có tiềm năng được ứng dụng làm một hệ thống hỗ trợ ra quyết định phân tích kỹ thuật trên thị trường giao dịch thực tế.

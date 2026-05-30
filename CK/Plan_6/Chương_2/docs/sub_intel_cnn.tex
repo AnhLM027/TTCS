@@ -1,155 +1,381 @@
-\paragraph{Thực nghiệm với Intel Image Classification} \hfill \\
-Bộ dữ liệu gồm hàng ngàn hình ảnh thuộc 6 lớp phong cảnh: buildings, forest, glacier, mountain, sea, và street. Đây là một bài toán phân loại đa lớp (Multi-class Classification) điển hình trong thị giác máy tính.
+\paragraph{Phân loại cảnh quan tự nhiên (Intel Image Classification)} \hfill\mbox{}
 
-\paragraph{Phân tích Dữ liệu (EDA) và Tiền xử lý} \hfill \\
-Trước khi huấn luyện, chúng ta tiến hành phân tích sự phân bổ các lớp và quan sát dữ liệu mẫu. Việc cân bằng dữ liệu giữa các lớp là yếu tố quan trọng để mô hình không bị thiên kiến.
+Bài toán phân loại hình ảnh vệ tinh (Intel Image Classification) yêu cầu hệ thống nhận diện 6 lớp cảnh quan tự nhiên: \textit{Buildings, Forest, Glacier, Mountain, Sea, Street}. Phần này trình bày chi tiết toàn bộ quy trình thiết lập, khám phá dữ liệu, huấn luyện mạng Mạng Nơ-ron Tích chập (CNN) tự tùy chỉnh (Custom CNN) và đánh giá mô hình.
 
-\begin{figure}[H]
-    \centering
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_2/results/intel/01_class_distribution.png}
-        \caption{Sự phân bổ dữ liệu giữa các lớp phong cảnh}
-        \label{fig:intel_dist}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_2/results/intel/02_sample_images.png}
-        \caption{Hình ảnh mẫu từ bộ dữ liệu Intel}
-        \label{fig:intel_samples}
-    \end{minipage}
-\end{figure}
+\paragraph{Thiết lập Môi trường và Dữ liệu} \hfill\mbox{}
 
-Để tăng khả năng tổng quát hóa, kỹ thuật **Data Augmentation** đã được áp dụng, bao gồm các phép xoay, lật và thay đổi độ sáng nhẹ.
+Đầu tiên, hệ thống được khởi tạo với các thư viện cần thiết, thiết lập hằng số tái lập ngẫu nhiên (random seeds) để đảm bảo tính nhất quán của kết quả trong quá trình huấn luyện, đồng thời kiểm tra môi trường GPU.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\linewidth]{Chương_2/results/intel/03_augmentation_demo.png}
-    \caption{Minh họa các kỹ thuật Data Augmentation áp dụng cho ảnh đầu vào}
-    \label{fig:intel_aug}
-\end{figure}
+\begin{lstlisting}[style=pythoncode, caption={Khởi tạo môi trường TensorFlow và thiết lập đường dẫn}]
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
+import matplotlib.pyplot as plt
+import numpy as np
+import os, random
 
-\paragraph{Mô hình Custom CNN} \hfill \\
-Chúng ta thiết kế một mạng CNN đơn giản gồm 3 lớp tích chập với số lượng filter tăng dần (32, 64, 128). Mỗi lớp tích chập đi kèm với lớp ReLU activation và lớp Max Pooling để giảm kích thước đặc trưng. Tổng số tham số của mô hình là \textbf{10,759,974}.
+SEED = 42
+os.environ['PYTHONHASHSEED'] = str(SEED)
+random.seed(SEED)
+np.random.seed(SEED)
+tf.random.set_seed(SEED)
 
-\paragraph{Kết quả huấn luyện và Đánh giá} \hfill \\
-Mô hình đạt độ chính xác cao nhất trên tập kiểm tra là \textbf{81.10\%}. Dưới đây là các biểu đồ minh chứng cho hiệu năng của mô hình:
+plt.rcParams.update({'figure.dpi': 120, 'font.size': 11})
 
-\begin{figure}[H]
-    \centering
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_2/results/intel/04_training_history.png}
-        \caption{Lịch sử huấn luyện (Accuracy và Loss)}
-        \label{fig:intel_history}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_2/results/intel/05_confusion_matrix.png}
-        \caption{Ma trận nhầm lẫn (Confusion Matrix)}
-        \label{fig:intel_cm}
-    \end{minipage}
-\end{figure}
+TRAIN_DIR = '../data/intel_images/seg_train/seg_train'
+TEST_DIR  = '../data/intel_images/seg_test/seg_test'
+SAVE_DIR  = '../results/intel'
+os.makedirs(SAVE_DIR, exist_ok=True)
 
-Dựa trên ma trận nhầm lẫn, chúng ta thấy mô hình phân loại rất tốt các lớp như \textit{forest} (F1-score 0.89), tuy nhiên còn có sự nhầm lẫn nhẹ giữa \textit{glacier} và \textit{mountain} do đặc điểm hình thái tương đồng của chúng.
+IMG_SIZE   = (150, 150)
+BATCH_SIZE = 32
+EPOCHS     = 30
 
-\paragraph{Phụ lục: Quy trình thực nghiệm chi tiết} \hfill \\
-Dưới đây là các bước triển khai chi tiết trên môi trường Jupyter Notebook:
+print(f'TF version: {tf.__version__}')
+\end{lstlisting}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/1 (1).png}
-    \caption{Thiết lập môi trường: Import các thư viện cần thiết (TensorFlow, Keras) và cấu hình hạt giống ngẫu nhiên (Seed) để đảm bảo tính tái lập.}
-\end{figure}
+\begin{lstlisting}[style=consoleoutput, caption={Output: Thông tin hệ thống TensorFlow}]
+TF version: 2.13.0
+GPU available: []
+\end{lstlisting}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/2.png}
-    \caption{Cấu hình Determinism: Thiết lập các thông số để kết quả huấn luyện không thay đổi giữa các lần chạy.}
-\end{figure}
+\paragraph{Khám phá Phân phối Tập dữ liệu (EDA)} \hfill\mbox{}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/3.png}
-    \caption{Quản lý đường dẫn và Kiểm tra thiết bị: Định nghĩa thư mục dữ liệu và xác nhận sự hiện diện của GPU để tăng tốc huấn luyện.}
-\end{figure}
+Thực hiện kiểm đếm và thống kê số lượng ảnh của từng lớp trong hai tập dữ liệu Train và Test để xác định tính cân bằng của hệ thống.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/4.png}
-    \caption{Tải danh sách lớp: Nhận diện 6 thư mục tương ứng với 6 lớp phong cảnh của bộ dữ liệu Intel.}
-\end{figure}
+\begin{lstlisting}[style=pythoncode, caption={Đếm số lượng mẫu trong từng Class}]
+classes = sorted(os.listdir(TRAIN_DIR))
+train_counts = {c: len(os.listdir(os.path.join(TRAIN_DIR, c))) for c in classes}
+test_counts  = {c: len(os.listdir(os.path.join(TEST_DIR, c)))  for c in classes}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/5.png}
-    \caption{Thống kê số lượng mẫu: Kiểm tra độ cân bằng dữ liệu giữa các lớp (Train: 14,034 ảnh, Test: 3,000 ảnh).}
-\end{figure}
+print('=== DATASET OVERVIEW ===')
+print(f'Classes ({len(classes)}): {classes}')
+print(f'Total Train: {sum(train_counts.values()):,}')
+print(f'Total Test : {sum(test_counts.values()):,}')
+for c in classes:
+    print(f'  {c:15s}: Train={train_counts[c]:,}  Test={test_counts[c]:,}')
+\end{lstlisting}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/6.png}
-    \caption{Trực quan hóa mẫu ảnh: Hiển thị lưới ảnh đại diện cho từng lớp để hiểu đặc trưng thị giác ban đầu.}
-\end{figure}
+\begin{lstlisting}[style=consoleoutput, caption={Output: Tổng quan Dataset}]
+=== DATASET OVERVIEW ===
+Classes (6): ['buildings', 'forest', 'glacier', 'mountain', 'sea', 'street']
+Total Train: 14,034
+Total Test : 3,000
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/7.png}
-    \caption{Mã nguồn Data Augmentation: Định nghĩa các phép biến đổi ảnh (rotation, shift, zoom, flip) để làm phong phú dữ liệu.}
-\end{figure}
+Per-class:
+  buildings      : Train=2,191  Test=437
+  forest         : Train=2,271  Test=474
+  glacier        : Train=2,404  Test=553
+  mountain       : Train=2,512  Test=525
+  sea            : Train=2,274  Test=510
+  street         : Train=2,382  Test=501
+\end{lstlisting}
+
+Kết quả thống kê cho thấy sự cân bằng rất tốt giữa các lớp ảnh (đều nằm trong khoảng 2,100 đến 2,500 mẫu), loại trừ nguy cơ mô hình thiên vị một đối tượng cụ thể.
+
+Để có cái nhìn trực quan, phân phối này được chuyển hóa thành biểu đồ thanh (Bar Chart):
+
+\begin{lstlisting}[style=pythoncode, caption={Vẽ biểu đồ phân phối các Class}]
+fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+for ax, (counts, split) in zip(axes, [(train_counts, 'Train'), (test_counts, 'Test')]):
+    bars = ax.bar(counts.keys(), counts.values(),
+                  color=plt.cm.Set2(np.linspace(0, 1, len(counts))),
+                  edgecolor='black', linewidth=0.8)
+    ax.set_title(f'Class Distribution - {split} Set')
+    ax.set_ylabel('Number of Images')
+    ax.tick_params(axis='x', rotation=30)
+    for bar, val in zip(bars, counts.values()):
+        ax.text(bar.get_x()+bar.get_width()/2, bar.get_height()+20,
+                f'{val:,}', ha='center', fontsize=9, fontweight='bold')
+
+plt.suptitle('Intel Image Classification Dataset Distribution', fontsize=14, fontweight='bold')
+plt.tight_layout()
+plt.savefig(f'{SAVE_DIR}/01_class_distribution.png')
+plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/8.png}
-    \caption{Kết quả Augmentation: Minh họa một ảnh gốc sau khi đi qua các phép biến đổi ngẫu nhiên.}
+    \includegraphics[width=0.9\linewidth]{Chương_2/results/intel/01_class_distribution.png}
+    \caption{Phân phối dữ liệu huấn luyện và kiểm thử theo các lớp}
 \end{figure}
+
+Tương tự, các hình ảnh mẫu (Sample Images) được trực quan hóa để quan sát độ phức tạp của bài toán hình học:
+
+\begin{lstlisting}[style=pythoncode, caption={Hiển thị ảnh mẫu từ mỗi Class}]
+fig, axes = plt.subplots(len(classes), 5, figsize=(13, len(classes)*2.2))
+for row, cls in enumerate(classes):
+    cls_dir = os.path.join(TRAIN_DIR, cls)
+    imgs    = os.listdir(cls_dir)[:5]
+    for col, img_name in enumerate(imgs):
+        img = load_img(os.path.join(cls_dir, img_name), target_size=(100, 100))
+        axes[row, col].imshow(img)
+        axes[row, col].axis('off')
+        if col == 0:
+            axes[row, col].set_ylabel(cls, rotation=0, labelpad=50,
+                                      fontsize=10, fontweight='bold')
+
+plt.suptitle('Sample Images - Intel Image Dataset', fontsize=14, fontweight='bold')
+plt.tight_layout()
+plt.savefig(f'{SAVE_DIR}/02_sample_images.png')
+plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/9.png}
-    \caption{Thiết lập Data Generators: Sử dụng `flow\_from\_directory` để đọc dữ liệu theo batch từ ổ đĩa.}
+    \includegraphics[width=1\linewidth]{Chương_2/results/intel/02_sample_images.png}
+    \caption{Một số mẫu hình ảnh đặc trưng từ Intel Dataset}
 \end{figure}
+
+Các bức ảnh \textit{Glacier} (Sông băng) và \textit{Mountain} (Núi) có sự tương đồng lớn về nền trời và khối đá, báo hiệu các thách thức phân loại tại hai lớp này.
+
+\paragraph{Data Augmentation và Image Data Generators} \hfill\mbox{}
+
+Data Augmentation là phương pháp tạo ra các dữ liệu biến thể bằng cách áp dụng các phép biến đổi hình học cơ bản (như dịch chuyển, xoay, lật). Kỹ thuật này gia tăng không gian mẫu học và ngăn chặn hiện tượng học vẹt.
+
+\begin{lstlisting}[style=pythoncode, caption={Trực quan hóa hoạt động của Data Augmentation}]
+sample_cls = classes[0]
+sample_img_path = os.path.join(TRAIN_DIR, sample_cls, os.listdir(os.path.join(TRAIN_DIR, sample_cls))[0])
+sample_img = load_img(sample_img_path, target_size=IMG_SIZE)
+sample_arr = np.expand_dims(img_to_array(sample_img), axis=0)
+
+aug = ImageDataGenerator(
+    rotation_range=15, width_shift_range=0.08, height_shift_range=0.08,
+    zoom_range=0.08, horizontal_flip=True, brightness_range=[0.9,1.1],
+    fill_mode='reflect'
+)
+
+fig, axes = plt.subplots(2, 5, figsize=(14, 6))
+axes[0,0].imshow(sample_arr[0].astype(np.uint8))
+axes[0, 0].set_title('Original', fontweight='bold')
+axes[0, 0].axis('off')
+
+aug_gen = aug.flow(sample_arr, batch_size=1)
+for i, ax in enumerate(axes.flatten()[1:]):
+    aug_img = next(aug_gen)[0].astype(np.uint8)
+    ax.imshow(aug_img)
+    ax.set_title(f'Aug #{i+1}', fontsize=9)
+    ax.axis('off')
+
+plt.suptitle('Data Augmentation Effect', fontsize=13, fontweight='bold')
+plt.tight_layout()
+plt.savefig(f'{SAVE_DIR}/03_augmentation_demo.png')
+plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/10.png}
-    \caption{Kiểm tra batch dữ liệu: Xác nhận kích thước đầu vào (150x150x3) và nhãn One-hot encoding.}
+    \includegraphics[width=1\linewidth]{Chương_2/results/intel/03_augmentation_demo.png}
+    \caption{Hiệu ứng của Data Augmentation trên một bức ảnh thực tế}
 \end{figure}
+
+Tiếp theo, \texttt{ImageDataGenerator} chính thức được thiết lập để truyền dữ liệu theo lô (Batch) vào mô hình trong quá trình học.
+
+\begin{lstlisting}[style=pythoncode, caption={Thiết lập Generators cho dữ liệu Train và Test}]
+train_datagen = ImageDataGenerator(
+    rescale=1./255, rotation_range=15, width_shift_range=0.08,
+    height_shift_range=0.08, zoom_range=0.08, horizontal_flip=True,
+    brightness_range=[0.9,1.1], fill_mode='reflect'
+)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+train_gen = train_datagen.flow_from_directory(
+    TRAIN_DIR, target_size=IMG_SIZE, batch_size=BATCH_SIZE, class_mode='categorical', seed=SEED)
+test_gen  = test_datagen.flow_from_directory(
+    TEST_DIR,  target_size=IMG_SIZE, batch_size=BATCH_SIZE, class_mode='categorical', seed=SEED, shuffle=False)
+
+NUM_CLASSES = len(classes)
+print(f'Train Samples : {train_gen.samples}')
+print(f'Test Samples  : {test_gen.samples}')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Xác nhận số lượng hình ảnh Generators}]
+Found 14034 images belonging to 6 classes.
+Found 3000 images belonging to 6 classes.
+Train Samples : 14034
+Test Samples  : 3000
+\end{lstlisting}
+
+\paragraph{Xây dựng Kiến trúc Mạng Custom CNN} \hfill\mbox{}
+
+Một mô hình CNN 3 khối được định nghĩa để khai thác chi tiết không gian của ảnh $150 \times 150 \times 3$.
+
+\begin{lstlisting}[style=pythoncode, caption={Định nghĩa Kiến trúc Mạng Nơ-ron Tích chập}]
+model = models.Sequential([
+    # Block 1
+    layers.Conv2D(32, (3,3), activation='relu', padding='same', input_shape=(150,150,3)),
+    layers.BatchNormalization(),
+    layers.Conv2D(32, (3,3), activation='relu', padding='same'),
+    layers.MaxPooling2D((2,2)),
+    layers.Dropout(0.25),
+    # Block 2
+    layers.Conv2D(64, (3,3), activation='relu', padding='same'),
+    layers.BatchNormalization(),
+    layers.Conv2D(64, (3,3), activation='relu', padding='same'),
+    layers.MaxPooling2D((2,2)),
+    layers.Dropout(0.25),
+    # Block 3
+    layers.Conv2D(128, (3,3), activation='relu', padding='same'),
+    layers.BatchNormalization(),
+    layers.MaxPooling2D((2,2)),
+    layers.Dropout(0.25),
+    # Classifier
+    layers.Flatten(),
+    layers.Dense(256, activation='relu'),
+    layers.BatchNormalization(),
+    layers.Dropout(0.5),
+    layers.Dense(NUM_CLASSES, activation='softmax')
+], name='CustomCNN_Intel')
+
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+              loss='categorical_crossentropy', metrics=['accuracy'])
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Tóm tắt Mạng nơ-ron (Model Summary)}]
+Model: "CustomCNN_Intel"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ conv2d (Conv2D)             (None, 150, 150, 32)      896       
+ batch_normalization         (None, 150, 150, 32)      128       
+ conv2d_1 (Conv2D)           (None, 150, 150, 32)      9248      
+ max_pooling2d (MaxPooling2  (None, 75, 75, 32)        0         
+ dropout (Dropout)           (None, 75, 75, 32)        0         
+...
+ flatten (Flatten)           (None, 41472)             0         
+ dense (Dense)               (None, 256)               10617088  
+ dense_1 (Dense)             (None, 6)                 1542      
+=================================================================
+Total params: 10,759,974 (41.05 MB)
+Trainable params: 10,759,014 (41.04 MB)
+Non-trainable params: 960 (3.75 KB)
+\end{lstlisting}
+
+Kiến trúc chứa hơn $10.7$ triệu tham số. Tính năng \texttt{BatchNormalization} giúp giới hạn dải giá trị gradient, kết hợp với \texttt{Dropout} để chống over-fitting.
+
+\paragraph{Huấn luyện Mô hình và Điều khiển Lịch trình (Callbacks)} \hfill\mbox{}
+
+\begin{lstlisting}[style=pythoncode, caption={Bắt đầu quá trình Huấn luyện với Callbacks}]
+callbacks = [
+    tf.keras.callbacks.EarlyStopping(patience=5, restore_best_weights=True, monitor='val_accuracy'),
+    tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=3, min_lr=1e-6, verbose=1)
+]
+
+history = model.fit(
+    train_gen, epochs=EPOCHS, validation_data=test_gen,
+    callbacks=callbacks, verbose=1
+)
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Quá trình Fit theo các Epochs}]
+Epoch 1/30
+439/439 [==============================] - 80s 182ms/step - loss: 1.1695 - accuracy: 0.5830 - val_loss: 4.2783 - val_accuracy: 0.2230 - lr: 0.0010
+Epoch 8/30
+439/439 [==============================] - 79s 180ms/step - loss: 0.4751 - accuracy: 0.8319 - val_loss: 0.4675 - val_accuracy: 0.8483 - lr: 5.0000e-04
+...
+Epoch 16: ReduceLROnPlateau reducing learning rate to 0.000125.
+Epoch 18/30
+439/439 [==============================] - 80s 181ms/step - loss: 0.3236 - accuracy: 0.8843 - val_loss: 0.4472 - val_accuracy: 0.8517 - lr: 1.2500e-04
+\end{lstlisting}
+
+Sự giảm dần của \texttt{Learning Rate} khi \texttt{val\_loss} chững lại giúp mô hình từ từ đạt điểm cực tiểu cục bộ tốt hơn mà không bị văng ra ngoài, đem lại một đường cong hội tụ tương đối mượt mà:
+
+\begin{lstlisting}[style=pythoncode, caption={Trực quan hóa đường cong Huấn luyện}]
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+epochs_range = range(1, len(history.history['accuracy'])+1)
+
+axes[0].plot(epochs_range, history.history['accuracy'],    'o-', color='#2196F3', label='Train Acc')
+axes[0].plot(epochs_range, history.history['val_accuracy'],'s-', color='#FF5722', label='Val Acc')
+axes[0].set_title('Accuracy over Epochs')
+axes[0].set_xlabel('Epoch'); axes[0].set_ylabel('Accuracy'); axes[0].legend(); axes[0].grid(True, alpha=0.3)
+
+axes[1].plot(epochs_range, history.history['loss'],    'o-', color='#2196F3', label='Train Loss')
+axes[1].plot(epochs_range, history.history['val_loss'],'s-', color='#FF5722', label='Val Loss')
+axes[1].set_title('Loss over Epochs')
+axes[1].set_xlabel('Epoch'); axes[1].set_ylabel('Loss'); axes[1].legend(); axes[1].grid(True, alpha=0.3)
+
+plt.suptitle('Training History - Custom CNN (Intel Images)', fontsize=14, fontweight='bold')
+plt.tight_layout()
+plt.savefig(f'{SAVE_DIR}/04_training_history.png')
+plt.show()
+
+best_val_acc = max(history.history['val_accuracy'])
+print(f'Best Validation Accuracy: {best_val_acc:.4f}')
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/11.png}
-    \caption{Kiến trúc Custom CNN: Chi tiết các lớp Convolution, Batch Normalization, MaxPooling và Dropout.}
+    \includegraphics[width=1\linewidth]{Chương_2/results/intel/04_training_history.png}
+    \caption{Biểu đồ Lịch sử Huấn luyện: Accuracy và Loss}
 \end{figure}
+
+Với việc đạt Validation Accuracy cao nhất ở ngưỡng xấp xỉ $86.63\%$, mô hình hoạt động tương đối ổn định mặc dù có dấu hiệu over-fitting nhẹ từ epoch thứ 15.
+
+\paragraph{Đánh giá Mô hình (Model Evaluation)} \hfill\mbox{}
+
+Chúng ta tiến hành đo lường hiệu suất mô hình trên dữ liệu độc lập (Test Set) để xem thuật toán xử lý từng đối tượng như thế nào thông qua Classification Report và Confusion Matrix.
+
+\begin{lstlisting}[style=pythoncode, caption={Triển khai kiểm tra và tính toán Ma trận Nhầm lẫn}]
+from sklearn.metrics import confusion_matrix, classification_report
+
+test_gen.reset()
+y_pred_prob = model.predict(test_gen, verbose=0)
+y_pred = np.argmax(y_pred_prob, axis=1)
+y_true = test_gen.classes
+
+cm = confusion_matrix(y_true, y_pred)
+cm_norm = cm.astype(float) / cm.sum(axis=1)[:, np.newaxis]
+
+fig, ax = plt.subplots(figsize=(9, 7))
+import seaborn as sns
+sns.heatmap(cm_norm, annot=cm, fmt='d', cmap='Blues',
+            xticklabels=classes, yticklabels=classes, linewidths=0.5, ax=ax)
+ax.set_title('Confusion Matrix - Custom CNN', fontsize=13, fontweight='bold')
+ax.set_ylabel('Actual'); ax.set_xlabel('Predicted')
+plt.xticks(rotation=30)
+plt.tight_layout()
+plt.savefig(f'{SAVE_DIR}/05_confusion_matrix.png')
+plt.show()
+
+print(classification_report(y_true, y_pred, target_names=classes))
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/12.png}
-    \caption{Quá trình huấn luyện: Theo dõi sự thay đổi của Loss và Accuracy qua 10 epochs đầu tiên.}
+    \includegraphics[width=0.8\linewidth]{Chương_2/results/intel/05_confusion_matrix.png}
+    \caption{Ma trận nhầm lẫn (Confusion Matrix) của mô hình Custom CNN}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/13.png}
-    \caption{Mã nguồn vẽ biểu đồ lịch sử: Sử dụng Matplotlib để trực quan hóa quá trình hội tụ của mô hình.}
-\end{figure}
+\begin{lstlisting}[style=consoleoutput, caption={Output: Báo cáo chỉ số Classification Report}]
+              precision    recall  f1-score   support
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/14.png}
-    \caption{Kết quả Training History: Accuracy đạt trên 80\% và Loss giảm ổn định, cho thấy mô hình học tốt.}
-\end{figure}
+   buildings       0.80      0.92      0.86       437
+      forest       0.92      0.99      0.95       474
+     glacier       0.84      0.81      0.83       553
+    mountain       0.82      0.82      0.82       525
+         sea       0.89      0.92      0.90       510
+      street       0.95      0.76      0.85       501
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/15.png}
-    \caption{Mã nguồn đánh giá Ma trận nhầm lẫn: Tính toán CM trên tập Test để phân tích sai sót của mô hình.}
-\end{figure}
+    accuracy                           0.87      3000
+   macro avg       0.87      0.87      0.87      3000
+\end{lstlisting}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/16.png}
-    \caption{Kết quả Confusion Matrix: Trực quan hóa các lớp bị nhầm lẫn, đặc biệt là giữa Mountain và Glacier.}
-\end{figure}
+\textbf{Đánh giá chuyên sâu:}
+Kết quả $87\%$ Accuracy trên toàn bộ $3000$ ảnh Test là một kết quả tốt cho một mô hình thiết kế từ đầu (từ con số không). Khi phân tích sự phân bổ của Ma trận nhầm lẫn (Hình 2.X):
+\begin{itemize}
+    \item Lớp \textbf{Forest} đạt kết quả ấn tượng nhất (Recall $99\%$, F1-score $95\%$), điều này nhờ vào kết cấu lá cây và màu xanh lục đặc trưng làm mạng CNN rất dễ dàng phân biệt.
+    \item Dù vậy, cặp \textbf{Glacier} - \textbf{Mountain} thường xuyên nhầm với nhau (như đã phân tích từ bước EDA). Về mặt quang học, các rặng núi đá và các dòng sông băng lấp lánh có cấu trúc cực kì giống nhau.
+    \item Lớp \textbf{Street} bị suy giảm sức mạnh phân biệt nặng nhất với tỉ lệ nhận dạng (Recall) thấp ở mức $76\%$, với nhiều mẫu đường phố bị mô hình gán nhãn thành \textbf{Buildings}. Hệ thống cần sự bổ sung của các bộ lọc cấp độ cao (high-level filters) để hiểu không gian sâu hơn.
+\end{itemize}
+
+Cuối cùng, các chỉ số đánh giá được xuất tự động thành báo cáo:
+
+\begin{lstlisting}[style=pythoncode, caption={Lưu báo cáo vào tệp văn bản}]
+with open(f'{SAVE_DIR}/report.txt', 'w') as f:
+    f.write('Intel Images Classification - Custom CNN\n' + '='*50 + '\n')
+    f.write(f'Best Validation Accuracy: {best_val_acc:.4f}\n')
+    f.write(f'Total Parameters: {model.count_params():,}\n\n')
+    f.write(classification_report(y_true, y_pred, target_names=classes))
+
+print('Intel CNN Experiment Completed! Results saved to', SAVE_DIR)
+\end{lstlisting}

@@ -1,106 +1,325 @@
-\paragraph{Thực nghiệm với Chest X-Ray Pneumonia} \hfill \\
-Đây là bài toán phân loại nhị phân (Binary Classification) có ý nghĩa thực tiễn cao trong y tế. Mục tiêu là phát hiện dấu hiệu viêm phổi qua ảnh chụp X-quang lồng ngực.
+\paragraph{Chẩn đoán Viêm phổi qua Ảnh X-Quang (Chest X-Ray Pneumonia với ResNet50)} \hfill\mbox{}
 
-\paragraph{Phân tích Dữ liệu Y tế} \hfill \\
-Dữ liệu ảnh X-quang thường có độ tương phản thấp và đòi hỏi sự tỉ mỉ trong việc quan sát các vùng mờ.
+Bài toán phát hiện viêm phổi từ ảnh chụp X-quang lồng ngực là một bài toán phân loại nhị phân (Binary Classification) điển hình trong lĩnh vực y tế (Medical Imaging). Việc chẩn đoán bệnh từ các ảnh X-quang có độ phân giải thấp, không màu và chứa nhiều nhiễu hạt là rất khó khăn, đòi hỏi sự hỗ trợ của các kiến trúc học sâu mạnh mẽ như \textbf{ResNet50}.
+
+\paragraph{Thiết lập Hệ thống và Khám phá Dữ liệu} \hfill\mbox{}
+
+\begin{lstlisting}[style=pythoncode, caption={Khởi tạo môi trường TensorFlow và siêu tham số}]
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
+from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import os, random
+
+SEED = 42
+np.random.seed(SEED)
+random.seed(SEED)
+tf.random.set_seed(SEED)
+os.environ["PYTHONHASHSEED"] = str(SEED)
+
+plt.rcParams.update({'figure.dpi': 120, 'font.size': 11})
+
+TRAIN_DIR = '../data/chest_xray/chest_xray/train'
+TEST_DIR  = '../data/chest_xray/chest_xray/test'
+SAVE_DIR  = '../results/chest_xray'
+os.makedirs(SAVE_DIR, exist_ok=True)
+
+IMG_SIZE   = (224, 224)
+BATCH_SIZE = 32
+EPOCHS     = 15
+CLASSES    = ['NORMAL', 'PNEUMONIA']
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Phiên bản TensorFlow}]
+TF: 2.13.0
+\end{lstlisting}
+
+Để huấn luyện hiệu quả, cần phân tích kỹ lưỡng mức độ cân bằng của hai lớp dữ liệu \textit{NORMAL} (Bình thường) và \textit{PNEUMONIA} (Viêm phổi).
+
+\begin{lstlisting}[style=pythoncode, caption={Thống kê số lượng bệnh án theo từng lớp}]
+def count_split(split_dir):
+    return {c: len(os.listdir(os.path.join(split_dir, c)))
+            for c in os.listdir(split_dir) if os.path.isdir(os.path.join(split_dir, c))}
+
+splits = {'Train': count_split(TRAIN_DIR),
+          'Test':  count_split(TEST_DIR)}
+
+print('=== DATASET DISTRIBUTION ===')
+for split, counts in splits.items():
+    total = sum(counts.values())
+    print(f'{split:8s}: Total={total:,}', end=' | ')
+    for cls, n in counts.items():
+        print(f'{cls}={n:,}({n/total*100:.1f}%)', end=' ')
+    print()
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Phân phối mẫu bệnh lý}]
+=== DATASET DISTRIBUTION ===
+Train   : Total=5,216 | PNEUMONIA=3,875(74.3%) NORMAL=1,341(25.7%) 
+Test    : Total=624 | PNEUMONIA=390(62.5%) NORMAL=234(37.5%) 
+\end{lstlisting}
+
+Kết quả cho thấy tập dữ liệu bị mất cân bằng trầm trọng: Số ca mắc Viêm phổi chiếm tới $74.3\%$ tập huấn luyện. Sự mất cân bằng này được mô hình hóa qua biểu đồ thanh dưới đây:
+
+\begin{lstlisting}[style=pythoncode, caption={Vẽ biểu đồ phân bố nhãn (Class Distribution)}]
+fig, ax = plt.subplots(figsize=(10, 5))
+x = np.arange(len(CLASSES)); w = 0.25
+colors = ['#2196F3', '#FF9800']
+
+for i, ((name, cnt), color) in enumerate(zip(splits.items(), colors)):
+    vals = [cnt.get(c, 0) for c in CLASSES]
+    bars = ax.bar(x + (i - 1) * w, vals, w, label=name, color=color, edgecolor='black')
+    for b in bars:
+        ax.text(b.get_x() + b.get_width()/2, b.get_height() + 20, int(b.get_height()), ha='center', fontsize=8)
+
+ax.set(title='Class Distribution per Split', xticks=x, xticklabels=CLASSES, ylabel='Count')
+ax.legend(); ax.grid(axis='y', alpha=.3); plt.tight_layout()
+plt.savefig(f'{SAVE_DIR}/01_class_distribution.png', dpi=300)
+plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_2/results/chest_xray/01_dataset_overview.png}
-    \caption{Tổng quan dữ liệu ảnh X-quang (Bình thường vs Viêm phổi)}
-    \label{fig:chest_overview}
+    \includegraphics[width=0.9\linewidth]{Chương_2/results/chest_xray/01_class_distribution.png}
+    \caption{Phân phối dữ liệu cho thấy sự mất cân bằng giữa bệnh nhân Viêm phổi và người khỏe mạnh}
 \end{figure}
 
-\paragraph{ResNet-50 và Fine-tuning} \hfill \\
-Kiến trúc ResNet-50 với 50 lớp sâu và các kết nối tắt giúp mô hình học được các đặc trưng phức tạp trong ảnh y tế. Với \textbf{24,113,537} tham số, mô hình đủ mạnh để phân biệt các tổn thương mờ nhạt trên phổi.
+Sự chênh lệch này buộc chúng ta phải tính toán \textit{Class Weights} (Trọng số lớp) trong quá trình huấn luyện ở bước sau, nhằm buộc mô hình phải phạt nặng hơn khi dự đoán sai bệnh nhân khỏe mạnh (do dữ liệu lớp NORMAL ít hơn).
 
-\paragraph{Kết quả và Phân tích chuyên sâu} \hfill \\
-Mô hình đạt chỉ số \textbf{ROC-AUC là 0.9265}. Đặc biệt, trong y tế, chỉ số \textbf{Recall} (độ nhạy) cho lớp \textit{PNEUMONIA} đạt tới \textbf{0.97}, nghĩa là mô hình hầu như không bỏ sót bệnh nhân nào bị viêm phổi.
+Tiếp tục trực quan hóa các bức ảnh X-quang:
+
+\begin{lstlisting}[style=pythoncode, caption={Hiển thị ảnh mẫu X-quang y tế}]
+fig, axes = plt.subplots(len(CLASSES), 3, figsize=(9, 6))
+
+for r, cls in enumerate(CLASSES):
+    imgs = os.listdir(os.path.join(TRAIN_DIR, cls))[:3]
+    for c, img_name in enumerate(imgs):
+        ax = axes[r, c]
+        img = load_img(os.path.join(TRAIN_DIR, cls, img_name), target_size=(180, 180))
+        ax.imshow(img, cmap='gray')
+        ax.axis('off')
+        if c == 1:
+            ax.set_title(cls, fontweight='bold')
+
+plt.suptitle('Sample Chest X-Ray Images', fontsize=15, fontweight='bold')
+plt.tight_layout(rect=[0, 0, 1, .95])
+plt.savefig(f'{SAVE_DIR}/02_sample_images.png', dpi=300)
+plt.show()
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Chương_2/results/chest_xray/02_sample_images.png}
+    \caption{Hình ảnh y tế đơn sắc mang nhiều chi tiết mờ, khó phân biệt bằng mắt thường}
+\end{figure}
+
+\paragraph{Chuẩn bị Tiền xử lý và Bù đắp Mất cân bằng (Class Weights)} \hfill\mbox{}
+
+Thiết lập Generator và bù đắp tỷ trọng lớp:
+
+\begin{lstlisting}[style=pythoncode, caption={Thiết lập Generator và tính toán Class Weights}]
+train_datagen = ImageDataGenerator(
+    rescale=1./255, rotation_range=15, zoom_range=0.1,
+    width_shift_range=0.1, height_shift_range=0.1, horizontal_flip=True
+)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+train_gen = train_datagen.flow_from_directory(
+    TRAIN_DIR, target_size=IMG_SIZE, batch_size=BATCH_SIZE, class_mode='binary', seed=SEED)
+test_gen  = test_datagen.flow_from_directory(
+    TEST_DIR,  target_size=IMG_SIZE, batch_size=BATCH_SIZE, class_mode='binary', shuffle=False, seed=SEED)
+
+n_normal    = train_gen.classes.tolist().count(0)
+n_pneumonia = train_gen.classes.tolist().count(1)
+total_n     = n_normal + n_pneumonia
+
+# Assign inverse frequencies to weights
+class_weights = {0: total_n / (2 * n_normal), 1: total_n / (2 * n_pneumonia)}
+print(f'Class weights: {class_weights}')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Các hệ số trọng số cân bằng lớp}]
+Found 5216 images belonging to 2 classes.
+Found 624 images belonging to 2 classes.
+Class weights: {0: 1.9448, 1: 0.6730}
+\end{lstlisting}
+
+Lớp NORMAL (0) giờ đây mang trọng số phạt gấp gần 3 lần so với lớp PNEUMONIA (1) để chống lại độ "thiên vị" của mạng học sâu. Lớp phân loại được đổi thành \texttt{binary} thay vì \texttt{categorical}.
+
+\paragraph{Kiến trúc ResNet50 (Residual Network)} \hfill\mbox{}
+
+Kiến trúc ResNet50 chứa các "kết nối tắt" (Skip Connections) giúp truyền thông tin xuyên qua nhiều lớp sâu mà không bị hiện tượng triệt tiêu Gradient (Vanishing Gradient). Điều này cực kỳ hữu ích cho ảnh y tế phức tạp.
+
+\begin{lstlisting}[style=pythoncode, caption={Định nghĩa mô hình ResNet50 chuyển giao}]
+base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224,224,3))
+base_model.trainable = False
+
+model = models.Sequential([
+    base_model,
+    layers.GlobalAveragePooling2D(),
+    layers.Dense(256, activation='relu'),
+    layers.BatchNormalization(),
+    layers.Dropout(0.5),
+    layers.Dense(1, activation='sigmoid')
+], name='ResNet50_ChestXRay')
+
+model.compile(optimizer=tf.keras.optimizers.Adam(1e-4),
+              loss='binary_crossentropy',
+              metrics=['accuracy', tf.keras.metrics.AUC(name='auc')])
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Tóm tắt thông số cấu trúc}]
+Model: "ResNet50_ChestXRay"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ resnet50 (Functional)       (None, 7, 7, 2048)        23587712  
+ global_average_pooling2d    (None, 2048)              0         
+ dense (Dense)               (None, 256)               524544    
+ batch_normalization         (None, 256)               1024      
+ dropout (Dropout)           (None, 256)               0         
+ dense_1 (Dense)             (None, 1)                 257       
+=================================================================
+Total params: 24,113,537 (91.99 MB)
+Trainable params: 525,313 (2.00 MB)
+\end{lstlisting}
+
+Cấu hình \texttt{activation='sigmoid'} ở lớp ra thay vì \texttt{softmax} là cấu hình chuẩn mực nhằm tính toán xác suất bệnh (từ $0.0$ đến $1.0$) cho bài toán phân loại nhị phân.
+
+\paragraph{Huấn luyện Mô hình Y tế} \hfill\mbox{}
+
+\begin{lstlisting}[style=pythoncode, caption={Quá trình học tích hợp giám sát tiêu chí AUC}]
+callbacks = [
+    tf.keras.callbacks.EarlyStopping(monitor='val_auc', patience=5,
+                                      restore_best_weights=True, mode='max'),
+    tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5,
+                                          patience=2, min_lr=1e-7, verbose=1)
+]
+
+history = model.fit(
+    train_gen, epochs=EPOCHS, validation_data=test_gen,
+    class_weight=class_weights, callbacks=callbacks, verbose=1
+)
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Log theo dõi trong quá trình Epochs}]
+Epoch 1/15
+163/163 [==============================] - 57s 341ms/step - loss: 0.4512 - accuracy: 0.7778 - auc: 0.8894 - val_loss: 0.6649 - val_accuracy: 0.6154 - val_auc: 0.8907 - lr: 1.0000e-04
+...
+Epoch 8: ReduceLROnPlateau reducing learning rate to 4.999999873689376e-05.
+Epoch 8/15
+163/163 [==============================] - 52s 319ms/step - loss: 0.2572 - accuracy: 0.8961 - auc: 0.9597 - val_loss: 0.3711 - val_accuracy: 0.8510 - val_auc: 0.9261 - lr: 1.0000e-04
+...
+Epoch 15/15
+163/163 [==============================] - 53s 322ms/step - loss: 0.2415 - accuracy: 0.9013 - auc: 0.9647 - val_loss: 0.3271 - val_accuracy: 0.8798 - val_auc: 0.9312 - lr: 1.2500e-05
+\end{lstlisting}
+
+Sử dụng \texttt{val\_auc} thay vì \texttt{val\_accuracy} làm tiêu chí \texttt{EarlyStopping} giúp ta lưu giữ được phiên bản mô hình có độ nhạy bén cao nhất với các ca bệnh.
+
+\begin{lstlisting}[style=pythoncode, caption={Biểu đồ đồ thị kết quả học thuật cho ResNet50}]
+eps = range(1, len(history.history['accuracy']) + 1)
+for tr, vl, title, file in [('accuracy', 'val_accuracy', 'Accuracy', '03_accuracy.png'),
+                            ('loss', 'val_loss', 'Loss', '04_loss.png'),
+                            ('auc', 'val_auc', 'ROC-AUC', '05_auc.png')]:
+    plt.figure(figsize=(6, 5))
+    plt.plot(eps, history.history[tr], 'o-', label='Train')
+    plt.plot(eps, history.history[vl], 's-', label='Validation')
+    plt.title(f'{title} History'); plt.xlabel('Epoch'); plt.ylabel(title)
+    plt.grid(alpha=.3); plt.legend(); plt.tight_layout()
+    plt.savefig(f'{SAVE_DIR}/{file}', dpi=300); plt.show()
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.32\textwidth}
+        \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/03_accuracy.png}
+    \end{minipage}
+    \begin{minipage}{0.32\textwidth}
+        \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/04_loss.png}
+    \end{minipage}
+    \begin{minipage}{0.32\textwidth}
+        \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/05_auc.png}
+    \end{minipage}
+    \caption{Từ trái qua phải: Đồ thị Độ chính xác, Hàm suy hao, và Chỉ số ROC-AUC}
+\end{figure}
+
+\textbf{Phân tích quá trình huấn luyện qua biểu đồ:}
+Nhìn vào các đồ thị Lịch sử huấn luyện (Training History), ta nhận thấy một số điểm đặc trưng:
+\begin{itemize}
+    \item \textbf{Đồ thị Hàm suy hao (Loss):} Đường Validation Loss không hoàn toàn trơn tru mà có sự rung lắc mạnh ở những Epoch giữa (ví dụ tại Epoch 7, val\_loss bất ngờ tăng vọt lên 1.86). Nguyên nhân là do bản chất ảnh X-quang rất phức tạp cộng với việc sử dụng hệ số \texttt{Class Weights} lớn đã khiến mô hình bị phạt nặng khi chẩn đoán sai lớp NORMAL. Tuy nhiên, nhờ cơ chế \texttt{ReduceLROnPlateau} (tự động giảm tốc độ học Learning Rate từ $10^{-4}$ xuống dần $1.25 \times 10^{-5}$), mô hình lập tức kìm hãm đà phân tán và hội tụ vững chắc ở những Epoch cuối.
+    \item \textbf{Đồ thị ROC-AUC:} Trái ngược với sự dao động của Loss, đường cong ROC-AUC tăng trưởng cực kỳ ổn định, bám sát nhau trên cả tập Train và Validation. Điều này minh chứng rằng ROC-AUC là một thước đo đo lường năng lực cốt lõi của mạng nơ-ron y tế xuất sắc hơn nhiều so với Accuracy, đặc biệt trong điều kiện dữ liệu chênh lệch (imbalanced).
+\end{itemize}
+
+\paragraph{Đánh giá Mô hình Y tế (Confusion Matrix \& ROC Curve)} \hfill\mbox{}
+
+\begin{lstlisting}[style=pythoncode, caption={Phân tích Confusion Matrix và Vẽ đường ROC}]
+test_gen.reset()
+y_prob = model.predict(test_gen, verbose=0).flatten()
+y_pred = (y_prob >= 0.5).astype(int)
+y_true = test_gen.classes
+
+fpr, tpr, _ = roc_curve(y_true, y_prob)
+roc_auc = auc(fpr, tpr)
+
+plt.figure(figsize=(6, 5))
+sns.heatmap(confusion_matrix(y_true, y_pred), annot=True, fmt='d', cmap='Blues',
+            xticklabels=CLASSES, yticklabels=CLASSES, linewidths=1)
+plt.title('Confusion Matrix'); plt.xlabel('Predicted'); plt.ylabel('Actual')
+plt.savefig(f'{SAVE_DIR}/06_confusion_matrix.png', dpi=300); plt.show()
+
+plt.figure(figsize=(6, 5))
+plt.plot(fpr, tpr, lw=2, label=f'AUC = {roc_auc:.4f}')
+plt.plot([0, 1], [0, 1], 'k--')
+plt.fill_between(fpr, tpr, alpha=.1)
+plt.xlabel('False Positive Rate'); plt.ylabel('True Positive Rate')
+plt.title('ROC Curve'); plt.legend(); plt.grid(alpha=.3)
+plt.savefig(f'{SAVE_DIR}/07_roc_curve.png', dpi=300); plt.show()
+
+print(classification_report(y_true, y_pred, target_names=CLASSES))
+print(f'ROC-AUC: {roc_auc:.4f}')
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
     \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/02_training_history.png}
-        \caption{Lịch sử huấn luyện ResNet-50}
-        \label{fig:chest_history}
+        \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/06_confusion_matrix.png}
+        \caption{Ma trận nhầm lẫn dự đoán viêm phổi}
     \end{minipage}
     \hfill
     \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/03_confusion_roc.png}
-        \caption{Confusion Matrix và Đường cong ROC}
-        \label{fig:chest_roc}
+        \includegraphics[width=\linewidth]{Chương_2/results/chest_xray/07_roc_curve.png}
+        \caption{Đường cong đặc trưng hoạt động (ROC)}
     \end{minipage}
 \end{figure}
 
-Việc ưu tiên Recall giúp hệ thống trở thành một công cụ hỗ trợ đắc lực cho các bác sĩ trong việc sàng lọc ban đầu, giảm thiểu rủi ro chẩn đoán sót.
+\begin{lstlisting}[style=consoleoutput, caption={Output: Kết luận chỉ số Y khoa (Medical Evaluation)}]
+              precision    recall  f1-score   support
 
-\paragraph{Phụ lục: Quy trình thực nghiệm chi tiết} \hfill \\
-Dưới đây là các bước triển khai chi tiết trên môi trường Jupyter Notebook:
+      NORMAL       0.84      0.85      0.84       234
+   PNEUMONIA       0.91      0.90      0.90       390
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/17.png}
-    \caption{Thiết lập môi trường Y tế: Import kiến trúc ResNet50 và các thư viện xử lý ảnh chuyên sâu.}
-\end{figure}
+    accuracy                           0.88       624
+   macro avg       0.87      0.87      0.87       624
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/18.png}
-    \caption{Phân tích độ mất cân bằng lớp: Nhận diện sự chênh lệch lớn giữa lớp Pneumonia (74.3\%) và Normal (25.7\%).}
-\end{figure}
+ROC-AUC: 0.9313
+\end{lstlisting}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/19.png}
-    \caption{Mã nguồn EDA dữ liệu y tế: Vẽ biểu đồ phân bổ lớp kèm theo hiển thị ảnh mẫu cho từng loại.}
-\end{figure}
+\textbf{Phân tích độ tin cậy của chẩn đoán:}
+Trái với phân loại hoa lá hay cảnh quan, trong bài toán y khoa, đánh giá hiệu năng phải xoay quanh các khái niệm rủi ro của lỗi chẩn đoán:
+\begin{itemize}
+    \item \textbf{ROC-AUC ($93.13\%$):} Đường cong ROC tiệm cận lên góc trái trên cực kỳ xuất sắc (AUC vượt $0.9$), chứng minh khả năng dứt khoát của thuật toán phân định người bệnh và người khỏe, bỏ qua sự rối loạn nhiễu (noise) của màng xương sườn hay mô trong ảnh chụp X-Quang.
+    \item \textbf{Recall của PNEUMONIA ($90\%$):} Hay còn gọi là Sensitivity (Độ nhạy). Việc đạt tới $90\%$ phát hiện viêm phổi là rất tốt. Dù vậy, trong y tế, nếu $10\%$ ca bệnh thực sự bị bỏ sót (False Negative) thì hậu quả có thể nguy hiểm. Trên thực tế triển khai ứng dụng, bác sĩ lâm sàng có thể hạ ngưỡng \texttt{threshold} của \texttt{sigmoid} xuống từ $0.5$ thành $0.3$ để đẩy Recall lên sát $98\% - 99\%$, chấp nhận hy sinh Precision (có vài ca khỏe bị kết luận viêm phổi) để đảm bảo an toàn sinh mạng tuyệt đối và không bỏ lọt bệnh nhân.
+\end{itemize}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/20.png}
-    \caption{Kết quả Dataset Overview: Hình ảnh so sánh sự khác biệt mờ đục giữa phổi bình thường và phổi bị viêm.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/21.png}
-    \caption{Xử lý mất cân bằng: Mã nguồn tính toán `class\_weights` để gán trọng số cao hơn cho lớp thiểu số (Normal).}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/22.png}
-    \caption{Thiết kế mô hình Transfer Learning: Sử dụng ResNet50 làm Base model và thêm các lớp Dense tùy chỉnh.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/23.png}
-    \caption{Quá trình huấn luyện với Trọng số lớp: Sử dụng tham số `class\_weight` trong hàm `fit` để cân bằng mô hình.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/24.png}
-    \caption{Mã nguồn trực quan hóa kết quả: Vẽ biểu đồ Accuracy, Loss và đặc biệt là ROC-AUC.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/25.png}
-    \caption{Kết quả Training History: Chỉ số ROC-AUC đạt mức ổn định cao (0.92+), chứng minh khả năng phân loại tốt.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/26.png}
-    \caption{Mã nguồn đánh giá y tế chuyên sâu: Tính toán Precision, Recall và vẽ đường cong ROC.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_2/docs/ch2/27.png}
-    \caption{Kết quả đánh giá cuối cùng: Sự kết hợp giữa Confusion Matrix và ROC Curve cho cái nhìn toàn diện về mô hình.}
-\end{figure}
+Cuối cùng, lưu trữ tệp báo cáo vào hệ thống:
+\begin{lstlisting}[style=pythoncode, caption={Lưu báo cáo vào tập tin hệ thống}]
+with open(f'{SAVE_DIR}/report.txt', 'w') as f:
+    f.write('Chest X-Ray Pneumonia Detection - ResNet50\n' + '='*50 + '\n')
+    f.write(f'ROC-AUC: {roc_auc:.4f}\n')
+    f.write(f'Total Params: {model.count_params():,}\n\n')
+    f.write(classification_report(y_true, y_pred, target_names=CLASSES))
+\end{lstlisting}

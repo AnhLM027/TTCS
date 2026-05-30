@@ -4,7 +4,7 @@ Mặc dù LSTM đã giải quyết tốt vấn đề tiêu biến đạo hàm, n
 \subsection{Dự báo chuỗi thời gian (Time Series Forecasting)}
 Khác với phân loại văn bản, dự báo chuỗi thời gian yêu cầu mô hình nắm bắt được tính mùa vụ (seasonality), xu hướng (trend) và các biến động phi tuyến tính từ dữ liệu số.
 
-\subsection{Thực nghiệm chuyên sâu trên 2 Datasets \& 2 Models}
+\subsection{Thực nghiệm chuyên sâu trên 5 Datasets \& 5 Models}
 
 \subsubsection{Dataset 1: Beijing Air Quality (LSTM + Multi-variate)}
 \textbf{Kiến trúc:} LSTM đa biến.
@@ -16,8 +16,23 @@ Khác với phân loại văn bản, dự báo chuỗi thời gian yêu cầu m�
 \textbf{Mục tiêu:} Sử dụng Conv1D để trích xuất đặc trưng cục bộ và LSTM để học xu hướng dài hạn của giá cổ phiếu.
 \input{Chương_4/docs/sub_stock_price.tex}
 
+\subsubsection{Dataset 3: Energy Consumption (LSTM + Attention)}
+\textbf{Kiến trúc:} LSTM kết hợp Cơ chế Chú ý (Attention).
+\textbf{Mục tiêu:} Dự báo phụ tải điện năng, giải quyết tính mùa vụ mạnh và trích xuất trọng số giải thích (Explainable AI).
+\input{Chương_4/docs/sub_energy_attention.tex}
+
+\subsubsection{Dataset 4: Human Activity Recognition (BiGRU)}
+\textbf{Kiến trúc:} Bidirectional GRU (BiGRU).
+\textbf{Mục tiêu:} Nhận diện hành động con người từ tín hiệu chuỗi thời gian của cảm biến gia tốc và con quay hồi chuyển.
+\input{Chương_4/docs/sub_har_bigru.tex}
+
+\subsubsection{Dataset 5: Phân tích Cảm xúc IMDB Reviews (BiLSTM)}
+\textbf{Kiến trúc:} Bidirectional LSTM (BiLSTM) xếp chồng 2 tầng.
+\textbf{Mục tiêu:} Phân tích cảm xúc đánh giá phim, nắm bắt ngữ nghĩa ngữ cảnh theo cả hai chiều của câu và tự động phân loại cảm xúc tích cực hoặc tiêu cực.
+\input{Chương_4/docs/sub_imdb_bilstm.tex}
+
 \subsection{So sánh và Đánh giá tổng hợp (Benchmarking)}
-Bảng dưới đây tổng hợp kết quả của các mô hình bộ nhớ dài hạn trên 2 bài toán dự báo:
+Bảng dưới đây tổng hợp kết quả của các mô hình bộ nhớ dài hạn trên các bài toán dự báo chuỗi thời gian và xử lý ngôn ngữ tự nhiên (NLP):
 
 \begin{table}[H]
     \centering
@@ -25,13 +40,16 @@ Bảng dưới đây tổng hợp kết quả của các mô hình bộ nhớ d�
     \hline
     \textbf{Dataset} & \textbf{Model} & \textbf{R² / Accuracy} & \textbf{Params} & \textbf{Kỹ thuật chính} \\ \hline
     Beijing Air & MV-LSTM & 0.9457 (R²) & 121K & Multivariate Context \\ \hline
-    Google Stock & Conv1D-LSTM & 0.9745 (R²) & 110K & Feature Filtering \\ \hline
+    Google Stock & Conv1D-LSTM & 0.9342 (R²) & 110K & Feature Filtering \\ \hline
+    Energy Demand & LSTM-Attention & 0.9884 (R²) & 136K & Attention Mechanism \\ \hline
+    HAR Sensors & BiGRU & 0.8600 (Acc) & 233K & Bidirectional Sequence \\ \hline
+    IMDB Reviews & BiLSTM & 0.8900 (Acc) & 2.99M & Bidirectional Context \\ \hline
     \end{tabular}
     \caption{Bảng so sánh hiệu năng các mô hình trong Chương 4}
     \label{tab:lstm_comparison}
 \end{table}
 
-Thực nghiệm cho thấy các mô hình dự báo chuỗi thời gian số (Regression) đạt độ chính xác cực cao ($R^2 > 0.94$). Việc kết hợp LSTM với các kỹ thuật lọc nhiễu (Conv1D) hoặc xử lý đa biến giúp tăng cường độ ổn định cho các bài toán môi trường và tài chính.
+Thực nghiệm cho thấy các mô hình dự báo chuỗi thời gian số (Regression) đạt độ chính xác cực cao ($R^2 > 0.93$). Việc kết hợp LSTM với các kỹ thuật lọc nhiễu (Conv1D) hoặc xử lý đa biến giúp tăng cường độ ổn định cho các bài toán môi trường và tài chính. Bên cạnh đó, đối với dữ liệu phân loại chuỗi và văn bản (HAR, IMDB), các kiến trúc học hai chiều (BiGRU, BiLSTM) thể hiện khả năng nắm bắt ngữ cảnh vượt trội với độ chính xác dao động từ $86\%$ đến $89\%$.
 
 \subsection{Tổng kết Chương 4}
 Việc kết hợp LSTM với Attention và Conv1D mang lại độ chính xác cao vượt trội cho các bài toán chuỗi thời gian phức tạp. Cơ chế bộ nhớ dài hạn đã chứng minh tính hiệu quả từ việc dự báo các chỉ số môi trường, tài chính cho đến nhận diện hành động con người. Đây là nền tảng quan trọng giúp chúng ta tiến tới hiểu rõ hơn về các kiến trúc Transformer hiện đại trong tương lai.

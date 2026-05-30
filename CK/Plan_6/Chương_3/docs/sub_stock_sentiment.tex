@@ -1,141 +1,343 @@
-\paragraph{Thực nghiệm với Stock Market Sentiment} \hfill \\
-Bộ dữ liệu gồm các tiêu đề tin tức tài chính được gán nhãn cảm xúc (Tích cực/Tiêu cực). Đây là bài toán phân loại văn bản ngắn, thách thức ở việc nắm bắt các thuật ngữ chuyên ngành tài chính.
+\paragraph{Thực nghiệm: Dự đoán Cảm xúc Thị trường Chứng khoán (Stock Market Sentiment) bằng mạng Hồi quy (RNN)} \hfill \\
 
-\paragraph{Mô hình Vanilla RNN} \hfill \\
-Chúng ta sử dụng kiến trúc RNN cơ bản (SimpleRNN) để đánh giá khả năng học chuỗi của mô hình truyền thống. Mô hình có tổng cộng \textbf{652,449} tham số.
+Xử lý Ngôn ngữ Tự nhiên (NLP) trên văn bản tài chính đặt ra nhiều thách thức đặc thù so với văn bản thông thường. Bộ dữ liệu **Stock Sentiment** gồm các dòng trạng thái (tweets) hoặc tiêu đề tin tức ngắn liên quan đến chứng khoán, mang theo lượng lớn các thuật ngữ chuyên ngành (tickers) và từ lóng tài chính. Trong phần này, chúng ta sẽ áp dụng kiến trúc mạng Nơ-ron Hồi quy cơ bản (Vanilla RNN / SimpleRNN) với cơ chế đa chiều (Bidirectional) để đánh giá khả năng trích xuất cảm xúc (Tích cực / Tiêu cực).
 
-\paragraph{Phân tích Dữ liệu và Trực quan hóa} \hfill \\
-Trước khi huấn luyện, chúng ta quan sát sự phân bổ độ dài văn bản và các từ khóa phổ biến thông qua WordCloud.
+\paragraph{Thiết lập Môi trường và Load dữ liệu} \hfill \\
+
+\begin{lstlisting}[style=pythoncode, caption={Khởi tạo môi trường thư viện cho bài toán NLP}]
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from wordcloud import WordCloud
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix
+import re, random, warnings
+
+SEED = 42
+np.random.seed(SEED)
+random.seed(SEED)
+tf.random.set_seed(SEED)
+os.environ["PYTHONHASHSEED"] = str(SEED)
+
+warnings.filterwarnings('ignore')
+plt.rcParams.update({'figure.dpi': 120, 'font.size': 11})
+
+DATA_DIR = '../data/stock_sentiment'
+SAVE_DIR = '../results/stock_sentiment'
+os.makedirs(SAVE_DIR, exist_ok=True)
+
+VOCAB_SIZE  = 10000
+MAX_LEN     = 50
+EMBED_DIM   = 64
+EPOCHS      = 10
+BATCH_SIZE  = 32
+\end{lstlisting}
+
+\begin{lstlisting}[style=pythoncode, caption={Đọc tập dữ liệu Stock Data từ file CSV}]
+import glob
+csv_files = glob.glob(f'{DATA_DIR}/**/*.csv', recursive=True) + glob.glob(f'{DATA_DIR}/*.csv')
+df = pd.read_csv(csv_files[0])
+
+text_col  = [c for c in df.columns if any(k in c.lower() for k in ['text','headline'])][0]
+label_col = [c for c in df.columns if any(k in c.lower() for k in ['sentiment','label'])][0]
+
+df = df[[text_col, label_col]].dropna()
+df.columns = ['text', 'label']
+
+# Normalize labels to 0/1 (-1: Negative -> 0, 1: Positive -> 1)
+unique_labels = sorted(df['label'].unique())
+if set(unique_labels) != set(range(len(unique_labels))):
+    label_map = {v: i for i, v in enumerate(unique_labels)}
+    df['label'] = df['label'].map(label_map)
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Kích thước và thông tin bộ dữ liệu ban đầu}]
+Label mapping: {-1: 0, 1: 1}
+Final shape: (5791, 2)
+label
+1    3685
+0    2106
+Name: count, dtype: int64
+\end{lstlisting}
+
+\paragraph{Khám phá Dữ liệu Văn bản (EDA)} \hfill \\
+
+\begin{lstlisting}[style=pythoncode, caption={Trực quan hóa phân phối độ dài văn bản và Nhãn cảm xúc}]
+df['text_len'] = df['text'].apply(lambda x: len(str(x).split()))
+
+# 1. Sentiment Label Distribution
+plt.figure(figsize=(6, 4))
+label_names = [str(v) for v in sorted(df['label'].unique())]
+counts = df['label'].value_counts().sort_index()
+bars = plt.bar(label_names, counts.values, color=['#EF5350','#66BB6A'], edgecolor='black')
+plt.title('Sentiment Label Distribution'); plt.ylabel('Count'); plt.xlabel('Label')
+for bar, val in zip(bars, counts.values):
+    plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 10, f'{val:,}', ha='center')
+plt.savefig(f'{SAVE_DIR}/01_a_label_dist.png'); plt.show()
+
+# 2. Text Length Distribution
+plt.figure(figsize=(6, 4))
+for lbl, color in zip(sorted(df['label'].unique()), ['#EF5350','#66BB6A']):
+    plt.hist(df[df['label']==lbl]['text_len'], bins=30, alpha=0.7, color=color, label=f'Label {lbl}', density=True)
+plt.axvline(MAX_LEN, color='black', linestyle='--', lw=2, label=f'MAX_LEN={MAX_LEN}')
+plt.title('Text Length Distribution'); plt.legend()
+plt.savefig(f'{SAVE_DIR}/01_b_textlen_dist.png'); plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
     \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_3/results/stock_sentiment/01_label_textlen_dist.png}
-        \caption{Phân bổ nhãn và độ dài tiêu đề tin tức}
-        \label{fig:stock_dist}
+        \includegraphics[width=\linewidth]{Chương_3/results/stock_sentiment/01_a_label_dist.png}
+        \caption{Biểu đồ số lượng nhãn: Sự chênh lệch đáng kể giữa Positive (1) và Negative (0)}
     \end{minipage}
     \hfill
     \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_3/results/stock_sentiment/02_wordclouds.png}
-        \caption{WordCloud của các nhãn cảm xúc}
-        \label{fig:stock_wc}
+        \includegraphics[width=\linewidth]{Chương_3/results/stock_sentiment/01_b_textlen_dist.png}
+        \caption{Phân phối mật độ số từ. Đa số câu đều ngắn hơn ngưỡng cắt \texttt{MAX\_LEN=50}}
     \end{minipage}
 \end{figure}
 
-\paragraph{Kết quả huấn luyện và Đánh giá} \hfill \\
-Mô hình đạt độ chính xác kiểm định tốt nhất là \textbf{52.09\%}. Kết quả này cho thấy hạn chế của RNN truyền thống đối với các câu văn có cấu trúc phức tạp.
+\textbf{Phân tích Phân phối:} 
+- Biểu đồ nhãn cho thấy sự mất cân bằng ($3685$ tích cực so với $2106$ tiêu cực). Điều này buộc chúng ta phải áp dụng kỹ thuật \texttt{class\_weights} trong quá trình học.
+- Độ dài câu chủ yếu rơi vào khoảng 10-30 từ. Việc chọn tham số \texttt{MAX\_LEN = 50} là hoàn toàn an toàn (bao phủ hơn 99\% các câu) để thực hiện Zero-Padding.
+
+\paragraph{Kỹ thuật Tiền xử lý nhiễu Tài chính (Domain-Specific Text Cleaning)} \hfill \\
+
+Khác với văn bản thông thường, tin tức chứng khoán chứa vô số mã ticker (ví dụ \$AAPL), URL và các từ lóng vô giá trị đối với phân tích cảm xúc (như "user", "stock", "today"). Chúng ta thiết kế một bộ lọc kết hợp \textit{RegEx} và danh sách \textit{Custom Stopwords}.
+
+\begin{lstlisting}[style=pythoncode, caption={Hàm loại bỏ nhiễu và bảo toàn từ mang nghĩa phủ định}]
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+
+# 1. Remove negative words from Stopwords so we DO NOT delete them
+safelist = {'not', 'no', 'nor', 'cannot', 'none'} 
+SAFE_STOPWORDS = set(ENGLISH_STOP_WORDS) - safelist
+
+# 2. Domain-specific noise
+DOMAIN_NOISE = {
+    'user', 'aap', 'goog', 'stock', 'market', 'today', 'day', 'will', 'now', 'see', 'share', 'amzn', 
+    'report', 'volume', 'one', 'going', 'go', 'still', 'yesterday', 'tomorrow', 'im' 
+}
+STOPWORDS_AND_NOISE = SAFE_STOPWORDS.union(DOMAIN_NOISE)
+
+def clean_text(text):
+    text = str(text).lower()
+    text = re.sub(r'https?://\S+|www\.\S+', '', text) # Remove URL
+    text = re.sub(r'\$\w+', '', text)                 # Remove Ticker
+    text = re.sub(r'[^a-z\s]', '', text)              # Remove special characters
+    text = re.sub(r'\s+', ' ', text).strip()
+    
+    # Filter stopwords
+    words = [w for w in text.split() if w not in STOPWORDS_AND_NOISE]
+    return ' '.join(words)
+
+df['clean_text'] = df['text'].apply(clean_text)
+\end{lstlisting}
+
+Trực quan hóa WordCloud để kiểm chứng xem bộ lọc đã làm sạch dữ liệu hiệu quả chưa:
+
+\begin{lstlisting}[style=pythoncode, caption={Vẽ WordCloud cho 2 phân lớp (Tích cực / Tiêu cực)}]
+unique_labels = sorted(df['label'].unique())
+label_titles  = {0: 'Negative', 1: 'Positive'}
+label_colors  = {0: 'Reds', 1: 'Greens'}
+
+fig, axes = plt.subplots(1, len(unique_labels), figsize=(12, 5))
+for ax, lbl in zip(axes, unique_labels):
+    text_corpus = ' '.join(df[df['label']==lbl]['clean_text'].astype(str).tolist())
+    wc = WordCloud(width=600, height=400, max_words=100,
+                   colormap=label_colors.get(lbl, 'viridis'), background_color='white').generate(text_corpus)
+    ax.imshow(wc, interpolation='bilinear'); ax.axis('off')
+    ax.set_title(label_titles.get(lbl, f'Label {lbl}'), fontsize=12)
+
+plt.suptitle('WordCloud by Sentiment Label', fontsize=14, fontweight='bold')
+plt.savefig(f'{SAVE_DIR}/02_wordclouds.png'); plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_3/results/stock_sentiment/03_training_history.png}
-        \caption{Lịch sử huấn luyện Vanilla RNN}
-        \label{fig:stock_history}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_3/results/stock_sentiment/04_confusion_matrix.png}
-        \caption{Ma trận nhầm lẫn phân loại tin tức}
-        \label{fig:stock_cm}
-    \end{minipage}
+    \includegraphics[width=1\linewidth]{Chương_3/results/stock_sentiment/02_wordclouds.png}
+    \caption{Phân bố các từ vựng cốt lõi chi phối cảm xúc sau khi lọc nhiễu}
 \end{figure}
 
-Ngoài ra, chúng ta sử dụng t-SNE để trực quan hóa không gian nhúng (Embedding space), cho thấy cách mô hình gom cụm các từ vựng có ngữ nghĩa tương đồng.
+\textbf{Đánh giá Ngữ nghĩa (Semantic Analysis):}
+- \textbf{Negative (Màu đỏ):} Các từ nổi bật nhất là \textit{short} (bán khống), \textit{lower} (giảm), \textit{down}, \textit{loss}, \textit{fall}. Đây là những tín hiệu mạnh mẽ của thị trường gấu (Bearish).
+- \textbf{Positive (Màu xanh):} Tràn ngập các từ biểu thị sự tăng trưởng như \textit{long} (mua dài hạn), \textit{buy}, \textit{high}, \textit{growth}, \textit{up}.
+WordCloud chứng tỏ quá trình làm sạch văn bản (Data Cleaning) đã giữ lại được linh hồn của dữ liệu tài chính.
+
+\paragraph{Kỹ thuật Vector hóa (Tokenization) và Word Embedding} \hfill \\
+
+\begin{lstlisting}[style=pythoncode, caption={Vector hóa câu văn thành chuỗi số nguyên (Token IDs)}]
+X = df['clean_text'].values
+y = df['label'].values
+NUM_CLASSES = len(np.unique(y))
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=SEED, stratify=y)
+
+tokenizer = Tokenizer(num_words=VOCAB_SIZE, oov_token='<OOV>')
+tokenizer.fit_on_texts(X_train)
+
+X_train_seq = pad_sequences(tokenizer.texts_to_sequences(X_train), maxlen=MAX_LEN, padding='pre', truncating='pre')
+X_test_seq  = pad_sequences(tokenizer.texts_to_sequences(X_test),  maxlen=MAX_LEN, padding='pre', truncating='pre')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Kiểm tra quá trình Zero-Padding}]
+=== TOKENIZATION DEMO ===
+Original  : tcs price jumps no layoffs dividend announcements buy sell hold
+Cleaned   : kickers watchlist xide tit soq pnk cpw bpz aj trade method prev posts
+Token IDs : [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]...
+Padding   : 40 zero-padded positions
+OOV rate in train: 0.0000
+\end{lstlisting}
+
+Thuật toán \texttt{pad\_sequences} đã thêm số `0` (Zero-Padding) vào trước (pre) những câu ngắn hơn 50 từ để đồng bộ hóa kích thước ma trận truyền vào mô hình nơ-ron.
+
+\paragraph{Xây dựng Kiến trúc Bidirectional SimpleRNN} \hfill \\
+
+RNN truyền thống thường gặp vấn đề mất thông tin (vanishing gradient) khi đọc câu dài. Để cải thiện, chúng tôi sử dụng \textbf{Bidirectional RNN} (RNN đa chiều) đọc văn bản từ trái sang phải và từ phải sang trái.
+
+\begin{lstlisting}[style=pythoncode, caption={Thiết kế kiến trúc RNN Đa chiều với SpatialDropout1D}]
+model = models.Sequential([
+    layers.Input(shape=(MAX_LEN,), dtype='int32', name='input_layer'),
+    layers.Embedding(VOCAB_SIZE, EMBED_DIM, input_length=MAX_LEN, name='embedding'),
+    
+    # Improvement 1: SpatialDropout1D to prevent overfitting on Word Embeddings
+    layers.SpatialDropout1D(0.3, name='spatial_dropout'),
+    
+    # Improvement 2: Bidirectional SimpleRNN for bidirectional context
+    layers.Bidirectional(layers.SimpleRNN(32, return_sequences=True), name='bidirectional_rnn_1'),
+    layers.Dropout(0.3),
+    layers.Bidirectional(layers.SimpleRNN(16, return_sequences=True), name='bidirectional_rnn_2'),
+    
+    # Improvement 3: GlobalMaxPooling1D to extract the most important keywords
+    layers.GlobalMaxPooling1D(name='global_max_pooling'),
+    layers.Dropout(0.3),
+    
+    layers.Dense(32, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(1e-3)),
+    layers.Dropout(0.3),
+    layers.Dense(1, activation='sigmoid', name='output')
+], name='VanillaRNN_StockSentiment')
+
+model.compile(optimizer=tf.keras.optimizers.Adam(1e-3), loss='binary_crossentropy', metrics=['accuracy'])
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Tóm tắt thông số cấu trúc liên kết}]
+ Total params: 649,889
+ Trainable params: 649,889
+ Non-trainable params: 0
+\end{lstlisting}
+
+Đáng chú ý, lớp \texttt{GlobalMaxPooling1D} được sử dụng nhằm mục đích "vớt" lấy những đặc trưng mạnh nhất (như từ khóa "short", "buy") bất kể chúng xuất hiện ở vị trí nào trong câu, thay vì chỉ lấy trạng thái ẩn cuối cùng (last hidden state) như RNN thông thường.
+
+\paragraph{Đánh giá Quá trình Huấn luyện và Biểu đồ Lịch sử} \hfill \\
+
+\begin{lstlisting}[style=pythoncode, caption={Huấn luyện cùng với kỹ thuật bù trừ Class Weights}]
+from sklearn.utils.class_weight import compute_class_weight
+
+# 1. Compute class weights to offset data imbalance
+# Minority class gets higher weight so the model pays more attention
+weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
+class_weights = dict(enumerate(weights))
+
+# 2. Train model with class_weight
+history = model.fit(
+    X_train_seq, y_train, epochs=EPOCHS, batch_size=BATCH_SIZE, validation_split=0.2,
+    class_weight=class_weights,
+    callbacks=[
+        tf.keras.callbacks.EarlyStopping(patience=2, restore_best_weights=True, monitor='val_loss'),
+        tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=2, verbose=1)
+    ], verbose=1
+)
+\end{lstlisting}
+
+\begin{lstlisting}[style=pythoncode, caption={Trực quan hóa sự biến thiên của Loss và Accuracy}]
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+eps = range(1, len(history.history['accuracy'])+1)
+
+for ax, (tr, vl, metric) in zip(axes, [('accuracy', 'val_accuracy', 'Accuracy'), ('loss', 'val_loss', 'Loss')]):
+    ax.plot(eps, history.history[tr], 'o-', color='#2196F3', lw=2, label='Train')
+    ax.plot(eps, history.history[vl], 's-', color='#FF5722', lw=2, label='Validation')
+    ax.fill_between(eps, history.history[tr], history.history[vl], alpha=0.1, color='gray')
+    ax.set_title(f'{metric} - Vanilla RNN (Stock Sentiment)'); ax.set_xlabel('Epoch'); ax.set_ylabel(metric)
+    ax.legend(); ax.grid(True, alpha=0.3)
+
+plt.tight_layout(); plt.savefig(f'{SAVE_DIR}/03_training_history.png'); plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{Chương_3/results/stock_sentiment/05_embedding_tsne.png}
-    \caption{Trực quan hóa Embedding bằng t-SNE}
-    \label{fig:stock_tsne}
+    \includegraphics[width=1\linewidth]{Chương_3/results/stock_sentiment/03_training_history.png}
+    \caption{Biểu đồ lịch sử huấn luyện cho thấy bản chất Overfitting nội tại của SimpleRNN}
 \end{figure}
 
-\paragraph{Phụ lục: Quy trình thực nghiệm chi tiết} \hfill \\
-Dưới đây là các bước triển khai chi tiết trên môi trường Jupyter Notebook:
+\textbf{Phân tích độ ổn định:} 
+Nhìn vào biểu đồ Loss bên phải, sau Epoch thứ 4, trong khi Training Loss tiếp tục lao dốc (tiến gần về $0.2$), thì Validation Loss lại đảo chiều tăng ngược trở lại (vượt ngưỡng $0.75$). Mặc dù đã dùng rất nhiều cơ chế như \texttt{Dropout} và \texttt{L2 Regularization}, cấu trúc SimpleRNN vẫn bộc lộ điểm yếu "học vẹt" (Overfitting) kinh điển khi đối mặt với dữ liệu ngôn ngữ có tính trừu tượng phức tạp. Lệnh \texttt{EarlyStopping} đã phải can thiệp để tự động ngắt quá trình huấn luyện nhằm tránh rủi ro, khôi phục lại trọng số tốt nhất tại Epoch 4 (Val Acc $\approx 74.11\%$).
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/1.png}
-    \caption{Thiết lập môi trường: Khai báo các thư viện (TensorFlow, Scikit-learn) và cấu hình Hyperparameters cho bài toán Stock Sentiment.}
-\end{figure}
+\paragraph{Kết quả Confusion Matrix và Phân tích t-SNE Không gian Vector} \hfill \\
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/2.png}
-    \caption{Tiền xử lý văn bản: Mã nguồn làm sạch dữ liệu, loại bỏ ký tự đặc biệt và chuyển về chữ thường trước khi đưa vào mô hình.}
-\end{figure}
+\begin{lstlisting}[style=pythoncode, caption={Xuất ma trận nhầm lẫn (Confusion Matrix)}]
+y_pred_raw = model.predict(X_test_seq, verbose=0)
+y_pred = np.where(y_pred_raw.flatten() >= 0.5, 1, 0)
+target_names = ['Negative', 'Positive']
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/3.png}
-    \caption{Thống kê nhãn: Kiểm tra phân bổ lớp Tích cực (1) và Tiêu cực (-1) trong bộ dữ liệu chứng khoán.}
-\end{figure}
+cm = confusion_matrix(y_test, y_pred)
+fig, ax = plt.subplots(figsize=(6, 5))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=target_names, yticklabels=target_names, ax=ax)
+ax.set_title('Confusion Matrix - Vanilla RNN (Stock Sentiment)')
+plt.tight_layout(); plt.savefig(f'{SAVE_DIR}/04_confusion_matrix.png'); plt.show()
+
+print(classification_report(y_test, y_pred, target_names=target_names))
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/4.png}
-    \caption{Kết quả EDA: Trực quan hóa phân bổ nhãn và độ dài tiêu đề tin tức để xác định chiều dài tối đa của chuỗi (`MAX\_LEN`).}
+    \includegraphics[width=0.6\linewidth]{Chương_3/results/stock_sentiment/04_confusion_matrix.png}
+    \caption{Ma trận nhầm lẫn trên tập Test (1159 mẫu văn bản)}
 \end{figure}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Báo cáo hiệu năng Precision và Recall}]
+              precision    recall  f1-score   support
+    Negative       0.72      0.56      0.63       421
+    Positive       0.78      0.88      0.82       738
+
+    accuracy                           0.76      1159
+   macro avg       0.75      0.72      0.73      1159
+\end{lstlisting}
+
+Mô hình đạt độ chính xác (Accuracy) tổng thể là \textbf{76\%}. Tuy nhiên, Recall của lớp Tiêu cực (Negative) khá thấp (56\%), nghĩa là mạng RNN cơ bản khá khó khăn và dễ bị bỏ sót các tín hiệu dự báo thị trường giảm điểm. Lỗi phân loại này có thể do giới hạn về "bộ nhớ ngắn hạn" của SimpleRNN.
+
+Cuối cùng, để đánh giá xem lớp `Embedding` học được ngữ nghĩa từ vựng tài chính như thế nào, ta chiếu Vector 64 chiều của các từ khóa xuống mặt phẳng 2D bằng thuật toán \textbf{t-SNE} (t-Distributed Stochastic Neighbor Embedding):
+
+\begin{lstlisting}[style=pythoncode, caption={Giảm chiều dữ liệu bằng t-SNE để vẽ Không gian nhúng từ vựng}]
+from sklearn.manifold import TSNE
+
+embedding_weights = model.get_layer('embedding').get_weights()[0]
+top_n = 300
+top_words = list(tokenizer.word_index.keys())[:top_n]
+top_vecs = embedding_weights[1:top_n+1]
+
+tsne = TSNE(n_components=2, random_state=SEED, perplexity=30, max_iter=500)
+reduced = tsne.fit_transform(top_vecs)
+
+plt.figure(figsize=(10,7))
+plt.scatter(reduced[:,0], reduced[:,1], alpha=.4, s=20, color='steelblue')
+
+for i, w in enumerate(top_words[:50]):
+    plt.annotate(w, (reduced[i,0], reduced[i,1]), fontsize=9, alpha=.85)
+
+plt.title('t-SNE Word Embedding Visualization (Top 300 words)', fontweight='bold')
+plt.savefig(f'{SAVE_DIR}/05_embedding_tsne.png'); plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/5.png}
-    \caption{Phân tích từ vựng: WordCloud hiển thị các từ khóa xuất hiện nhiều trong cả hai lớp cảm xúc.}
+    \includegraphics[width=0.9\linewidth]{Chương_3/results/stock_sentiment/05_embedding_tsne.png}
+    \caption{Phân phối các từ vựng cốt lõi trên Không gian 2D sau khi bị nén bởi t-SNE}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/7.png}
-    \caption{Tokenization: Mã nguồn sử dụng `Tokenizer` của Keras để chuyển văn bản thành các chuỗi số nguyên.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/8.png}
-    \caption{Kiểm tra Padding: Trực quan hóa một batch dữ liệu sau khi được thêm padding để đảm bảo độ dài đồng nhất.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/9.png}
-    \caption{Kết quả Tokenization: Danh sách 20 từ khóa đầu tiên trong từ điển và hình thái của chuỗi số tương ứng.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/11.png}
-    \caption{Kiến trúc Vanilla RNN: Thiết kế mô hình với lớp Embedding, các lớp SimpleRNN xếp chồng và Dropout.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/12.png}
-    \caption{Quá trình huấn luyện: Theo dõi sự thay đổi của Loss và Accuracy qua từng Epoch.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/13.png}
-    \caption{Kết quả Training History: Biểu đồ cho thấy sự hội tụ của mô hình RNN truyền thống trên tập dữ liệu Stock.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/14.png}
-    \caption{Đánh giá CM: Ma trận nhầm lẫn giúp xác định các trường hợp dự báo sai giữa các lớp cảm xúc.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/15.png}
-    \caption{Phân tích Embedding: Mã nguồn sử dụng t-SNE để giảm chiều không gian vector từ 64 xuống 2 chiều.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_3/docs/ch3/16.png}
-    \caption{Trực quan hóa Word Embedding: Các từ có ngữ nghĩa tương đồng bắt đầu được gom nhóm trong không gian vector.}
-\end{figure}
+\textbf{Giải thích bản đồ Không gian nhúng t-SNE:} Các từ có cùng tính chất tài chính sẽ có xu hướng gom cụm (cluster) lại với nhau. Ví dụ, nhóm các mã ticker công ty hoặc nhóm các động từ xu hướng (trend verbs) sẽ kết nối khoảng cách rất gần với nhau, minh chứng mạng nơ-ron không chỉ học các ký tự vô hồn, mà đã thực sự hình thành được \textit{Không gian ngữ nghĩa (Semantic Space)} của thị trường chứng khoán trong quá trình tối ưu hóa. Tuy nhiên để đạt được F1-Score xuất sắc hơn cho mảng tài chính, cấu trúc SimpleRNN vẫn còn yếu và buộc chúng ta phải cân nhắc tới các kiến trúc phức tạp hơn như LSTM hay GRU.

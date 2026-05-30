@@ -16,23 +16,43 @@
 \usepackage{xcolor}
 \usepackage{hyperref}
 
-\lstset{
+% Cấu hình các style chuyên biệt cho gói listings
+\lstdefinestyle{pythoncode}{
     language=Python,
     basicstyle=\ttfamily\small,
     keywordstyle=\color{blue},
     commentstyle=\color{gray},
     stringstyle=\color{orange},
     numbers=left,
-    numberstyle=\tiny,
-    breaklines=true,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{blue!2!white},
     frame=single,
+    rulecolor=\color{blue!35!white},
+    breaklines=true,
     columns=fullflexible,
     keepspaces=true,
-    escapeinside={(*}{*)},
-    escapebegin=\color{gray}\itshape, % Auto-match color/style for escaped text
+    showstringspaces=false,
     extendedchars=true,
     inputencoding=utf8
 }
+
+\lstdefinestyle{consoleoutput}{
+    basicstyle=\ttfamily\footnotesize\color{black!90},
+    backgroundcolor=\color{gray!6!white},
+    numbers=none,
+    frame=single,
+    rulecolor=\color{gray!40},
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true,
+    extendedchars=true,
+    inputencoding=utf8
+}
+
+% Mặc định ban đầu sử dụng pythoncode style
+\lstset{style=pythoncode}
 
 % Section: I, II, III
 \renewcommand{\thesection}{\Roman{section}}
@@ -80,10 +100,10 @@
 \large
 \begin{tabular}{p{14cm}}
 \textbf{Đề tài: Nghiên cứu chuyên sâu về Học máy và Học sâu qua thực nghiệm đa tầng} \\
-1. TIỀN XỬ LÝ DỮ LIỆU NÂNG CAO (4 DATASETS TABULAR) \\
+1. TIỀN XỬ LÝ DỮ LIỆU (4 DATASETS TABULAR) \\
 2. THỊ GIÁC MÁY TÍNH VỚI MẠNG TÍCH CHẬP (4 DATASETS IMAGE - 4 MODELS) \\
-3. XỬ LÝ CHUỖI VỚI MẠNG RNN VÀ LSTM (4 DATASETS TEXT - 4 MODELS) \\
-4. DỰ BÁO CHUỖI THỜI GIAN VỚI ATTENTION VÀ TRANSFORMER (4 DATASETS - 4 MODELS)
+3. XỬ LÝ CHUỖI VỚI MẠNG RNN (2 DATASETS TEXT - 3 MODELS) \\
+4. BỘ NHỚ DÀI HẠN LSTM VÀ CƠ CHẾ ATTENTION (5 DATASETS TIME-SERIES/TEXT - 5 MODELS)
 \end{tabular}
 \\[15mm]
 
@@ -121,16 +141,16 @@ Sinh viên thực hiện:\hspace{1cm} & \hspace{1mm} Lê Minh Anh - B23DCCN027\\
 
 \section*{KẾT LUẬN}
 \addcontentsline{toc}{section}{KẾT LUẬN}
-Trong khuôn khổ của học phần Thực tập cơ sở, báo cáo đã trình bày một cách hệ thống và chi tiết từ những khái niệm nền tảng cơ bản nhất của Học máy (Machine Learning) cho đến các kiến trúc phức tạp của Học sâu (Deep Learning). Thông qua việc kết hợp chặt chẽ giữa lý thuyết và thực hành trên ngôn ngữ Python với các thư viện phổ biến (TensorFlow, Keras, Scikit-learn, Pandas), sinh viên đã đạt được những kết quả cụ thể như sau:
+Trong khuôn khổ của học phần Thực tập cơ sở, báo cáo đã trình bày một cách hệ thống và chi tiết từ những khái niệm nền tảng cơ bản nhất của Học máy (Machine Learning) cho đến các kiến trúc phức tạp của Học sâu (Deep Learning). Thông qua việc kết hợp chặt chẽ giữa lý thuyết và thực hành trên 15 tập dữ liệu đa dạng cùng ngôn ngữ Python với các thư viện phổ biến (TensorFlow, Keras, Scikit-learn, Pandas), sinh viên đã đạt được những kết quả cụ thể như sau:
 
 \begin{itemize}
-    \item \textbf{Về Tiền xử lý dữ liệu:} Hiểu và vận dụng được tầm quan trọng của việc làm sạch, biến đổi và lựa chọn đặc trưng (Feature Engineering) thông qua bài toán phân loại hành khách sống sót trên tàu Titanic. Điều này khẳng định nguyên lý cốt lõi "Garbage In, Garbage Out" trong khoa học dữ liệu.
-    \item \textbf{Về Mạng nơ-ron tích chập (CNN):} Nắm vững cơ chế hoạt động của các lớp Convolution và Pooling. Thực nghiệm thành công mô hình phân loại hình ảnh trên tập dữ liệu Fashion MNIST, cho thấy sự vượt trội của CNN trong việc trích xuất các đặc trưng không gian (spatial features) trong các bài toán Thị giác máy tính.
-    \item \textbf{Về Mạng nơ-ron hồi quy (RNN):} Hiểu rõ cấu trúc lặp (Recurrent) và trạng thái ẩn (Hidden state) giúp mạng có khả năng xử lý dữ liệu chuỗi (Sequential data). Ứng dụng thành công RNN vào bài toán Phân tích cảm xúc (Sentiment Analysis) trên tập dữ liệu IMDB.
-    \item \textbf{Về Mạng bộ nhớ Dài-Ngắn hạn (LSTM):} Khắc phục được nhược điểm tiêu biến đạo hàm (Vanishing Gradient) của RNN truyền thống. Ứng dụng thành thạo cấu trúc các cổng (Gates) của LSTM để giải quyết xuất sắc bài toán dự báo chuỗi thời gian (Time Series Forecasting) dựa trên tập dữ liệu số lượng hành khách hàng không.
+    \item \textbf{Về Tiền xử lý dữ liệu:} Hiểu và vận dụng được tầm quan trọng của việc làm sạch, biến đổi, mã hóa dữ liệu và xử lý mất cân bằng thông qua các bài toán phân loại và hồi quy thực tế. Điều này khẳng định nguyên lý cốt lõi "Garbage In, Garbage Out" trong khoa học dữ liệu.
+    \item \textbf{Về Mạng nơ-ron tích chập (CNN):} Nắm vững cơ chế hoạt động của các lớp Convolution và Pooling. Khám phá sức mạnh của việc trích xuất đặc trưng không gian, cũng như kỹ thuật chuyển giao học (Transfer Learning) với MobileNet qua các tập dữ liệu ảnh đa dạng.
+    \item \textbf{Về Mạng nơ-ron hồi quy (RNN):} Hiểu rõ cấu trúc lặp (Recurrent) và trạng thái ẩn (Hidden state) giúp mạng có khả năng xử lý dữ liệu chuỗi văn bản. Ứng dụng thành công vào bài toán Phân tích cảm xúc (Sentiment Analysis) với dữ liệu Tin tức chứng khoán và đánh giá phim IMDB.
+    \item \textbf{Về Mạng LSTM, GRU và Cơ chế Attention:} Khắc phục xuất sắc nhược điểm tiêu biến đạo hàm (Vanishing Gradient) của RNN truyền thống. Xây dựng các mô hình lai (Hybrid) như Conv1D-LSTM, BiGRU và LSTM-Attention để giải quyết đa dạng các bài toán từ dự báo chuỗi thời gian không khí, tài chính, năng lượng đến nhận diện hành động con người qua cảm biến. Đặc biệt, việc tích hợp Attention đã mang lại cái nhìn trực quan (Explainable AI) về cách mô hình đưa ra quyết định phân bổ trọng số.
 \end{itemize}
 
-Nhìn chung, quá trình thực tập đã giúp củng cố kiến thức học thuật, rèn luyện tư duy phân tích bài toán và nâng cao kỹ năng lập trình AI thực tế. Đây sẽ là hành trang quan trọng để tiếp tục nghiên cứu và phát triển các hệ thống Trí tuệ nhân tạo quy mô lớn trong tương lai.
+Nhìn chung, quá trình thực tập đã giúp củng cố kiến thức học thuật, rèn luyện tư duy phân tích bài toán và nâng cao kỹ năng lập trình AI chuyên nghiệp (chuẩn Research). Đây sẽ là hành trang quan trọng để tiếp tục nghiên cứu và phát triển các hệ thống Trí tuệ nhân tạo quy mô lớn, đặc biệt là các mô hình ngôn ngữ lớn (LLMs) và Transformer trong tương lai.
 
 \newpage
 \begin{thebibliography}{9}
@@ -139,12 +159,12 @@ Nhìn chung, quá trình thực tập đã giúp củng cố kiến thức học
 \bibitem{lecun1998} Yann LeCun, Leon Bottou, Yoshua Bengio, and Patrick Haffner, \textit{Gradient-based learning applied to document recognition}, Proceedings of the IEEE, 1998.
 \bibitem{hochreiter1997} Sepp Hochreiter and Jürgen Schmidhuber, \textit{Long Short-Term Memory}, Neural Computation, 1997.
 \bibitem{cho2014} Kyunghyun Cho et al., \textit{Learning Phrase Representations using RNN Encoder-Decoder for Statistical Machine Translation}, EMNLP, 2014.
+\bibitem{bahdanau2014} Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio, \textit{Neural Machine Translation by Jointly Learning to Align and Translate}, ICLR, 2015.
 \bibitem{chollet2018} François Chollet, \textit{Deep Learning with Python}, Manning Publications, 2018.
 \bibitem{tfdocs} TensorFlow and Keras Documentation, \url{https://www.tensorflow.org/api_docs}.
-\bibitem{titanic} Titanic: Machine Learning from Disaster Dataset, Kaggle, \url{https://www.kaggle.com/c/titanic}.
-\bibitem{fashionmnist} Fashion MNIST Dataset, Zalando Research, \url{https://github.com/zalandoresearch/fashion-mnist}.
 \bibitem{imdb} IMDB Dataset of 50K Movie Reviews, Stanford University, \url{http://ai.stanford.edu/~amaas/data/sentiment/}.
-\bibitem{airline} International Airline Passengers Dataset, Brownlee, \url{https://raw.githubusercontent.com/jbrownlee/Datasets/master/airline-passengers.csv}.
+\bibitem{kaggle} Kaggle Datasets Repository, \url{https://www.kaggle.com/datasets}.
+\bibitem{uci} UCI Machine Learning Repository, \url{https://archive.ics.uci.edu/ml/index.php}.
 \end{thebibliography}
 
 \end{document}

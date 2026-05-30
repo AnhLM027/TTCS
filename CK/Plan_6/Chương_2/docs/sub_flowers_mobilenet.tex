@@ -1,47 +1,325 @@
-\paragraph{Thực nghiệm với Flowers-102} \hfill \\
-Bộ dữ liệu chứa hình ảnh của các loài hoa phổ biến. Thách thức của bài toán này nằm ở sự tương đồng về màu sắc và cấu trúc giữa các loài hoa khác nhau.
+\paragraph{Phân loại các loài hoa bằng Học chuyển giao (Transfer Learning với MobileNetV2)} \hfill\mbox{}
 
-\paragraph{Phân tích Dữ liệu và Tiền xử lý} \hfill \\
-Việc quan sát sự phân bổ dữ liệu cho thấy một số loài hoa có số lượng ảnh áp đảo, điều này đòi hỏi mô hình phải có khả năng học đặc trưng tốt để không bị overfit vào các lớp phổ biến.
+Bài toán nhận diện 5 loài hoa (\textit{daisy, dandelion, rose, sunflower, tulip}) đối mặt với thách thức lớn về số lượng mẫu (chỉ hơn 4,000 ảnh). Nếu huấn luyện một mạng CNN sâu (Deep CNN) hoàn toàn từ đầu (from scratch) trên dữ liệu nhỏ, hiện tượng học vẹt (Overfitting) là không thể tránh khỏi. Do đó, phương pháp \textbf{Học chuyển giao (Transfer Learning)} được áp dụng, tận dụng kiến trúc mạng \textbf{MobileNetV2} đã được huấn luyện trước (pre-trained) trên tập dữ liệu hàng triệu ảnh ImageNet. 
+
+\paragraph{Thiết lập Môi trường và Phân tích Dữ liệu (EDA)} \hfill\mbox{}
+
+Đầu tiên, hệ thống khởi tạo các thư viện chuẩn và cố định các hằng số cấu hình.
+
+\begin{lstlisting}[style=pythoncode, caption={Khởi tạo môi trường thư viện học sâu}]
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
+from sklearn.metrics import confusion_matrix, classification_report
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import os, random
+
+SEED = 42
+np.random.seed(SEED)
+random.seed(SEED)
+tf.random.set_seed(SEED)
+os.environ["PYTHONHASHSEED"] = str(SEED)
+
+plt.rcParams.update({'figure.dpi': 120, 'font.size': 11})
+
+DATA_DIR = '../data/flowers/flowers'
+SAVE_DIR = '../results/flowers'
+os.makedirs(SAVE_DIR, exist_ok=True)
+
+IMG_SIZE   = (224, 224)
+BATCH_SIZE = 32
+EPOCHS     = 15
+
+print(f'TF: {tf.__version__}')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Phiên bản TensorFlow}]
+TF: 2.13.0
+\end{lstlisting}
+
+Để có cái nhìn tổng quan về thách thức của bộ dữ liệu, thuật toán thống kê số lượng hình ảnh theo các danh mục:
+
+\begin{lstlisting}[style=pythoncode, caption={Đếm số lượng mẫu của từng loại hoa}]
+classes = sorted(os.listdir(DATA_DIR))
+class_counts = {c: len(os.listdir(os.path.join(DATA_DIR, c))) for c in classes}
+
+print(f'Classes ({len(classes)}): {classes}')
+total = sum(class_counts.values())
+for c, n in class_counts.items():
+    print(f'  {c:15s}: {n:,} images ({n/total*100:.1f}%)')
+print(f'  Total         : {total:,}')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Chi tiết số lượng mẫu từng lớp}]
+Classes (5): ['daisy', 'dandelion', 'rose', 'sunflower', 'tulip']
+  daisy          : 764 images (17.7%)
+  dandelion      : 1,052 images (24.4%)
+  rose           : 784 images (18.2%)
+  sunflower      : 733 images (17.0%)
+  tulip          : 984 images (22.8%)
+  Total         : 4,317
+\end{lstlisting}
+
+Phân phối này được biểu diễn bằng hình ảnh qua biểu đồ Cột (Bar Chart) và biểu đồ Tròn (Pie Chart) dưới đây:
+
+\begin{lstlisting}[style=pythoncode, caption={Trực quan hóa phân phối Class}]
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+colors = plt.cm.Set1(np.linspace(0, 1, len(classes)))
+bars = axes[0].bar(class_counts.keys(), class_counts.values(), color=colors, edgecolor='black')
+axes[0].set_title('Flower Count per Class', fontsize=12, fontweight='bold')
+axes[0].set_ylabel('Count')
+
+axes[1].pie(class_counts.values(), labels=class_counts.keys(), autopct='%1.1f%%', colors=colors)
+axes[1].set_title('Distribution Ratio', fontsize=12, fontweight='bold')
+
+plt.suptitle('Flowers Dataset Distribution', fontsize=14, fontweight='bold')
+plt.tight_layout()
+plt.savefig(f'{SAVE_DIR}/01_class_distribution.png')
+plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_2/results/flowers/01_class_distribution.png}
-        \caption{Phân bổ dữ liệu các loài hoa}
-        \label{fig:flowers_dist}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_2/results/flowers/02_sample_images.png}
-        \caption{Hình ảnh mẫu từ Flowers-102}
-        \label{fig:flowers_samples}
-    \end{minipage}
+    \includegraphics[width=0.9\linewidth]{Chương_2/results/flowers/01_class_distribution.png}
+    \caption{Phân phối số lượng và tỷ lệ \% của các loại hoa}
 \end{figure}
 
-\paragraph{MobileNetV2 và Transfer Learning} \hfill \\
-Chúng ta sử dụng MobileNetV2 - một kiến trúc sử dụng tích chập tách biệt theo chiều sâu (Depthwise Separable Convolutions). Mô hình chỉ có \textbf{2,592,325} tham số, cực kỳ nhẹ nhưng vẫn mang lại hiệu suất mạnh mẽ. Bằng cách sử dụng Transfer Learning từ ImageNet, mô hình đã thừa hưởng khả năng nhận diện các hình khối và màu sắc cơ bản.
+Biểu đồ cho thấy lớp \textit{Dandelion} (Bồ công anh) chiếm tỷ lệ cao nhất ($24.4\%$), trong khi \textit{Sunflower} (Hướng dương) thấp nhất ($17.0\%$). Đây là trạng thái tương đối cân bằng, cho phép huấn luyện mạng nơ-ron mà không cần can thiệp cân bằng tỷ trọng (Class Weights).
 
-\paragraph{Kết quả thực nghiệm} \hfill \\
-Mô hình đạt độ chính xác ấn tượng là \textbf{86.51\%} trên tập kiểm tra.
+\begin{lstlisting}[style=pythoncode, caption={Hiển thị ảnh mẫu cho mỗi danh mục}]
+fig, axes = plt.subplots(len(classes), 4, figsize=(12, len(classes)*2.5))
+
+for row, cls in enumerate(classes):
+    cls_dir = os.path.join(DATA_DIR, cls)
+    imgs    = [f for f in os.listdir(cls_dir) if f.lower().endswith(('.jpg','.png'))][:4]
+    for col, img_name in enumerate(imgs):
+        img = load_img(os.path.join(cls_dir, img_name), target_size=(120, 120))
+        axes[row, col].imshow(img)
+        axes[row, col].axis('off')
+        if col == 0:
+            axes[row, col].set_title(cls.capitalize(), fontweight='bold', fontsize=11)
+
+plt.suptitle('Sample Images - Flowers Dataset', fontsize=14, fontweight='bold')
+plt.tight_layout()
+plt.savefig(f'{SAVE_DIR}/02_sample_images.png')
+plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_2/results/flowers/03_training_history.png}
-        \caption{Lịch sử huấn luyện MobileNetV2}
-        \label{fig:flowers_history}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{Chương_2/results/flowers/04_confusion_matrix.png}
-        \caption{Ma trận nhầm lẫn phân loại hoa}
-        \label{fig:flowers_cm}
-    \end{minipage}
+    \includegraphics[width=0.9\linewidth]{Chương_2/results/flowers/02_sample_images.png}
+    \caption{Các bức ảnh mẫu thể hiện cấu trúc sinh học và màu sắc đa dạng của 5 loài hoa}
 \end{figure}
 
-Sử dụng Transfer Learning giúp mô hình không chỉ đạt độ chính xác cao mà còn hội tụ rất nhanh (chỉ sau khoảng 10-15 epoch), tiết kiệm đáng kể tài nguyên tính toán.
+\paragraph{Tiền xử lý và Data Augmentation} \hfill\mbox{}
+
+Không giống như việc tự thiết kế mạng từ đầu, mô hình MobileNetV2 yêu cầu kích thước hình ảnh đầu vào là $224 \times 224$ pixels. Kỹ thuật Data Augmentation cũng được áp dụng.
+
+\begin{lstlisting}[style=pythoncode, caption={Sử dụng ImageDataGenerator tạo các dữ liệu tăng cường}]
+datagen = ImageDataGenerator(
+    rescale=1./255,
+    validation_split=0.2,       # Reserve 20% data for validation
+    rotation_range=15,
+    zoom_range=0.2,
+    width_shift_range=0.15,
+    height_shift_range=0.15,
+    horizontal_flip=True,
+    brightness_range=[0.8, 1.2]
+)
+
+train_gen = datagen.flow_from_directory(
+    DATA_DIR, target_size=IMG_SIZE, batch_size=BATCH_SIZE,
+    class_mode='categorical', subset='training', shuffle=True, seed=SEED)
+    
+val_gen = datagen.flow_from_directory(
+    DATA_DIR, target_size=IMG_SIZE, batch_size=BATCH_SIZE,
+    class_mode='categorical', subset='validation', shuffle=False, seed=SEED)
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Khởi tạo Generators thành công}]
+Found 3457 images belonging to 5 classes.
+Found 860 images belonging to 5 classes.
+\end{lstlisting}
+
+\paragraph{Giai đoạn 1: Trích xuất Đặc trưng (Feature Extraction với Frozen Base)} \hfill\mbox{}
+
+Trong Giai đoạn 1, chúng ta tải toàn bộ mạng MobileNetV2 trừ lớp phân loại cuối cùng (\texttt{include\_top=False}). Các trọng số này được "đóng băng" (Frozen) để đóng vai trò như một cỗ máy trích xuất đặc trưng thuần túy. Lớp \texttt{GlobalAveragePooling2D} và lớp \texttt{Dense} (Softmax) mới được thêm vào đỉnh mạng.
+
+\begin{lstlisting}[style=pythoncode, caption={Định nghĩa mô hình MobileNetV2 - Đóng băng trọng số}]
+# Stage 1: Frozen base
+base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(224,224,3))
+base_model.trainable = False
+
+model = models.Sequential([
+    base_model,
+    layers.GlobalAveragePooling2D(),
+    layers.BatchNormalization(),
+    layers.Dense(256, activation='relu'),
+    layers.Dropout(0.3),
+    layers.Dense(NUM_CLASSES, activation='softmax')
+], name='MobileNetV2_Flowers')
+
+model.compile(optimizer=tf.keras.optimizers.Adam(1e-3),
+              loss='categorical_crossentropy', metrics=['accuracy'])
+
+print(f'Trainable params (frozen base): {model.count_params():,}')
+trainable = sum(tf.keras.backend.count_params(w) for w in model.trainable_weights)
+print(f'  -> Trainable only: {trainable:,}')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Kiểm tra số lượng tham số huấn luyện}]
+Trainable params (frozen base): 2,592,325
+  -> Trainable only: 331,781
+\end{lstlisting}
+
+Như vậy, mạng chỉ thực sự học $331,781$ tham số của các lớp Dense ở trên cùng.
+
+\begin{lstlisting}[style=pythoncode, caption={Huấn luyện Stage 1}]
+# Stage 1 training
+hist1 = model.fit(
+    train_gen, epochs=15, validation_data=val_gen,
+    callbacks=[tf.keras.callbacks.EarlyStopping(patience=4, restore_best_weights=True)],
+    verbose=1)
+print(f'Stage 1 best val_acc: {max(hist1.history["val_accuracy"]):.4f}')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Huấn luyện Giai đoạn 1}]
+Epoch 1/15
+109/109 [==============================] - 28s 249ms/step - loss: 0.7329 - accuracy: 0.7692 - val_loss: 0.5052 - val_accuracy: 0.8349
+...
+Epoch 10/15
+109/109 [==============================] - 27s 245ms/step - loss: 0.1781 - accuracy: 0.9369 - val_loss: 0.4265 - val_accuracy: 0.8802
+Stage 1 best val_acc: 0.8802
+\end{lstlisting}
+
+Ngay từ Giai đoạn đầu tiên, nhờ kiến thức chuyển giao từ ImageNet, Accuracy đã nhảy vọt lên ngưỡng $88\%$.
+
+\paragraph{Giai đoạn 2: Tinh chỉnh tinh vi (Fine-Tuning)} \hfill\mbox{}
+
+Để vượt qua giới hạn của Giai đoạn 1, ta tiến hành \textbf{Fine-tuning}: mở khóa (unfreeze) khoảng 30 layers cuối cùng của mạng MobileNetV2 gốc, và tiếp tục train với mức Learning Rate cực nhỏ ($1e-5$). Việc này giúp mạng không quên đi những gì đã học, nhưng dần dần "thích nghi" mượt mà hơn với cấu trúc đặc trưng của các loài hoa.
+
+\begin{lstlisting}[style=pythoncode, caption={Mở băng các layers và huấn luyện Stage 2}]
+# Stage 2: Fine-tuning - unfreeze last 30 layers
+base_model.trainable = True
+for layer in base_model.layers[:-30]:
+    layer.trainable = False
+
+model.compile(optimizer=tf.keras.optimizers.Adam(1e-5),
+              loss='categorical_crossentropy', metrics=['accuracy'])
+
+trainable2 = sum(tf.keras.backend.count_params(w) for w in model.trainable_weights)
+print(f'Fine-tuning trainable params: {trainable2:,}')
+
+hist2 = model.fit(
+    train_gen, epochs=EPOCHS, validation_data=val_gen,
+    callbacks=[tf.keras.callbacks.EarlyStopping(patience=4, restore_best_weights=True)],
+    verbose=1)
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Huấn luyện Giai đoạn 2}]
+Fine-tuning trainable params: 1,858,181
+Epoch 1/15
+109/109 [==============================] - 30s 254ms/step - loss: 0.3610 - accuracy: 0.8756 - val_loss: 0.4718 - val_accuracy: 0.8674
+...
+Epoch 10/15
+109/109 [==============================] - 27s 249ms/step - loss: 0.1660 - accuracy: 0.9424 - val_loss: 0.4426 - val_accuracy: 0.8814
+\end{lstlisting}
+
+Số lượng tham số được huấn luyện lúc này tăng lên $1.85$ triệu tham số. Để quan sát được sự khác biệt giữa hai giai đoạn, biểu đồ nối tiếp (Merged History) được khởi tạo:
+
+\begin{lstlisting}[style=pythoncode, caption={Vẽ biểu đồ tích hợp cho hai giai đoạn học}]
+all_acc     = hist1.history['accuracy']     + hist2.history['accuracy']
+all_val_acc = hist1.history['val_accuracy'] + hist2.history['val_accuracy']
+all_loss    = hist1.history['loss']         + hist2.history['loss']
+all_val_loss= hist1.history['val_loss']     + hist2.history['val_loss']
+sep_ep = len(hist1.history['accuracy'])
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+for ax, (train_h, val_h, ylabel) in zip(axes, [(all_acc, all_val_acc, 'Accuracy'), (all_loss, all_val_loss, 'Loss')]):
+    eps = range(1, len(train_h)+1)
+    ax.plot(eps, train_h, 'o-', color='#2196F3', label='Train')
+    ax.plot(eps, val_h,   's-', color='#FF5722', label='Validation')
+    ax.axvline(sep_ep, linestyle='--', color='gray', label='Fine-tune Start')
+    ax.set_title(f'{ylabel} - Frozen to Fine-tune', fontweight='bold')
+    ax.set_xlabel('Epoch'); ax.set_ylabel(ylabel)
+    ax.legend(); ax.grid(True, alpha=0.3)
+
+plt.suptitle('Training History - MobileNetV2 (Transfer Learning)', fontsize=13, fontweight='bold')
+plt.tight_layout()
+plt.savefig(f'{SAVE_DIR}/03_training_history.png')
+plt.show()
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Chương_2/results/flowers/03_training_history.png}
+    \caption{Lịch sử huấn luyện hai giai đoạn: Feature Extraction và Fine-Tuning}
+\end{figure}
+
+Đường thẳng đứt nét dọc (\textit{Fine-tune Start}) chia quá trình học thành 2 giai đoạn rõ rệt:
+\begin{itemize}
+    \item \textbf{Giai đoạn 1 (Frozen Base - Bên trái):} Vì lớp Convolution đã mang tri thức từ ImageNet và bị khóa chặt, mạng học cực kỳ nhanh. Chỉ sau vài Epoch, Validation Accuracy đã vọt thẳng lên ngưỡng $\approx 85-88\%$.
+    \item \textbf{Giai đoạn 2 (Fine-Tuning - Bên phải):} Sau khi "mở khóa" 30 layers cuối của MobileNetV2, tốc độ học (Learning Rate) được thu nhỏ tối đa ($10^{-5}$) nhằm ngăn chặn hiện tượng quên kiến thức cũ (Catastrophic Forgetting). Đồ thị cho thấy rõ hiệu quả của kỹ thuật này: Đường Validation hoàn toàn không bị gãy hay nhiễu loạn (spike). Thay vào đó, Accuracy tiếp tục tăng nhẹ và Loss tiếp tục giảm ổn định, mượt mà bám sát đường Train để tiến tới giới hạn tối ưu sâu hơn.
+\end{itemize}
+
+\paragraph{Đánh giá Mô hình (Confusion Matrix)} \hfill\mbox{}
+
+\begin{lstlisting}[style=pythoncode, caption={Kiểm tra độ chính xác trên Validation Set}]
+val_gen.reset()
+y_pred_prob = model.predict(val_gen, verbose=0)
+y_pred = np.argmax(y_pred_prob, axis=1)
+y_true = val_gen.classes
+
+cm = confusion_matrix(y_true, y_pred)
+fig, ax = plt.subplots(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Purples',
+            xticklabels=classes, yticklabels=classes, linewidths=0.5, ax=ax)
+ax.set_title('Confusion Matrix - MobileNetV2 (Flowers)', fontsize=13, fontweight='bold')
+ax.set_ylabel('Actual'); ax.set_xlabel('Predicted')
+plt.tight_layout()
+plt.savefig(f'{SAVE_DIR}/04_confusion_matrix.png')
+plt.show()
+
+print(classification_report(y_true, y_pred, target_names=classes))
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chương_2/results/flowers/04_confusion_matrix.png}
+    \caption{Ma trận nhầm lẫn của mô hình nhận diện 5 loại hoa}
+\end{figure}
+
+\begin{lstlisting}[style=consoleoutput, caption={Output: Báo cáo phân loại cuối cùng}]
+              precision    recall  f1-score   support
+
+       daisy       0.86      0.94      0.90       152
+   dandelion       0.92      0.92      0.92       210
+        rose       0.89      0.80      0.84       156
+   sunflower       0.85      0.88      0.87       146
+       tulip       0.86      0.82      0.84       196
+
+    accuracy                           0.87       860
+   macro avg       0.87      0.87      0.87       860
+\end{lstlisting}
+
+\textbf{Phân tích độ chính xác sinh học:}
+Việc sử dụng Transfer Learning mang lại một F1-Score trung bình $87\%$ (một con số tốt đối với bộ dữ liệu phức tạp chỉ có 4000 ảnh). Tuy nhiên:
+\begin{itemize}
+    \item \textbf{Dandelion (Bồ công anh):} Có F1 cao nhất ($92\%$), bởi cấu tạo dạng bông xốp hoặc cánh mảnh của Bồ công anh rất đặc trưng, dễ dàng bị các bộ lọc chập phân tách.
+    \item \textbf{Rose và Tulip:} Tỉ lệ nhận sai tương đối cao ($20\%$ số hoa Hồng bị nhận nhầm thành Tulip và ngược lại). Lý do nằm ở cấu trúc hình dáng: hoa hồng nụ và hoa tulip có khuôn mẫu cánh khép kín khá tương đồng, đồng thời đều có các biến thể đa dạng về màu sắc (đỏ, vàng, hồng) khiến mạng CNN nhầm lẫn.
+\end{itemize}
+
+Báo cáo sẽ được xuất ra tệp tự động:
+\begin{lstlisting}[style=pythoncode, caption={Lưu báo cáo vào tập tin hệ thống}]
+best_val_acc = max(all_val_acc)
+with open(f'{SAVE_DIR}/report.txt', 'w') as f:
+    f.write('Flowers Classification - MobileNetV2\n' + '='*55 + '\n')
+    f.write(f'Best Val Accuracy: {best_val_acc:.4f}\n')
+    f.write(f'Total Params: {model.count_params():,}\n\n')
+    f.write(classification_report(y_true, y_pred, target_names=classes))
+\end{lstlisting}

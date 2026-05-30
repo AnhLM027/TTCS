@@ -1,107 +1,195 @@
 \paragraph{Phân tích bộ dữ liệu Adult Census Income} \hfill \\
-Mục tiêu là dự báo thu nhập của một cá nhân dựa trên các biến nhân khẩu học. Đây là bài toán điển hình về dữ liệu hạng mục có độ phức tạp cao (High Cardinality).
 
-\paragraph{Phân tích đặc trưng hạng mục} \hfill \\
-Biểu đồ EDA cho thấy sự chênh lệch thu nhập rõ rệt giữa các cấp học vấn, độ tuổi và nghề nghiệp:
+Dự báo thu nhập (Adult Census Income Classification) là bài toán kinh điển trong học máy, trong đó nhiệm vụ là phân loại thu nhập cá nhân vào một trong hai nhóm: $\leq50K$ hoặc $>50K$ dựa trên dữ liệu điều tra dân số. Bài toán này nổi bật với sự hiện diện của nhiều biến hạng mục (categorical variables) có số lượng nhãn lớn (High Cardinality), đòi hỏi kỹ thuật tiền xử lý tinh tế.
+
+\paragraph{Thiết lập Môi trường và Tải Dữ liệu} \hfill \\
+
+Đầu tiên, dữ liệu thô được nạp vào và làm sạch bằng cách loại bỏ các giá trị bị khuyết (được mã hóa dưới dạng ký tự `?`) và chuẩn hóa các cột chứa khoảng trắng thừa.
+
+\begin{lstlisting}[style=pythoncode, caption={Initialize environment and load Census dataset}]
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.metrics import classification_report, accuracy_score, roc_auc_score, confusion_matrix
+import category_encoders as ce
+import warnings, os, random
+
+SEED = 42
+os.environ['PYTHONHASHSEED'] = str(SEED)
+random.seed(SEED)
+np.random.seed(SEED)
+warnings.filterwarnings('ignore')
+
+plt.rcParams.update({'figure.dpi': 120, 'font.size': 11, 'axes.titlesize': 13, 'axes.titleweight': 'bold'})
+sns.set_theme(style='whitegrid', palette='husl')
+
+DATA_PATH = '../data/adult_census/adult.csv'
+df = pd.read_csv(DATA_PATH)
+df = df.replace('?', np.nan).dropna()
+for col in df.select_dtypes('object').columns:
+    df[col] = df[col].str.strip()
+
+df['income'] = (df['income'].str.strip() == '>50K').astype(int)
+print(f'Shape: {df.shape}')
+print(f'Income >50K rate: {df["income"].mean()*100:.2f}%')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Dữ liệu Census Income đã được làm sạch}]
+Shape: (30162, 15)
+Income >50K rate: 24.89%
+\end{lstlisting}
+
+Tập dữ liệu sau làm sạch còn hơn $30,000$ bản ghi, trong đó nhóm người có thu nhập cao ($>50K$) chiếm khoảng $24.89\%$. Đây là sự mất cân bằng tương tự như bài toán Telco Churn, nhưng không đến mức cực đoan như Credit Fraud.
+
+\paragraph{Phân tích Khám phá Dữ liệu (EDA)} \hfill \\
+
+Ba yếu tố khách quan dễ hình dung nhất quyết định đến mức thu nhập của một người bao gồm: Độ tuổi, Học vấn và Cường độ làm việc.
+
+\begin{lstlisting}[style=pythoncode, caption={Exploratory Data Analysis: Age, Education, and Hours per week}]
+fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+
+# 1. Age distribution by income
+for cls, label, color in [(0, '<=50K', '#42A5F5'), (1, '>50K', '#FF7043')]:
+    axes[0].hist(df[df['income']==cls]['age'], bins=30, alpha=0.7, color=color, label=label, density=True)
+axes[0].set_title('Age Distribution by Income')
+axes[0].set_xlabel('Age')
+axes[0].legend()
+
+# 2. Education vs Income Rate
+edu_income = df.groupby('education')['income'].mean().sort_values(ascending=False)
+bars = axes[1].bar(range(len(edu_income)), edu_income.values,
+                   color=plt.cm.RdYlGn(edu_income.values), edgecolor='black', linewidth=0.5)
+axes[1].set_xticks(range(len(edu_income)))
+axes[1].set_xticklabels(edu_income.index, rotation=45, ha='right', fontsize=8)
+axes[1].set_title('Income >50K Rate by Education')
+axes[1].set_ylabel('Income Rate')
+
+# 3. Hours per week
+axes[2].boxplot([df[df['income']==0]['hours.per.week'], df[df['income']==1]['hours.per.week']],
+                labels=['<=50K', '>50K'], patch_artist=True,
+                boxprops=dict(facecolor='lightblue', alpha=0.7),
+                medianprops=dict(color='red', linewidth=2))
+axes[2].set_title('Hours per week vs Income')
+axes[2].set_ylabel('Hours')
+
+plt.tight_layout()
+plt.show()
+\end{lstlisting}
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_1/results/adult_census/01_eda_overview.png}
-    \caption{Phân phối thu nhập theo Tuổi, Học vấn và Giới tính}
+    \includegraphics[width=1\linewidth]{Chương_1/results/adult_census/01_eda_overview.png}
+    \caption{Phân tích tổng quan sự khác biệt về Độ tuổi, Học vấn và Giờ làm việc giữa hai nhóm thu nhập}
 \end{figure}
 
-Hình 1.1 cho thấy sự phân hóa thu nhập rõ rệt. Nhóm có trình độ học vấn cao (Bachelors, Masters, Doctorate) có tỷ lệ thu nhập trên 50K cao hơn đáng kể. Về độ tuổi, thu nhập có xu hướng tăng dần và đạt đỉnh ở độ tuổi trung niên (40-50 tuổi) trước khi giảm nhẹ khi về già.
+\textbf{Đánh giá biểu đồ EDA:}
+\begin{itemize}
+    \item \textbf{Độ tuổi (Age):} Biểu đồ phân phối ở bên trái cho thấy đỉnh chóp (mode) của những người thu nhập $\leq 50K$ rơi vào độ tuổi dưới 25 (người mới tham gia lao động). Ngược lại, nhóm $>50K$ đạt đỉnh ở độ tuổi 40-50, phản ánh giai đoạn chín muồi của sự nghiệp và tích lũy thâm niên.
+    \item \textbf{Học vấn (Education):} Có một mối tương quan tuyến tính rất mạnh giữa trình độ học vấn và tỷ lệ thu nhập cao. Các cấp bậc cao như Tiến sĩ (Doctorate) và Giáo sư/Chuyên gia (Prof-school) có xác suất đạt $>50K$ vượt mốc $70\%$. Ở thái cực ngược lại, những người chưa học hết trung học có tỷ lệ này gần bằng $0\%$.
+    \item \textbf{Cường độ làm việc (Hours/week):} Nhóm thu nhập cao có số giờ làm việc trung vị (40 giờ/tuần) cao hơn, và đặc biệt là độ lệch chuẩn trải dài lên mức 50-60 giờ/tuần.
+\end{itemize}
 
-\paragraph{Kỹ thuật xử lý: Target Encoding} \hfill \\
-Thay vì One-hot Encoding (gây bùng nổ số chiều), chúng ta áp dụng Target Encoding cho các biến như \texttt{occupation} và \texttt{education}. Giá trị được mã hóa tỷ lệ thuận với xác suất có thu nhập >50K:
+\paragraph{Kỹ thuật Target Encoding cho biến High Cardinality} \hfill \\
+
+Các biến như \texttt{workclass}, \texttt{occupation}, hay \texttt{native.country} chứa rất nhiều nhãn (hàng chục quốc gia, hàng tá nghề nghiệp). Nếu dùng One-hot Encoding, chiều của dữ liệu sẽ bùng nổ, gây ra vấn đề thưa thớt (Sparsity) và lời nguyền số chiều (Curse of Dimensionality). Giải pháp ưu việt ở đây là \textbf{Target Encoding} (Mã hóa theo mục tiêu).
+
+\begin{lstlisting}[style=pythoncode, caption={Analyze high cardinality features to prepare for Target Encoding}]
+high_card_cols = ['workclass', 'occupation', 'native.country']
+fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+
+for ax, col in zip(axes, high_card_cols):
+    income_rate = df.groupby(col)['income'].mean().sort_values(ascending=False).head(15)
+    bars = ax.barh(income_rate.index, income_rate.values,
+                   color=plt.cm.RdYlGn(income_rate.values / income_rate.max()),
+                   edgecolor='black', linewidth=0.5)
+    ax.set_xlabel('Income >50K Rate')
+    ax.set_title(f'Target Encoding Basis:\n{col}')
+
+plt.tight_layout()
+plt.show()
+\end{lstlisting}
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_1/results/adult_census/02_target_encoding_basis.png}
-    \caption{Nguyên lý Target Encoding: Ánh xạ nhãn sang xác suất nhãn mục tiêu}
+    \includegraphics[width=1\linewidth]{Chương_1/results/adult_census/02_target_encoding_basis.png}
+    \caption{Khảo sát tỷ lệ thu nhập $>50K$ theo từng biến phân loại đa nhãn}
 \end{figure}
 
-Nguyên lý của Target Encoding (Hình 1.2) là thay thế mỗi nhãn hạng mục bằng giá trị trung bình của biến mục tiêu cho nhãn đó. Điều này giúp mô hình học được mối quan hệ trực tiếp giữa hạng mục và mục tiêu mà không cần tạo thêm nhiều cột mới.
+Dựa trên nguyên lý của biểu đồ trên, mỗi nhãn text (ví dụ: nghề nghiệp \textit{Exec-managerial}) sẽ được thay thế trực tiếp bằng chính con số xác suất ($0.48$) mà nhóm đó đạt thu nhập $>50K$.
 
-Biểu đồ mã hóa chi tiết cho biến Nghề nghiệp:
+\begin{lstlisting}[style=pythoncode, caption={Apply Target Encoding on all categorical variables}]
+all_cat_cols = ['workclass', 'education', 'marital.status', 'occupation',
+                'relationship', 'race', 'sex', 'native.country']
+
+X = df.drop('income', axis=1)
+y = df['income']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=SEED)
+
+encoder = ce.TargetEncoder(cols=all_cat_cols)
+X_train_enc = encoder.fit_transform(X_train, y_train)
+X_test_enc  = encoder.transform(X_test)
+\end{lstlisting}
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{Chương_1/results/adult_census/03_occupation_target_encoding.png}
-    \caption{Giá trị Target Encoded cho từng loại nghề nghiệp}
+    \caption{Cơ chế biến đổi của Target Encoding trên biến Occupation}
 \end{figure}
 
-Hình 1.3 minh họa giá trị xác suất sau khi mã hóa. Các nghề nghiệp như "Exec-managerial" hay "Prof-specialty" có giá trị mã hóa cao, phản ánh thực tế đây là những nhóm ngành có thu nhập trung bình cao nhất trong bộ dữ liệu.
+Việc sử dụng thư viện \texttt{category\_encoders} giúp tính toán giá trị trung bình mục tiêu có tính năng \textbf{Smoothing} (làm mịn). Việc này giúp ngăn chặn Overfitting bằng cách kéo giá trị của những nhóm quá nhỏ (hiếm gặp) về gần với tỷ lệ trung bình chung của toàn bộ tập dữ liệu.
 
-\paragraph{Kết quả thực nghiệm} \hfill \\
-Thực nghiệm so sánh Logistic Regression và Gradient Boosting.
+\paragraph{Huấn luyện Mô hình và Đánh giá} \hfill \\
 
-\begin{table}[H]
-    \centering
-    \begin{tabular}{|l|c|c|c|c|}
-    \hline
-    \textbf{Mô hình} & \textbf{Accuracy} & \textbf{ROC-AUC} & \textbf{Recall (>50K)} & \textbf{F1 (>50K)} \\ \hline
-    Logistic Regression & 0.8377 & 0.8911 & 0.56 & 0.63 \\ \hline
-    \textbf{Gradient Boosting} & \textbf{0.8616} & \textbf{0.9161} & \textbf{0.63} & \textbf{0.69} \\ \hline
-    \end{tabular}
-    \caption{So sánh hiệu năng dự báo thu nhập}
-\end{table}
+Hai mô hình \texttt{Logistic Regression} và thuật toán cây tăng cường \texttt{Gradient Boosting} được chọn để đối chiếu sức mạnh phân loại.
+
+\begin{lstlisting}[style=pythoncode, caption={Model training and performance evaluation}]
+models = {
+    'Logistic Regression':   LogisticRegression(max_iter=1000),
+    'Gradient Boosting':     GradientBoostingClassifier(n_estimators=100, random_state=SEED)
+}
+
+results = {}
+for name, mdl in models.items():
+    mdl.fit(X_train_enc, y_train)
+    preds = mdl.predict(X_test_enc)
+    proba = mdl.predict_proba(X_test_enc)[:,1]
+    
+    acc  = accuracy_score(y_test, preds)
+    rauc = roc_auc_score(y_test, proba)
+    results[name] = {'preds': preds, 'Accuracy': acc, 'ROC-AUC': rauc}
+\end{lstlisting}
+
+Báo cáo kết quả phân loại:
+
+\begin{lstlisting}[style=consoleoutput, caption={Báo cáo các chỉ số phân loại (Classification Report)}]
+Adult Census Income Classification Report
+==================================================
+
+[Logistic Regression]
+  Accuracy : 0.8377
+  ROC-AUC  : 0.8911
+              precision    recall  f1-score   support
+       <=50K       0.86      0.93      0.90      4533
+        >50K       0.72      0.56      0.63      1500
+
+[Gradient Boosting]
+  Accuracy : 0.8616
+  ROC-AUC  : 0.9161
+              precision    recall  f1-score   support
+       <=50K       0.88      0.94      0.91      4533
+        >50K       0.77      0.63      0.69      1500
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_1/results/adult_census/04_confusion_matrices.png}
+    \includegraphics[width=1\linewidth]{Chương_1/results/adult_census/04_confusion_matrices.png}
     \caption{Ma trận nhầm lẫn của Logistic Regression và Gradient Boosting}
 \end{figure}
 
-Ma trận nhầm lẫn (Hình 1.4) cho thấy Gradient Boosting (bên phải) có khả năng phát hiện lớp thiểu số (>50K) tốt hơn với số lượng mẫu True Positive cao hơn (1392 so với 1239), đồng thời giảm thiểu sai lầm loại II (False Negative).
-
-Gradient Boosting cho thấy khả năng khai phá các mối quan hệ phi tuyến giữa các biến đã được mã hóa hiệu quả hơn hẳn mô hình tuyến tính.
-
-\paragraph{Phụ lục: Chi tiết quá trình thực hiện thực nghiệm Adult Census} \hfill \\
-Phần này trình bày chi tiết các bước xử lý dữ liệu và huấn luyện mô hình cho bài toán phân loại thu nhập.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/44.png}
-    \caption{Khởi tạo và Tải dữ liệu: Import các thư viện và đọc dataset Adult Census.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/45.png}
-    \caption{Mã nguồn EDA: Thiết kế các biểu đồ phân tích Thu nhập theo Độ tuổi, Trình độ học vấn và Số giờ làm việc.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/46.png}
-    \caption{Kết quả EDA: Nhận diện xu hướng thu nhập tăng dần theo độ tuổi lao động và trình độ chuyên môn (Prof-school, Doctorate).}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/47.png}
-    \caption{Kỹ thuật mã hóa nâng cao: Mã nguồn triển khai Target Encoding cho các biến phân loại có nhiều nhãn (Workclass, Occupation).}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/48.png}
-    \caption{Kiểm tra dữ liệu sau mã hóa: Các đặc trưng định tính đã được chuyển sang xác suất số tương ứng với mục tiêu.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/49.png}
-    \caption{Huấn luyện mô hình: So sánh độ chính xác của Logistic Regression, Random Forest và Gradient Boosting.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/50.png}
-    \caption{Mã nguồn đánh giá: Triển khai vẽ Ma trận nhầm lẫn để so sánh chi tiết khả năng phân loại của các mô hình.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/51.png}
-    \caption{Kết quả cuối cùng: Ma trận nhầm lẫn khẳng định Gradient Boosting là mô hình tối ưu nhất cho bài toán này.}
-\end{figure}
-    
+\textbf{Đánh giá kết quả:}
+Thuật toán \textbf{Gradient Boosting} tỏ ra vượt trội so với Logistic Regression, đẩy Accuracy lên mức $86.16\%$ và ROC-AUC vượt mốc $0.91$.
+Một điểm yếu chung của cả hai mô hình là tỷ lệ Recall cho lớp $>50K$ còn khá thấp ($56\%$ đối với LR và $63\%$ đối với GB). Điều này là do lớp mục tiêu $>50K$ chỉ chiếm $24.89\%$ dữ liệu, khiến mô hình thiên vị lớp thiểu số. Hướng cải tiến trong tương lai có thể là kết hợp Target Encoding với trọng số tập huấn luyện (Class Weights) hoặc sử dụng ngưỡng quyết định (Threshold Tuning) thay vì dùng mặc định là $0.5$ để tăng độ nhạy cảm của hệ thống.

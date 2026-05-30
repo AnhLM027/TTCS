@@ -1,104 +1,54 @@
-\subsection{Tổng quan về Trí tuệ nhân tạo (AI) và Vai trò của Dữ liệu}
-Trí tuệ nhân tạo (Artificial Intelligence - AI), cùng với các phân nhánh cốt lõi của nó là Học máy (Machine Learning - ML) và Học sâu (Deep Learning - DL), đã và đang định hình lại toàn bộ nền tảng khoa học máy tính hiện đại. Mục tiêu tối thượng của AI là kiến tạo nên các hệ thống máy tính có khả năng mô phỏng, tiếp thu và thực thi các nhiệm vụ phức tạp đòi hỏi năng lực trí tuệ tương đương con người, chẳng hạn như nhận thức thị giác, xử lý ngôn ngữ tự nhiên, ra quyết định chiến lược và suy luận logic. 
+\subsection{Tổng quan về Trí tuệ nhân tạo và Học máy}
+Trí tuệ nhân tạo (Artificial Intelligence - AI) và Học máy (Machine Learning - ML) đang định hình lại phương thức giải quyết các vấn đề phức tạp trong kỷ nguyên số. Về bản chất, Học máy là quá trình tối ưu hóa các hàm toán học dựa trên dữ liệu lịch sử để tìm ra các quy luật ẩn (hidden patterns) nhằm phục vụ cho mục tiêu dự báo. Tuy nhiên, khả năng học hỏi của các mô hình toán học này phụ thuộc hoàn toàn vào chất lượng của dữ liệu đầu vào, tuân theo nguyên lý bất di bất dịch của Khoa học máy tính: "Garbage In, Garbage Out" (Dữ liệu rác tạo ra Mô hình rác).
 
-Tuy nhiên, hiệu năng và sự thành bại của bất kỳ mô hình AI nào cũng phụ thuộc hoàn toàn vào nguồn tài nguyên cốt lõi: Dữ liệu. Trong kỷ nguyên số, dữ liệu được ví như "dầu mỏ mới", là nguồn nhiên liệu trực tiếp vận hành các thuật toán học máy. Điều này dẫn chúng ta đến một nguyên lý kinh điển mang tính sống còn trong khoa học dữ liệu: \textit{"Garbage In, Garbage Out"} (GIGO - tạm dịch: \textit{Dữ liệu rác đầu vào sẽ tạo ra kết quả rác đầu ra}). Dù cho kiến trúc thuật toán có tinh vi hay tối tân đến đâu (chẳng hạn như các mạng Transformer hàng tỷ tham số hay các mạng nơ-ron tích chập sâu), chúng vẫn sẽ hoàn toàn thất bại hoặc đưa ra các dự báo lệch lạc, sai sót nghiêm trọng nếu dữ liệu đầu vào bị nhiễu, không nhất quán, thiếu khuyết hoặc bị thiên lệch hệ thống.
+\subsection{Vai trò cốt lõi của Tiền xử lý dữ liệu (Data Preprocessing)}
+Trong thực tế phát triển các hệ thống AI, giai đoạn Tiền xử lý dữ liệu (Data Preprocessing) thường chiếm tới $70\% - 80\%$ thời gian và công sức của toàn bộ dự án. Dữ liệu thô thu thập được từ thế giới thực hiếm khi hoàn hảo; chúng thường xuyên chứa đựng nhiễu (noise), các giá trị khuyết thiếu (missing values), sự mâu thuẫn trong định dạng và đặc biệt là sự mất cân bằng về mặt thống kê. Tiền xử lý không chỉ đơn thuần là việc "làm sạch" mà còn là quá trình tái cấu trúc, biểu diễn lại thông tin dưới định dạng toán học tối ưu nhất, giúp các thuật toán hội tụ nhanh hơn và đạt được độ chính xác cao hơn.
 
-\subsection{Tầm quan trọng chiến lược của Tiền xử lý dữ liệu trong ML/DL}
-Tiền xử lý dữ liệu (Data Preprocessing) không chỉ đơn thuần là một bước chuẩn bị kỹ thuật, mà là một giai đoạn chiến lược chiếm đến hơn $80\%$ tổng thời gian và tài nguyên của một dự án khoa học dữ liệu tiêu chuẩn. Trong thực tế, dữ liệu thu thập từ các nguồn thế giới thực (real-world data) hiếm khi ở trạng thái lý tưởng; chúng thường phân mảnh, chứa nhiều nhiễu loạn, giá trị ngoại lai dị biệt (outliers), các thông tin khuyết thiếu và định dạng không nhất quán.
-
-Nếu bỏ qua bước tiền xử lý hoặc thực hiện sơ sài, các mô hình học máy sẽ phải đối mặt với nhiều hệ lụy nghiêm trọng:
+\subsection{Các kỹ thuật Tiền xử lý Cơ bản}
+Trước khi đối mặt với những vấn đề dữ liệu chuyên sâu, một luồng (pipeline) học máy tiêu chuẩn yêu cầu thực thi các kỹ thuật cơ bản sau đây để thiết lập nền tảng vững chắc:
 \begin{itemize}
-    \item \textbf{Mất hội tụ hoặc hội tụ chậm:} Các thuật toán tối ưu dựa trên độ dốc (Gradient Descent) như trong hồi quy tuyến tính, logistic hay mạng nơ-ron sâu sẽ dao động dữ dội hoặc hội tụ cực kỳ chậm nếu các đặc trưng đầu vào có thang đo lệch nhau hàng nghìn lần.
-    \item \textbf{Quá khớp (Overfitting) với nhiễu:} Mô hình có xu hướng học cả những biến động ngẫu nhiên hoặc các nhiễu sai số trong dữ liệu rác, dẫn đến hiệu năng cực cao trên tập huấn luyện nhưng suy giảm nghiêm trọng khi kiểm thử thực tế.
-    \item \textbf{Thiên lệch dự báo (Model Bias):} Sự hiện diện của các giá trị khuyết thiếu được xử lý sai hoặc dữ liệu mất cân bằng nghiêm trọng giữa các lớp sẽ khiến mô hình bị lệch hướng hoàn toàn về phía nhóm đa số.
-\end{itemize}
-Do đó, tiền xử lý dữ liệu đóng vai trò tinh lọc, chuẩn hóa cấu trúc thông tin để giúp các thuật toán học tập có thể tối ưu hóa các tham số (weights) một cách trơn tru, chính xác và đạt được khả năng tổng quát hóa (generalization) cao nhất trên dữ liệu chưa từng thấy.
-
-\subsection{Các kỹ thuật Tiền xử lý Dữ liệu Cơ bản}
-Trước khi tiếp cận các phương pháp tinh vi, việc xây dựng một nền tảng dữ liệu sạch thông qua các kỹ thuật cơ bản dưới đây là bắt buộc đối với mọi kỹ sư AI:
-
-\begin{enumerate}
-    \item \textbf{Làm sạch dữ liệu (Data Cleaning):} 
-    Dữ liệu thô thường xuất hiện các giá trị khuyết thiếu (Missing Values) do lỗi hệ thống cảm biến, người dùng từ chối cung cấp thông tin hoặc sai sót trong quá trình truyền tải. Các cơ chế khuyết thiếu phổ biến bao gồm khuyết thiếu hoàn toàn ngẫu nhiên (MCAR), khuyết thiếu ngẫu nhiên (MAR) và khuyết thiếu không ngẫu nhiên (MNAR). Chúng ta cần xử lý chúng bằng cách loại bỏ dòng/cột (chỉ áp dụng khi tỷ lệ khuyết dưới $5\%$) hoặc thực hiện gán thế giá trị (Imputation) bằng các giá trị thống kê tập trung như Mean, Median, Mode, hoặc các thuật toán nâng cao hơn như K-Nearest Neighbors (KNN Imputer) và Multiple Imputation by Chained Equations (MICE). Giai đoạn này cũng đồng thời loại bỏ dữ liệu trùng lặp (duplicates) và chuẩn hóa kiểu dữ liệu.
-
-    \item \textbf{Chuẩn hóa đặc trưng (Feature Scaling):}
-    Kỹ thuật này đưa các biến số (numerical features) về cùng một hệ quy chiếu thang đo. Điều này tối quan trọng đối với các mô hình tính toán dựa trên khoảng cách hình học (như KNN, SVM, K-Means) và các thuật toán học dựa trên Gradient. Hai phương pháp kinh điển bao gồm:
+    \item \textbf{Làm sạch dữ liệu (Data Cleaning):} Quá trình này bao gồm việc phát hiện và xử lý các giá trị thiếu (thông qua phương pháp nội suy - Imputation, hoặc loại bỏ), đồng thời phát hiện các điểm dữ liệu dị biệt (Outliers) có khả năng làm bóp méo đường ranh giới quyết định của mô hình.
+    \item \textbf{Chuẩn hóa đặc trưng (Feature Scaling):} Các thuật toán học máy tối ưu bằng Gradient Descent (như Hồi quy Logistic hay Mạng nơ-ron) hoặc dựa trên khoảng cách (như KNN, SVM) rất nhạy cảm với thang đo của dữ liệu. 
     \begin{itemize}
-        \item \textit{Normalization (Min-Max Scaling):} Biến đổi dữ liệu tuyến tính về phạm vi giới hạn chặt chẽ $[0, 1]$ (hoặc $[-1, 1]$). Công thức biến đổi:
-        \begin{equation}
-            X_{norm} = \frac{X - X_{min}}{X_{max} - X_{min}}
-        \end{equation}
-        Phương pháp này rất hữu ích khi phân phối dữ liệu không tuân theo phân phối chuẩn và cần giới hạn biên rõ ràng.
-        \item \textit{Standardization (Z-score Scaling):} Biến đổi dữ liệu để phân phối đầu ra có giá trị trung bình $\mu = 0$ và độ lệch chuẩn $\sigma = 1$. Công thức biến đổi:
-        \begin{equation}
-            X_{std} = \frac{X - \mu}{\sigma}
-        \end{equation}
-        Standardization không giới hạn dữ liệu trong một khoảng cố định, do đó nó ít bị ảnh hưởng bởi các giá trị cực trị hơn so với Min-Max Scaling và rất phù hợp cho các thuật toán giả định dữ liệu đầu vào phân phối chuẩn.
+        \item \textit{Normalization (Min-Max Scaling):} Đưa mọi giá trị về chung một không gian $[0, 1]$.
+        \item \textit{Standardization (Z-score Scaling):} Chuẩn hóa phân phối của đặc trưng về phân phối chuẩn (trung bình bằng $0$, phương sai bằng $1$).
     \end{itemize}
-
-    \item \textbf{Mã hóa dữ liệu phân loại (Categorical Encoding):}
-    Hầu hết các thuật toán học máy chỉ làm việc trên ma trận số thực. Do đó, các đặc trưng định tính (categorical features) cần được số hóa:
-    \begin{itemize}
-        \item \textit{Label Encoding:} Gán cho mỗi phân mục một số nguyên tuần tự. Kỹ thuật này đơn giản nhưng có nhược điểm lớn là vô tình tạo ra quan hệ thứ tự giả định (ví dụ: gán $Red=1$, $Green=2$, $Blue=3$ có thể khiến mô hình hiểu lầm rằng $Blue > Green > Red$). Do đó, nó thường chỉ dùng cho các biến định tính có thứ tự tự nhiên (Ordinal data).
-        \item \textit{One-Hot Encoding:} Tạo ra các cột vector nhị phân đại diện cho sự xuất hiện của từng nhãn phân mục. Cách tiếp cận này loại bỏ hoàn toàn mối quan hệ thứ tự giả định, nhưng có nhược điểm là làm gia tăng đột biến số lượng chiều dữ liệu (Curse of Dimensionality) nếu biến phân loại có quá nhiều nhãn khác nhau (high cardinality).
-    \end{itemize}
-
-    \item \textbf{Phân tách dữ liệu (Data Splitting):}
-    Để đánh giá mô hình một cách khách quan nhất và ngăn ngừa hiện tượng rò rỉ dữ liệu (Data Leakage), tập dữ liệu cần được chia tách nghiêm ngặt thành 3 phần:
-    \begin{itemize}
-        \item \textit{Train Set ($70\% - 80\%$):} Sử dụng trực tiếp để cập nhật trọng số của mô hình.
-        \item \textit{Validation Set ($10\% - 15\%$):} Sử dụng để tinh chỉnh siêu tham số (hyperparameters) và lựa chọn mô hình tối ưu nhất.
-        \item \textit{Test Set ($10\% - 15\%$):} Hoàn toàn độc lập, chỉ được mang ra đánh giá cuối cùng để kiểm tra khả năng tổng quát hóa thực tế của hệ thống.
-    \end{itemize}
-\end{enumerate}
-
-\subsection{Các kỹ thuật Tiền xử lý Dữ liệu Nâng cao}
-Khi đối mặt với các tập dữ liệu phức tạp trong thực tế, các kỹ thuật cơ bản thường bộc lộ những hạn chế. Do đó, các giải pháp nâng cao sau đây được triển khai để giải quyết triệt để các thách thức chuyên biệt:
-
-\begin{itemize}
-    \item \textbf{Robust Scaling (Chuẩn hóa bền vững):}
-    Khi dữ liệu chứa quá nhiều giá trị ngoại lai (outliers), các phép tính trung bình ($\mu$) và độ lệch chuẩn ($\sigma$) trong Standard Scaling sẽ bị kéo lệch nghiêm trọng, làm mất đi đặc trưng của phần lớn dữ liệu bình thường. Robust Scaling giải quyết vấn đề này bằng cách sử dụng các chỉ số thống kê bền vững là Median (trung vị) và Interquartile Range (IQR - Khoảng tứ phân vị):
-    \begin{equation}
-        X_{robust} = \frac{X - \text{Median}(X)}{IQR}
-    \end{equation}
-    Trong đó, $IQR = Q_3 - Q_1$ (hiệu số giữa phân vị $75\%$ và phân vị $25\%$). Kỹ thuật này giúp bảo toàn cấu trúc phân phối chính của dữ liệu mà không bị các giá trị cực trị bóp méo.
-
-    \item \textbf{SMOTE (Synthetic Minority Over-sampling Technique):}
-    Mất cân bằng lớp (Class Imbalance) là thách thức cực lớn trong các bài toán thực tế như phát hiện gian lận hoặc chẩn đoán y khoa. Nếu chỉ tăng mẫu bằng cách sao chép mẫu cũ (Random Over-sampling), mô hình sẽ dễ dàng bị quá khớp. SMOTE giải quyết điều này bằng cách tạo ra các mẫu dữ liệu giả lập mới cho lớp thiểu số dựa trên khoảng cách không gian đặc trưng. Với mỗi mẫu thuộc lớp thiểu số $x_i$, thuật toán tìm $k$ láng giềng gần nhất của nó, chọn ngẫu nhiên một láng giềng $x_{zi}$ và nội suy mẫu mới theo công thức:
-    \begin{equation}
-        x_{new} = x_i + \lambda \times (x_{zi} - x_i)
-    \end{equation}
-    với $\lambda$ là số ngẫu nhiên trong khoảng $[0, 1]$. Kỹ thuật này giúp mở rộng ranh giới quyết định (decision boundary) của lớp thiểu số một cách tự nhiên.
-
-    \item \textbf{Target Encoding (Mã hóa theo biến mục tiêu):}
-    Đối với các biến phân loại có số lượng nhãn lớn (High Cardinality), One-Hot Encoding sẽ tạo ra hàng ngàn cột thưa (sparse columns) làm chậm mô hình đáng kể. Target Encoding giải quyết bằng cách thay thế mỗi giá trị phân mục bằng giá trị trung bình của biến mục tiêu (Target Mean) tương ứng với phân mục đó. Để tránh rò rỉ thông tin mục tiêu (Target Leakage), kỹ thuật này thường kết hợp với kỹ thuật làm mịn (smoothing) hoặc phân tích Out-of-Fold.
-
-    \item \textbf{Kỹ nghệ Đặc trưng phái sinh (Feature Derivation):}
-    Là quá trình áp dụng các tri thức chuyên ngành (Domain Knowledge) để kết hợp hoặc biến đổi các đặc trưng thô thành các biến số mới mang ý nghĩa sâu sắc hơn cho bài toán. Kỹ thuật này giúp mô hình phi tuyến hóa mối quan hệ một cách đơn giản, cải thiện mạnh mẽ hiệu năng mà không cần gia tăng độ phức tạp của thuật toán.
+    \item \textbf{Mã hóa định tính (Categorical Encoding):} Máy tính chỉ hiểu được các con số. Kỹ thuật mã hóa như \textit{Label Encoding} (gán số thứ tự) hay \textit{One-Hot Encoding} (biến đổi thành các vector nhị phân rời rạc) là bắt buộc để mô hình có thể tiêu hóa được dữ liệu hạng mục (ví dụ: Màu sắc, Giới tính, Quốc gia).
+    \item \textbf{Phân tách dữ liệu (Data Splitting):} Đảm bảo tính khách quan của mô hình bằng cách chia dữ liệu thành tập Huấn luyện (Train), tập Kiểm định (Validation) và tập Kiểm thử (Test). Bước này ngăn chặn hiện tượng học vẹt (Overfitting).
 \end{itemize}
 
-\subsection{Thực nghiệm chuyên sâu trên 4 Datasets mẫu}
-Để minh chứng hiệu quả của các kỹ thuật trên, chương này tiến hành thực nghiệm và phân tích sâu sắc trên 4 bộ dữ liệu thực tế đại diện cho các thách thức đặc trưng khác nhau:
+\subsection{Các kỹ thuật Tiền xử lý Nâng cao}
+Trong đồ án này, chúng ta không chỉ dừng lại ở các phương pháp cơ bản, mà còn đi sâu triển khai các kỹ thuật nâng cao nhằm xử lý những bộ dữ liệu mang tính thách thức cao trong công nghiệp:
+\begin{itemize}
+    \item \textbf{Robust Scaling:} Đối với các tập dữ liệu có sự hiện diện của những ngoại lai (outliers) có giá trị cực đoan, Standardization sẽ thất bại do giá trị trung bình (mean) bị kéo lệch. Thay vào đó, \textit{Robust Scaling} sử dụng Trung vị (Median) và khoảng Tứ phân vị (IQR) để duy trì cấu trúc dữ liệu nguyên bản.
+    \item \textbf{Cân bằng phân phối bằng SMOTE:} Trong các bài toán phát hiện gian lận hoặc dự báo khách hàng rời bỏ, việc phân phối nhãn bị mất cân bằng trầm trọng (Class Imbalance) là rất phổ biến. Thuật toán \textit{SMOTE (Synthetic Minority Over-sampling Technique)} được áp dụng để nội suy toán học và tạo ra các mẫu dữ liệu nhân tạo cho lớp thiểu số thay vì nhân bản cơ học.
+    \item \textbf{Target Encoding:} Khi đối mặt với các biến phân loại có quá nhiều nhãn (High Cardinality) như "Nghề nghiệp" hay "Quốc tịch", One-Hot Encoding sẽ dẫn đến sự bùng nổ số chiều dữ liệu (Curse of Dimensionality). Kỹ thuật \textit{Target Encoding} giải quyết vấn đề này bằng cách thay thế nhãn định tính bằng xác suất mục tiêu thống kê của chính nhãn đó.
+    \item \textbf{Tính toán Đặc trưng phái sinh (Feature Derivation):} Sự am hiểu về mặt nghiệp vụ (Domain Knowledge) được áp dụng để tạo ra các đặc trưng mới từ những đặc trưng gốc (ví dụ: tuổi đời của xe, tỷ lệ tiêu hao theo năm), giúp mô hình "nhìn thấy" thông tin có giá trị cao một cách trực tiếp.
+\end{itemize}
 
-\subsubsection{Dataset 1: Used Car Price (Dữ liệu số - Xử lý Outliers và Kỹ nghệ Đặc trưng)}
-\textbf{Thách thức đặc trưng:} Tập dữ liệu chứa nhiều biến số có phân phối lệch phải nghiêm trọng (heavy-tailed distributions) cùng các giá trị ngoại lai cực trị (giá xe siêu sang, số km đi quá lớn). Bên cạnh đó, các cột dữ liệu quan trọng như thời gian hay hiệu suất động cơ tồn tại dưới dạng văn bản thô chưa có cấu trúc số. \\
-\textbf{Giải pháp áp dụng:} Trích xuất số thực từ các đơn vị đo lường thô bằng regex định dạng nâng cao. Áp dụng phương pháp \textit{RobustScaler} để chuẩn hóa các thuộc tính số mà không làm mất đi thông tin phân phối. Thực hiện Kỹ nghệ đặc trưng phái sinh để tạo ra hai biến số cực kỳ đắt giá là tuổi đời xe (\textit{Car Age}) và số km trung bình di chuyển mỗi năm (\textit{KM per Year}), giúp các thuật toán hồi quy nắm bắt xu hướng khấu hao một cách rõ rệt.
+\subsection{Thực nghiệm Tiền xử lý trên các Bộ Dữ liệu Công nghiệp}
+
+\subsubsection{Dataset 1: Used Car Price (Numerical - Outliers \& Feature Derivation)}
+\textbf{Thách thức cốt lõi:} Dữ liệu thị trường xe cũ chứa rất nhiều nhiễu, các giá trị giá bán và số kilomet đã chạy có độ dao động cực lớn (từ vài ngàn đến hàng triệu), đồng thời thông tin "Năm sản xuất" ở định dạng thô khó đem lại hiệu suất dự báo tốt. \\
+\textbf{Phương pháp giải quyết:} Áp dụng phân tích Tứ phân vị (IQR) để cắt tỉa ngoại lai cực đoan; sử dụng RobustScaler cho các đặc trưng số học lớn; và áp dụng Feature Derivation để chuyển đổi "Năm sản xuất" thành "Tuổi thọ xe".
 \input{Chương_1/docs/sub_used_car.tex}
 
-\subsubsection{Dataset 2: Telco Churn (Dữ liệu bảng - Mất cân bằng lớp và SMOTE)}
-\textbf{Thách thức đặc trưng:} Tỷ lệ khách hàng thực tế rời bỏ mạng viễn thông (\textit{Churn}) luôn chiếm tỷ lệ rất nhỏ so với nhóm khách hàng trung thành. Sự mất cân bằng nghiêm trọng này khiến mô hình dễ dàng đạt độ chính xác cao giả tạo (\textit{Accuracy Paradox}) bằng cách dự báo toàn bộ khách hàng là trung thành, dẫn đến việc bỏ lọt nhóm đối tượng cần chăm sóc đặc biệt. \\
-\textbf{Giải pháp áp dụng:} Thực hiện chuẩn hóa chuẩn mực các dịch vụ viễn thông thông qua One-hot Encoding. Áp dụng thuật toán \textit{SMOTE} trên không gian đặc trưng sau khi mã hóa để sinh mẫu lớp thiểu số, cân bằng tỷ lệ phân phối lớp về mức lý tưởng 50:50 trước khi đưa vào huấn luyện mô hình phân loại.
+\subsubsection{Dataset 2: Telco Churn (Tabular - Class Imbalance \& SMOTE)}
+\textbf{Thách thức cốt lõi:} Số lượng khách hàng trung thành luôn áp đảo số lượng khách hàng hủy dịch vụ (Churn), dẫn đến việc mô hình có xu hướng thiên vị (bias) dự đoán khách hàng sẽ không bao giờ rời đi. \\
+\textbf{Phương pháp giải quyết:} Sử dụng thuật toán SMOTE để cân bằng lại tập dữ liệu huấn luyện, kết hợp với các mô hình Ensemble để tăng cường khả năng phát hiện tập thiểu số.
 \input{Chương_1/docs/sub_telco_churn.tex}
 
-\subsubsection{Dataset 3: Credit Card Fraud (Dữ liệu dị thường - Tập trung Tối ưu Precision-Recall)}
-\textbf{Thách thức đặc trưng:} Các giao dịch gian lận tín dụng chiếm tỷ lệ cực kỳ nhỏ (thường chỉ dưới $0.1\%$). Ở đây, bài toán không đơn thuần là phân loại mà tiệm cận đến bài toán phát hiện dị thường (Anomaly Detection). Mọi thước đo truyền thống như Accuracy hay ROC-AUC đều bị vô hiệu hóa vì chúng không phản ánh đúng tác động của sai lầm loại II (False Negative - bỏ lọt gian lận). \\
-\textbf{Giải pháp áp dụng:} Áp dụng các thuật toán giảm chiều dữ liệu phi tuyến tính (như PCA) để trực quan hóa cụm gian lận thưa thớt trên không gian đặc trưng. Cấu hình quy trình huấn luyện tập trung tối ưu hóa các thước đo chuyên biệt bao gồm \textit{Precision-Recall Curve (PRC)} và \textit{F1-Score}, cân đối chi phí tổn thất giữa việc báo động nhầm và việc bỏ sót giao dịch lừa đảo.
+\subsubsection{Dataset 3: Credit Card Fraud (Anomaly - Precision-Recall Focus)}
+\textbf{Thách thức cốt lõi:} Tỷ lệ gian lận là siêu hiếm (chỉ $0.17\%$), dữ liệu bị ẩn danh bằng PCA, và chi phí cho một cảnh báo nhầm (False Positive) là rất lớn ảnh hưởng đến trải nghiệm người dùng. \\
+\textbf{Phương pháp giải quyết:} Chuyển trọng tâm đánh giá từ Accuracy sang tối ưu hóa đường cong Precision-Recall (PR-AUC); tận dụng kỹ thuật điều chỉnh trọng số (Balanced Class Weights) trên thuật toán Random Forest để giảm thiểu báo động giả.
 \input{Chương_1/docs/sub_credit_fraud.tex}
 
-\subsubsection{Dataset 4: Adult Census (Dữ liệu Categorical lớn - Target Encoding)}
-\textbf{Thách thức đặc trưng:} Bộ dữ liệu dự báo thu nhập cá nhân chứa nhiều trường dữ liệu định tính có số lượng nhãn phân mục cực lớn (High Cardinality) như quốc gia gốc (Native Country), vị trí nghề nghiệp (Occupation). Nếu sử dụng One-Hot Encoding thông thường, số chiều của bảng dữ liệu sẽ bùng nổ lên tới hàng trăm chiều thưa thớt, gây lãng phí bộ nhớ và dẫn đến hiện tượng quá khớp dữ liệu nghiêm trọng. \\
-\textbf{Giải pháp áp dụng:} Loại bỏ các cột thông tin quá thưa thớt, thay thế các nhãn định tính bằng kỹ thuật \textit{Target Encoding} dựa trên xác suất có điều kiện của biến mục tiêu (thu nhập vượt ngưỡng $\$50\text{K}/$năm). Phương pháp này giúp nén toàn bộ thông tin phân mục phức tạp về đúng một cột số thực duy nhất mang tính đại diện cực kỳ cao cho khả năng phân tách của mô hình.
+\subsubsection{Dataset 4: Adult Census (Categorical - Target Encoding)}
+\textbf{Thách thức cốt lõi:} Bộ dữ liệu chứa các biến nhân khẩu học phức tạp có số lượng nhãn lớn (như nghề nghiệp, quốc gia), đòi hỏi giải pháp mã hóa thông minh để không làm giảm tốc độ huấn luyện. \\
+\textbf{Phương pháp giải quyết:} Triển khai kỹ thuật \textit{Target Encoding} có tích hợp làm mịn (Smoothing) để biểu diễn các biến hạng mục phức tạp thành các con số xác suất, từ đó khai thác tối đa sức mạnh của thuật toán Gradient Boosting.
 \input{Chương_1/docs/sub_adult_census.tex}
 
 \subsection{Tổng kết Chương 1}
-Thông qua 4 bài toán thực tế với các thách thức khác nhau, chúng ta thấy rằng không có một quy trình tiền xử lý duy nhất cho mọi loại dữ liệu. Việc hiểu rõ bản chất của dữ liệu và lựa chọn kỹ thuật phù hợp là yếu tố tiên quyết để xây dựng mô hình AI thành công.
+Xuyên suốt chương đầu tiên, chúng ta đã tiến hành tháo gỡ thành công bốn bài toán học máy kinh điển mang đậm tính công nghiệp. Thông qua thực nghiệm chi tiết, một kết luận sắc bén được rút ra: \textit{Không tồn tại một "cây đũa thần" tiền xử lý duy nhất cho mọi tập dữ liệu}. Mỗi loại dữ liệu mang trong mình một căn bệnh riêng - từ nhiễu loạn giá trị (Used Car), mất cân bằng lớp (Telco Churn), độ hiếm cực hạn (Credit Fraud) cho đến sự bùng nổ số chiều (Adult Census). 
+
+Chính sự am hiểu sâu sắc về phân phối thống kê, kết hợp với tư duy lựa chọn công cụ tiền xử lý tinh tế (RobustScaler, SMOTE, PR-AUC, Target Encoding) đã tạo nên chiếc chìa khóa vàng giúp các mô hình Machine Learning phát huy tối đa sức mạnh phân tích. Những tri thức và kỹ năng làm sạch, tái cấu trúc dữ liệu được củng cố trong chương này sẽ đóng vai trò là nền móng vững chắc vô giá, chuẩn bị cho sự chuyển mình sang các kỹ thuật mô hình hóa phức tạp và các nền tảng trí tuệ nhân tạo chuyên sâu ở các chương tiếp theo.

@@ -38,8 +38,7 @@ Sinh viên chuẩn bị báo cáo gồm **4 chương**, nội dung như sau:
 
   * Trình bày lý thuyết, lịch sử phát triển, ưu nhược điểm.
   * Phân tích chi tiết **từng dòng lệnh trong code**, giải thích đoạn code đó liên hệ với lý thuyết như thế nào.
-  * Minh họa bằng kết quả thực nghiệm, biểu đồ, hình ảnh nếu có.
-
+  * Minh họa bằng kết quả thực nghiệm, biểu đồ, hình ảnh nếu có và giải thích chúng.
 ---
 
 ## **Dung lượng báo cáo**

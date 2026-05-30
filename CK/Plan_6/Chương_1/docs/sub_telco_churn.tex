@@ -1,163 +1,312 @@
-\paragraph{Phân tích bộ dữ liệu Telco Churn} \hfill \\
-Dự báo khả năng khách hàng rời bỏ dịch vụ viễn thông. Đây là bài toán phân loại nhị phân tiêu biểu.
+\paragraph{Phân tích bộ dữ liệu Telco Customer Churn} \hfill \\
 
-\paragraph{Phân tích biến mục tiêu và các yếu tố ảnh hưởng} \hfill \\
-Tỷ lệ khách hàng rời bỏ (Churn) chiếm khoảng 26.5\% dữ liệu, tạo ra sự mất cân bằng nhẹ:
+Dự báo khả năng khách hàng rời bỏ dịch vụ viễn thông (Churn Prediction) là một trong những bài toán cốt lõi của ngành chăm sóc khách hàng. Dựa trên dữ liệu nhân khẩu học, lịch sử sử dụng dịch vụ và phương thức thanh toán, mục tiêu của chúng ta là xây dựng một mô hình phân loại nhị phân (Binary Classification) để dự đoán xem một khách hàng có chuẩn bị hủy dịch vụ hay không.
+
+\paragraph{Thiết lập Môi trường và Tải Dữ liệu} \hfill \\
+
+Đầu tiên, chúng ta nạp các thư viện quan trọng và cố định \texttt{SEED} nhằm đảm bảo tính tái lập (reproducibility) của các thí nghiệm.
+
+\begin{lstlisting}[style=pythoncode, caption={Thiết lập môi trường và tải tập dữ liệu Telco Churn}]
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, roc_auc_score, roc_curve
+from imblearn.over_sampling import SMOTE
+import warnings, os, random
+
+SEED = 42
+os.environ['PYTHONHASHSEED'] = str(SEED)
+random.seed(SEED)
+np.random.seed(SEED)
+warnings.filterwarnings('ignore')
+
+plt.rcParams.update({'figure.dpi': 120, 'font.size': 11, 'axes.titlesize': 13, 'axes.titleweight': 'bold'})
+sns.set_theme(style='whitegrid', palette='husl')
+
+DATA_PATH = '../data/telco_churn/WA_Fn-UseC_-Telco-Customer-Churn.csv'
+df = pd.read_csv(DATA_PATH)
+print(f'Shape: {df.shape}')
+df.head()
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Một vài dòng đầu của tập dữ liệu Telco Churn}]
+Shape: (7043, 21)
+   customerID  gender  SeniorCitizen Partner Dependents  tenure PhoneService ...
+0  7590-VHVEG  Female              0     Yes         No       1           No ...
+1  5575-GNVDE    Male              0      No         No      34          Yes ...
+2  3668-QPYBK    Male              0      No         No       2          Yes ...
+3  7795-CFOCW    Male              0      No         No      45           No ...
+4  9237-HQITU  Female              0      No         No       2          Yes ...
+\end{lstlisting}
+
+\textbf{Giải thích:} Ngoài các thư viện học máy thông thường từ \texttt{scikit-learn}, chúng ta đặc biệt nhập khẩu thư viện \texttt{imblearn} để sử dụng thuật toán SMOTE nhằm giải quyết sự mất cân bằng dữ liệu của lớp mục tiêu.
+
+\begin{lstlisting}[style=pythoncode, caption={Kiểm tra cấu trúc và phân phối lớp mục tiêu}]
+info = pd.DataFrame({
+    'dtype': df.dtypes,
+    'null_count': df.isnull().sum(),
+    'unique': df.nunique()
+})
+display(info)
+print(f'\nChurn rate: {(df["Churn"]=="Yes").mean()*100:.2f}%')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Tỷ lệ khách hàng rời bỏ trong tập dữ liệu}]
+Churn rate: 26.54%
+\end{lstlisting}
+
+\textbf{Phân tích cấu trúc dữ liệu:} Kết quả cho thấy tỷ lệ khách hàng rời bỏ (Churn) chiếm khoảng $26.54\%$. Đây là bài toán có sự mất cân bằng dữ liệu mức độ nhẹ, đòi hỏi các kỹ thuật điều chỉnh tập huấn luyện để tránh hiện tượng mô hình thiên vị lớp đa số (khách hàng không rời bỏ).
+
+\paragraph{Phân tích Khám phá Dữ liệu (EDA)} \hfill \\
+
+Chúng ta tiến hành phân tích sự phân phối của lớp mục tiêu và ảnh hưởng của các biến liên tục như thời gian sử dụng (\texttt{tenure}) và chi phí hàng tháng (\texttt{MonthlyCharges}).
+
+\begin{lstlisting}[style=pythoncode, caption={Trực quan hóa phân phối biến mục tiêu và các biến liên tục}]
+fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+
+# 1. Pie chart churn
+churn_counts = df['Churn'].value_counts()
+axes[0].pie(churn_counts, labels=['No Churn', 'Churn'], autopct='%1.1f%%',
+            colors=['#4CAF50', '#F44336'], explode=(0, 0.07), startangle=90,
+            wedgeprops=dict(edgecolor='white', linewidth=2))
+axes[0].set_title('Churn Rate')
+
+# 2. Histogram tenure
+df[df['Churn'] == 'No']['tenure'].hist(bins=30, ax=axes[1], alpha=0.7, color='#4CAF50', label='No Churn')
+df[df['Churn'] == 'Yes']['tenure'].hist(bins=30, ax=axes[1], alpha=0.7, color='#F44336', label='Churn')
+axes[1].set_title('Tenure Distribution by Churn')
+axes[1].set_xlabel('Months')
+axes[1].legend()
+
+# 3. Boxplot MonthlyCharges
+df.boxplot(column='MonthlyCharges', by='Churn', ax=axes[2],
+           boxprops=dict(color='steelblue'), medianprops=dict(color='red', linewidth=2))
+axes[2].set_title('MonthlyCharges vs Churn')
+axes[2].set_xlabel('Churn')
+
+plt.suptitle('')
+plt.tight_layout()
+plt.show()
+\end{lstlisting}
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_1/results/telco/01_churn_eda.png}
-    \caption{Phân phối nhãn Churn và thời gian gắn bó (Tenure)}
+    \includegraphics[width=1\linewidth]{Chương_1/results/telco/01_churn_eda.png}
+    \caption{Phân phối nhãn Churn, thời gian gắn bó (Tenure) và cước phí (MonthlyCharges)}
 \end{figure}
 
-Hình 1.9 cho thấy khách hàng mới (Tenure thấp) có xu hướng rời bỏ dịch vụ cao hơn hẳn khách hàng lâu năm. Điều này gợi ý rằng các chương trình khuyến mãi nên tập trung vào giai đoạn đầu của hợp đồng.
+\textbf{Phân tích \& Đánh giá EDA:}
+\begin{itemize}
+    \item \textbf{Phân phối Tenure (Thời gian gắn bó):} Biểu đồ Histogram ở giữa cho thấy một sự khác biệt rất rõ rệt. Nhóm khách hàng rời bỏ (cột màu đỏ) tập trung với mật độ dày đặc ở giai đoạn đầu (những tháng đầu tiên sử dụng dịch vụ). Ngược lại, nhóm khách hàng ở lại (màu xanh lá) có tỷ lệ cao ở mức tenure $70+$ tháng. Điều này chứng minh quy luật: "khách hàng càng lâu năm thì sự trung thành càng cao". Do đó, các nhà mạng cần đặc biệt thiết kế các chương trình giữ chân khách hàng (retention programs) trong 3-6 tháng đầu tiên sau khi đăng ký.
+    \item \textbf{Cước phí hàng tháng (Monthly Charges):} Boxplot bên phải chỉ ra rằng nhóm khách hàng rời bỏ có mức cước phí trung vị (đường màu đỏ) cao hơn đáng kể so với nhóm trung thành. Mức giá cao có thể là một rào cản tài chính hoặc khách hàng cảm thấy chất lượng dịch vụ không tương xứng với số tiền bỏ ra, dẫn đến quyết định hủy dịch vụ.
+\end{itemize}
 
-Chúng ta quan sát thấy khách hàng sử dụng hợp đồng ngắn hạn (Month-to-month) và thanh toán bằng séc điện tử (Electronic check) có tỷ lệ rời bỏ cao nhất:
+Khảo sát sâu hơn sự tác động của các biến phân loại (nhân khẩu học và loại hình hợp đồng).
+
+\begin{lstlisting}[style=pythoncode, caption={Phân tích tỷ lệ rời bỏ theo các yếu tố Categorical}]
+cat_features = ['gender', 'Partner', 'Dependents', 'PhoneService',
+                'InternetService', 'Contract', 'PaymentMethod']
+
+fig, axes = plt.subplots(2, 4, figsize=(18, 9))
+axes = axes.flatten()
+
+for i, col in enumerate(cat_features):
+    churn_rate = df.groupby(col)['Churn'].apply(lambda x: (x=='Yes').mean() * 100)
+    bars = axes[i].bar(churn_rate.index, churn_rate.values,
+                       color=sns.color_palette('RdYlGn_r', len(churn_rate)),
+                       edgecolor='black', linewidth=0.5)
+    axes[i].set_title(f'Churn Rate by {col}')
+    axes[i].set_ylabel('Churn Rate (%)')
+    axes[i].tick_params(axis='x', rotation=25)
+
+axes[-1].set_visible(False)
+plt.suptitle('Churn Rate by Categorical Variables', fontsize=14, fontweight='bold')
+plt.tight_layout()
+plt.show()
+\end{lstlisting}
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_1/results/telco/02_churn_by_category.png}
-    \caption{Tỷ lệ rời bỏ theo loại hợp đồng và phương thức thanh toán}
+    \includegraphics[width=1\linewidth]{Chương_1/results/telco/02_churn_by_category.png}
+    \caption{Tỷ lệ rời bỏ (Churn Rate) theo các biến phân loại nhân khẩu học và hợp đồng}
 \end{figure}
 
-Hình 1.10 chỉ ra rằng loại hợp đồng là yếu tố then chốt: khách hàng "Month-to-month" có rủi ro rời bỏ cao nhất, trong khi hợp đồng 1-2 năm giúp duy trì sự ổn định. Thanh toán qua "Electronic check" cũng là một dấu hiệu cảnh báo cần chú ý.
+\textbf{Phân tích \& Đánh giá chi tiết:}
+\begin{itemize}
+    \item \textbf{Loại hình hợp đồng (Contract):} Đây là một trong những chỉ báo mạnh mẽ nhất. Khách hàng sử dụng hợp đồng gia hạn hàng tháng (Month-to-month) có tỷ lệ rời bỏ rất cao, trong khi hợp đồng 1-2 năm giúp giảm thiểu rủi ro này xuống mức cực thấp. Tính ràng buộc pháp lý của hợp đồng dài hạn tạo ra sự ổn định doanh thu rất lớn.
+    \item \textbf{Phương thức thanh toán (Payment Method):} Thanh toán bằng séc điện tử (Electronic check) đi kèm với tỷ lệ churn cao bất thường so với các hình thức thanh toán tự động (thẻ tín dụng, chuyển khoản). Điều này gợi ý rằng quy trình thanh toán thủ công hoặc sự bất tiện của hệ thống thanh toán điện tử có thể gây ra ma sát trải nghiệm người dùng.
+    \item \textbf{Yếu tố Internet \& Nhân khẩu học:} Dịch vụ Internet cáp quang (Fiber optic) ghi nhận tỷ lệ rời bỏ cao hơn DSL, có thể do giá thành cao hơn hoặc gặp sự cố đường truyền. Về nhân khẩu học, nhóm khách hàng không có người phụ thuộc (Dependents = No) hoặc sống độc thân (Partner = No) có tính di động cao hơn, do đó dễ chuyển đổi nhà mạng hơn.
+\end{itemize}
 
-\paragraph{Kỹ thuật xử lý: Cân bằng dữ liệu với SMOTE} \hfill \\
-Để mô hình không bị thiên kiến về lớp đa số, kỹ thuật SMOTE được áp dụng để sinh thêm các mẫu giả lập cho lớp Churn:
+\paragraph{Tiền xử lý và Cân bằng Dữ liệu (SMOTE)} \hfill \\
+
+Dữ liệu thô cần được xử lý các biến văn bản (Binary và One-hot Encoding), đồng thời sửa lỗi kiểu dữ liệu của \texttt{TotalCharges}.
+
+\begin{lstlisting}[style=pythoncode, caption={Tiền xử lý chuỗi ký tự và mã hóa phân loại}]
+df_proc = df.copy()
+# Convert TotalCharges to numeric, replace errors with median
+df_proc['TotalCharges'] = pd.to_numeric(df_proc['TotalCharges'], errors='coerce')
+df_proc['TotalCharges'] = df_proc['TotalCharges'].fillna(df_proc['TotalCharges'].median())
+df_proc = df_proc.drop('customerID', axis=1)
+
+# Label Encoding for binary categorical columns
+binary_cols = ['gender', 'Partner', 'Dependents', 'PhoneService', 'PaperlessBilling', 'Churn']
+le = LabelEncoder()
+for col in binary_cols:
+    df_proc[col] = le.fit_transform(df_proc[col])
+
+# One-hot Encoding for multi-class columns
+df_proc = pd.get_dummies(df_proc)
+print(f'Shape after encoding: {df_proc.shape}')
+df_proc.head(3)
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Hình dáng dữ liệu sau khi mã hóa One-hot}]
+Shape after encoding: (7043, 41)
+   gender  SeniorCitizen  Partner  Dependents  tenure  PhoneService  ...
+0       0              0        1           0       1             0  ...
+1       1              0        0           0      34             1  ...
+2       1              0        0           0       2             1  ...
+
+   PaymentMethod_Bank transfer (automatic)  PaymentMethod_Electronic check  ...
+0                                        0                               1  ...
+1                                        0                               0  ...
+2                                        0                               0  ...
+[3 rows x 41 columns]
+\end{lstlisting}
+
+Sau khi chuẩn hóa, chúng ta sử dụng thuật toán SMOTE (Synthetic Minority Over-sampling Technique) để xử lý tình trạng mất cân bằng dữ liệu trong tập huấn luyện.
+
+\begin{lstlisting}[style=pythoncode, caption={Sinh mẫu dữ liệu giả lập bằng thuật toán SMOTE}]
+X = df_proc.drop('Churn', axis=1)
+y = df_proc['Churn']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=SEED, stratify=y)
+print(f'Before SMOTE - Train: {X_train.shape}, Churn rate: {y_train.mean():.3f}')
+
+smote = SMOTE(random_state=SEED)
+X_res, y_res = smote.fit_resample(X_train, y_train)
+print(f'After  SMOTE - Train: {X_res.shape}, Churn rate: {y_res.mean():.3f}')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Kết quả kích thước tập huấn luyện trước và sau khi dùng SMOTE}]
+Before SMOTE - Train: (5634, 40), Churn rate: 0.265
+After  SMOTE - Train: (8278, 40), Churn rate: 0.500
+\end{lstlisting}
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{Chương_1/results/telco/03_smote_comparison.png}
     \caption{Tương quan dữ liệu trước và sau khi áp dụng SMOTE}
 \end{figure}
 
-Hình 1.11 minh họa hiệu quả của kỹ thuật SMOTE. Bằng cách sinh thêm các mẫu giả lập cho lớp thiểu số dựa trên khoảng cách K-Nearest Neighbors, chúng ta đã cân bằng được tập huấn luyện, giúp mô hình học được đặc trưng của nhóm khách hàng rời bỏ một cách công bằng hơn.
+\textbf{Giải thích thuật toán SMOTE:} SMOTE hoạt động bằng cách chọn ngẫu nhiên một mẫu từ lớp thiểu số (Churn=1), tìm $k$ hàng xóm gần nhất (K-Nearest Neighbors) của nó trong không gian đặc trưng, và tổng hợp một mẫu mới nằm trên đoạn thẳng nối giữa điểm đó và điểm hàng xóm. Bằng cách này, tập dữ liệu không bị sao chép nhàm chán (tránh overfitting cục bộ) mà được nội suy thành các điểm dữ liệu hợp lệ mới, ép buộc Churn rate đạt $50\%$ để các mô hình học máy không bị "lười biếng" ưu tiên dự báo lớp đa số.
 
-\paragraph{Kết quả thực nghiệm} \hfill \\
-Thực nghiệm sử dụng Logistic Regression và Random Forest với bộ tham số cân bằng.
+\paragraph{Huấn luyện và Đánh giá Mô hình} \hfill \\
 
-\begin{table}[H]
-    \centering
-    \begin{tabular}{|l|c|c|c|c|}
-    \hline
-    \textbf{Mô hình} & \textbf{Accuracy} & \textbf{ROC-AUC} & \textbf{F1 (Churn)} & \textbf{Recall (Churn)} \\ \hline
-    Logistic Regression & 0.7949 & 0.8407 & 0.61 & 0.61 \\ \hline
-    Random Forest & 0.7786 & 0.8197 & 0.57 & 0.55 \\ \hline
-    \end{tabular}
-    \caption{Kết quả phân loại khách hàng rời bỏ}
-\end{table}
+Hai mô hình \texttt{Logistic Regression} (tuyến tính) và \texttt{Random Forest} (học tập hợp phi tuyến) được triển khai trên dữ liệu đã chuẩn hóa \texttt{StandardScaler}.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\linewidth]{Chương_1/results/telco/04_confusion_roc.png}
-    \caption{Ma trận nhầm lẫn và Đường cong ROC (Logistic Regression chiếm ưu thế)}
-\end{figure}
+\begin{lstlisting}[style=pythoncode, caption={Chuẩn hóa và Huấn luyện các mô hình học máy}]
+scaler = StandardScaler()
+X_train_s = scaler.fit_transform(X_res)
+X_test_s  = scaler.transform(X_test)
 
-Hình 1.12 cho thấy mô hình Logistic Regression đạt diện tích dưới đường cong (AUC) là 0.84, một con số khá tốt cho bài toán dự báo hành vi con người. Ma trận nhầm lẫn xác nhận khả năng cân bằng giữa việc phát hiện Churn và duy trì độ chính xác tổng thể.
+models = {
+    'Logistic Regression': LogisticRegression(max_iter=1000),
+    'Random Forest':       RandomForestClassifier(n_estimators=100, random_state=SEED)
+}
 
-\paragraph{Feature Importance} \hfill \\
-Biểu đồ dưới đây chỉ ra các yếu tố "giữ chân" khách hàng hiệu quả nhất:
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\linewidth]{Chương_1/results/telco/05_feature_importance.png}
-    \caption{Tầm quan trọng của các đặc trưng trong bài toán Churn}
-\end{figure}
-
-Hình 1.13 tổng kết các đặc trưng quan trọng nhất. Ngoài loại hợp đồng và thời gian gắn bó, tổng số tiền thanh toán (\texttt{TotalCharges}) và loại hình Internet cũng đóng vai trò quyết định trong việc dự báo khả năng khách hàng rời đi.
-
-\paragraph{Phụ lục: Chi tiết quá trình thực hiện thực nghiệm Telco Churn} \hfill \\
-Dưới đây là các bước thực hiện chi tiết cho bài toán dự báo khách hàng rời bỏ dịch vụ.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/28.png}
-    \caption{Khởi tạo: Import các thư viện xử lý dữ liệu và học máy cho bài toán phân loại.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/29.png}
-    \caption{Tải dữ liệu Telco Churn: Đọc dữ liệu và kiểm tra phân phối của biến mục tiêu Churn.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/30.png}
-    \caption{Thống kê cơ bản: Xem xét kiểu dữ liệu và tỷ lệ khách hàng rời bỏ (26.54\%).}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/31.png}
-    \caption{Mã nguồn EDA (Phần 1): Vẽ biểu đồ tròn tỷ lệ Churn và biểu đồ histogram cho Tenure.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/32.png}
-    \caption{Mã nguồn EDA (Phần 2): Bổ sung biểu đồ Boxplot cho chi phí hàng tháng (Monthly Charges).}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/33.png}
-    \caption{Kết quả EDA tổng quan: Nhận diện sự khác biệt về Tenure và Chi phí giữa hai nhóm khách hàng.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/34.png}
-    \caption{Mã nguồn phân tích biến hạng mục: So sánh tỷ lệ Churn theo các loại dịch vụ và hợp đồng.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/35.png}
-    \caption{Kết quả phân tích hạng mục: Khách hàng dùng hợp đồng Month-to-month có tỷ lệ rời đi cao nhất.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/36.png}
-    \caption{Mã nguồn Heatmap tương quan: Đánh giá mối liên hệ giữa các biến số sau khi mã hóa.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/37.png}
-    \caption{Kết quả Ma trận tương quan: Quan sát các biến có tương quan thuận/nghịch với Churn.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/38.png}
-    \caption{Tiền xử lý và SMOTE: Mã nguồn xử lý giá trị thiếu, mã hóa Label/One-hot và cân bằng dữ liệu.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/39.png}
-    \caption{Kết quả SMOTE: Trực quan hóa sự thay đổi phân phối dữ liệu trước và sau khi Over-sampling.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/40.png}
-    \caption{Huấn luyện mô hình: So sánh hiệu năng giữa Logistic Regression và Random Forest trên tập Test.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/41.png}
-    \caption{Mã nguồn đánh giá chi tiết: Vẽ Ma trận nhầm lẫn và đường cong ROC cho các mô hình.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/42.png}
-    \caption{Kết quả đánh giá: Logistic Regression cho thấy kết quả ổn định hơn với AUC đạt 0.84.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Chương_1/docs/ch1/43.png}
-    \caption{Tầm quan trọng của đặc trưng: Xác định các yếu tố then chốt dẫn tới quyết định rời mạng của khách hàng.}
-\end{figure}
+results = {}
+for name, mdl in models.items():
+    mdl.fit(X_train_s, y_res)
+    preds = mdl.predict(X_test_s)
+    proba = mdl.predict_proba(X_test_s)[:, 1]
     
+    acc = accuracy_score(y_test, preds)
+    auc = roc_auc_score(y_test, proba)
+    results[name] = {'model': mdl, 'preds': preds, 'proba': proba, 'Accuracy': acc, 'AUC': auc}
+\end{lstlisting}
+
+Báo cáo kết quả phân loại trên tập dữ liệu đánh giá:
+
+\begin{lstlisting}[style=consoleoutput, caption={Báo cáo các chỉ số phân loại (Classification Report)}]
+Telco Churn Classification Report (with SMOTE)
+==================================================
+
+[Logistic Regression]
+  Accuracy : 0.7949
+  ROC-AUC  : 0.8407
+              precision    recall  f1-score   support
+    No Churn       0.86      0.86      0.86      1035
+       Churn       0.61      0.61      0.61       374
+
+[Random Forest]
+  Accuracy : 0.7786
+  ROC-AUC  : 0.8197
+              precision    recall  f1-score   support
+    No Churn       0.84      0.86      0.85      1035
+       Churn       0.59      0.55      0.57       374
+\end{lstlisting}
+
+\begin{lstlisting}[style=pythoncode, caption={Trực quan hóa Confusion Matrix và ROC Curve}]
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+# Plot Confusion Matrix for Best Model
+best_name = max(results, key=lambda m: results[m]['AUC'])
+best = results[best_name]
+cm = confusion_matrix(y_test, best['preds'])
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=axes[0])
+axes[0].set_title(f'Confusion Matrix\n({best_name})')
+
+# Plot ROC Curves
+for name, res in results.items():
+    fpr, tpr, _ = roc_curve(y_test, res['proba'])
+    axes[1].plot(fpr, tpr, lw=2, label=f'{name} (AUC={res["AUC"]:.3f})')
+
+axes[1].plot([0,1], [0,1], 'k--', lw=1.5, label='Random Baseline')
+axes[1].set_title('ROC Curve Comparison')
+axes[1].legend()
+plt.show()
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Chương_1/results/telco/04_confusion_roc.png}
+    \caption{Ma trận nhầm lẫn (Confusion Matrix) và Đường cong đặc trưng hoạt động bộ nhận diện (ROC Curve)}
+\end{figure}
+
+\textbf{Phân tích \& Đánh giá hiệu suất:}
+\begin{itemize}
+    \item \textbf{Sức mạnh của Hồi quy Logistic:} Trái với bài toán dự báo giá xe (nơi thuật toán phi tuyến tỏ ra vượt trội), đối với bài toán phân loại Telco Churn này, Logistic Regression lại chứng minh hiệu năng ưu việt hơn Random Forest với \texttt{ROC-AUC} đạt $0.841$ so với $0.820$. Điều này cho thấy ranh giới quyết định (decision boundary) giữa khách hàng rời bỏ và ở lại có bản chất tuyến tính khá rõ ràng trong không gian đặc trưng.
+    \item \textbf{Đánh giá qua ROC-AUC:} Đường cong ROC của Logistic Regression (màu xanh dương) luôn nằm trên Random Forest (màu cam). AUC đạt mức $0.841$ là một chỉ số rất đáng tin cậy trong các bài toán dự báo hành vi con người.
+    \item \textbf{Ý nghĩa của Recall (Độ nhạy):} Trong bài toán dự báo rời bỏ dịch vụ, Recall (khả năng phát hiện đúng khách hàng có ý định rời bỏ) quan trọng hơn Precision. Nhờ áp dụng SMOTE, tỷ lệ Recall của lớp Churn đã đạt mức $0.61$ đối với mô hình tốt nhất, giúp nhà mạng không bỏ sót các khách hàng tiềm năng có rủi ro rời đi cao.
+\end{itemize}
+
+Cuối cùng, chúng ta trích xuất cơ chế cốt lõi để giải mã thuật toán dựa trên Random Forest bằng biểu đồ Feature Importance.
+
+\begin{lstlisting}[style=pythoncode, caption={Đánh giá tầm quan trọng của các đặc trưng (Feature Importance)}]
+rf = results['Random Forest']['model']
+fi = pd.Series(rf.feature_importances_, index=X.columns)
+fi_top = fi.nlargest(15).sort_values()
+
+fig, ax = plt.subplots(figsize=(10, 6))
+colors_fi = plt.cm.RdYlGn(np.linspace(0.2, 0.9, len(fi_top)))
+fi_top.plot(kind='barh', ax=ax, color=colors_fi, edgecolor='black', linewidth=0.5)
+ax.set_title('Top 15 Feature Importance (Random Forest)', fontsize=13, fontweight='bold')
+plt.show()
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Chương_1/results/telco/05_feature_importance.png}
+    \caption{Top 15 yếu tố quan trọng nhất ảnh hưởng đến quyết định rời bỏ dịch vụ của khách hàng}
+\end{figure}
+
+\textbf{Kết luận Từ Feature Importance:}
+Các biến số tài chính (\texttt{TotalCharges}, \texttt{MonthlyCharges}) và thời gian gắn bó (\texttt{tenure}) đóng vai trò chi phối tuyệt đối. Đặc biệt, việc sử dụng hợp đồng gia hạn hàng tháng (\texttt{Contract\_Month-to-month}) là yếu tố phân loại rủi ro lớn nhất. Kết quả học máy này trực tiếp cung cấp các giải pháp kinh doanh: nhà mạng cần xây dựng các gói cước dài hạn hấp dẫn hơn để chuyển đổi tập khách hàng thanh toán từng tháng, đồng thời thiết lập cảnh báo sớm cho các khách hàng có mức phí hàng tháng quá cao đột biến trong những tháng đầu tiên sử dụng dịch vụ.
+

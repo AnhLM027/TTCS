@@ -1,55 +1,208 @@
-\paragraph{Phân tích bộ dữ liệu Credit Card Fraud} \hfill \\
-Đây là bài toán cực khó với tỷ lệ dữ liệu gian lận chỉ đạt 0.172\%. Việc sử dụng Accuracy là hoàn toàn sai lầm trong ngữ cảnh này.
+\paragraph{Phân tích bộ dữ liệu Credit Card Fraud Detection} \hfill \\
 
-\paragraph{Đặc thù dữ liệu và Phân tích cấu trúc} \hfill \\
-Dữ liệu đã được ẩn danh qua phép biến đổi PCA, chỉ giữ lại các cột V1-V28, cùng với thời gian (\texttt{Time}) và số tiền (\texttt{Amount}):
+Dự báo gian lận thẻ tín dụng là một trong những bài toán khó nhất trong ngành tài chính, đặc trưng bởi sự mất cân bằng lớp cực kỳ nghiêm trọng (Extreme Class Imbalance) và tính ẩn danh của các đặc trưng (ẩn sau quá trình biến đổi PCA). Mục tiêu của bài toán này là xây dựng mô hình có khả năng cô lập các giao dịch gian lận (Fraud) giữa hàng trăm ngàn giao dịch hợp lệ (Normal) mà vẫn duy trì tỷ lệ báo động giả ở mức thấp.
+
+\paragraph{Thiết lập Môi trường và Tải Dữ liệu} \hfill \\
+
+\begin{lstlisting}[style=pythoncode, caption={Load libraries and initialize random seed for reproducibility}]
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import RobustScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.decomposition import PCA
+from sklearn.metrics import precision_recall_curve, auc, roc_auc_score, confusion_matrix, classification_report, average_precision_score
+import warnings, os, random
+
+SEED = 42
+np.random.seed(SEED)
+random.seed(SEED)
+warnings.filterwarnings('ignore')
+
+plt.rcParams.update({'figure.dpi': 120, 'font.size': 11, 'axes.titlesize': 13, 'axes.titleweight': 'bold'})
+sns.set_theme(style='whitegrid')
+
+DATA_PATH = '../data/credit_card_fraud/creditcard.csv'
+df = pd.read_csv(DATA_PATH)
+print(f'Shape: {df.shape}')
+print(f'Fraud rate: {df["Class"].mean()*100:.4f}% ({df["Class"].sum()} frauds / {len(df)} total)')
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Thông số cấu trúc của tập dữ liệu Gian lận Thẻ tín dụng}]
+Shape: (284807, 31)
+Fraud rate: 0.1727% (492 frauds / 284807 total)
+\end{lstlisting}
+
+\textbf{Đánh giá sơ bộ:} Tập dữ liệu chứa 284,807 giao dịch, mỗi giao dịch có 31 cột (bao gồm Time, Amount, Class, và 28 biến V1-V28 đã được biến đổi qua PCA). Điểm đáng chú ý nhất là tỷ lệ gian lận chỉ chiếm vỏn vẹn $0.1727\%$ (492 giao dịch). Đây là tình trạng mất cân bằng cực độ, khiến cho các chỉ số đánh giá truyền thống như \textit{Accuracy} trở nên vô nghĩa (bởi vì một mô hình "lười biếng" luôn dự đoán "Không gian lận" cũng sẽ dễ dàng đạt độ chính xác $99.8\%$).
+
+\paragraph{Phân tích Khám phá Dữ liệu (EDA)} \hfill \\
+
+Chúng ta sẽ quan sát phân phối của các biến không bị ẩn danh (\texttt{Time} và \texttt{Amount}) để tìm kiếm đặc điểm phân biệt giữa hai lớp.
+
+\begin{lstlisting}[style=pythoncode, caption={Visualize class distribution, transaction amount, and time frequency}]
+fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+
+# 1. Class imbalance
+counts = df['Class'].value_counts()
+axes[0].pie(counts, labels=['Normal', 'Fraud'], autopct='%1.3f%%', colors=['#42A5F5', '#EF5350'],
+            explode=(0, 0.1), startangle=90, wedgeprops=dict(edgecolor='white', linewidth=2))
+axes[0].set_title('Class Distribution (Extreme Imbalance)')
+
+# 2. Amount distribution
+axes[1].hist(df[df['Class']==0]['Amount'], bins=80, alpha=0.7, color='#42A5F5', label='Normal', density=True)
+axes[1].hist(df[df['Class']==1]['Amount'], bins=80, alpha=0.8, color='#EF5350', label='Fraud', density=True)
+axes[1].set_title('Amount Distribution: Normal vs Fraud')
+axes[1].set_xlabel('Amount')
+axes[1].legend()
+axes[1].set_xlim(0, 1000)
+
+# 3. Time distribution
+axes[2].hist(df[df['Class']==0]['Time']/3600, bins=50, alpha=0.7, color='#42A5F5', label='Normal', density=True)
+axes[2].hist(df[df['Class']==1]['Time']/3600, bins=50, alpha=0.8, color='#EF5350', label='Fraud', density=True)
+axes[2].set_title('Transaction Time Distribution (hours)')
+axes[2].set_xlabel('Hours')
+axes[2].legend()
+
+plt.tight_layout()
+plt.show()
+\end{lstlisting}
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_1/results/credit_fraud/01_class_amount_time.png}
-    \caption{Phân phối nhãn và mối liên hệ giữa Số tiền - Thời gian}
+    \includegraphics[width=1\linewidth]{Chương_1/results/credit_fraud/01_class_amount_time.png}
+    \caption{Sự mất cân bằng nghiêm trọng và phân phối Amount, Time giữa hai lớp dữ liệu}
 \end{figure}
 
-Hình 1.5 cho thấy sự mất cân bằng cực độ của tập dữ liệu. Các giao dịch gian lận chiếm tỷ lệ rất nhỏ và không có sự phân hóa rõ rệt về mặt thời gian hay số tiền so với giao dịch hợp lệ, khiến việc phát hiện bằng các quy luật đơn giản là bất khả thi.
+\textbf{Phân tích EDA:}
+\begin{itemize}
+    \item \textbf{Cơ cấu Lớp (Class):} Mức độ mất cân bằng cực đoan yêu cầu chúng ta phải sử dụng kỹ thuật điều chỉnh trọng số (Class Weights) trong quá trình huấn luyện, đồng thời phải chuyển sang đánh giá bằng Precision-Recall thay vì ROC.
+    \item \textbf{Phân phối số tiền (Amount):} Các giao dịch gian lận (cột màu đỏ) chủ yếu tập trung ở mức giao dịch nhỏ, hiếm khi vượt quá $200\$$. Kẻ gian lận thường test thẻ bằng các khoản nhỏ để tránh hệ thống giám sát cảnh báo tức thời.
+    \item \textbf{Phân phối Thời gian (Time):} Biểu đồ thể hiện tính chu kỳ theo giờ (2 ngày ~ 48 giờ). Các giao dịch hợp pháp (Normal) suy giảm mạnh vào ban đêm, trong khi các giao dịch gian lận (Fraud) lại phân bố tương đối đồng đều, cho thấy kẻ tấn công có xu hướng hoạt động ở những thời điểm hệ thống ngân hàng ít giao dịch.
+\end{itemize}
 
-Sử dụng PCA để trực quan hóa cụm dữ liệu 2D, chúng ta thấy các vụ gian lận (màu đỏ) nằm rải rác nhưng có xu hướng tập trung ở một số vùng nhất định:
+Tiếp theo, ta nén không gian 28 chiều của các biến PCA xuống còn 2 chiều để quan sát hình học xem liệu có sự tách biệt rõ ràng giữa các điểm dữ liệu Fraud và Normal không.
+
+\begin{lstlisting}[style=pythoncode, caption={Use PCA to project high-dimensional data into a 2D scatter plot}]
+sample = df.sample(5000, random_state=SEED)
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(sample.drop('Class', axis=1))
+
+fig, ax = plt.subplots(figsize=(10, 7))
+for cls, label, color in [(0, 'Normal', '#42A5F5'), (1, 'Fraud', '#EF5350')]:
+    mask = sample['Class'] == cls
+    ax.scatter(X_pca[mask, 0], X_pca[mask, 1], c=color, label=label,
+               alpha=0.5 if cls==0 else 0.9, s=10 if cls==0 else 50, zorder=cls+1)
+
+ax.set_title('PCA 2D - Clustering Normal vs Fraud Transactions', fontsize=13, fontweight='bold')
+ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}% variance)')
+ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}% variance)')
+ax.legend(markerscale=3)
+plt.show()
+\end{lstlisting}
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{Chương_1/results/credit_fraud/02_pca_2d_clusters.png}
-    \caption{Trực quan hóa PCA 2D của các giao dịch}
+    \caption{Phân cụm 2D của dữ liệu giao dịch sử dụng phân tích thành phần chính (PCA)}
 \end{figure}
 
-Hình 1.6 minh họa các giao dịch gian lận thông qua phép chiếu PCA xuống 2 chiều. Mặc dù có sự chồng lấn, các điểm màu đỏ (gian lận) vẫn tạo thành các cụm đặc trưng, cho phép các mô hình học máy phi tuyến tính có thể phân tách ranh giới quyết định.
+Qua biểu đồ phân tán PCA, các giao dịch gian lận (màu đỏ) không tụ lại thành một cụm duy nhất mà phân tán và xen lẫn vào phần biên của đám mây dữ liệu Normal. Điều này cảnh báo rằng các mô hình hồi quy tuyến tính đơn giản sẽ gặp rất nhiều khó khăn, và ta cần đến các đường biên phân chia phi tuyến phức tạp hơn (ví dụ: Ensemble Trees).
 
-Sự khác biệt về phân phối giá trị của các đặc trưng giữa giao dịch bình thường và gian lận:
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\linewidth]{Chương_1/results/credit_fraud/03_feature_boxplots.png}
-    \caption{Boxplots so sánh các biến đặc trưng quan trọng}
-\end{figure}
+\begin{lstlisting}[style=pythoncode, caption={Visualize distribution differences for the most important V features}]
+top_features = ['V4', 'V11', 'V14', 'V12', 'V10', 'V17']
+fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+axes = axes.flatten()
 
-Hình 1.7 chỉ ra các biến đặc trưng có sự khác biệt lớn nhất về phân phối giữa hai lớp. Ví dụ, tại biến V14 và V17, các giao dịch gian lận thường có giá trị thấp hơn hẳn, đây là các tín hiệu quan trọng để mô hình nhận diện hành vi bất thường.
+for i, feat in enumerate(top_features):
+    data_normal = df[df['Class']==0][feat].sample(500, random_state=SEED)
+    data_fraud  = df[df['Class']==1][feat]
+    axes[i].boxplot([data_normal, data_fraud], labels=['Normal', 'Fraud'],
+                    boxprops=dict(color='steelblue', facecolor='lightblue', alpha=0.7),
+                    medianprops=dict(color='red', linewidth=2), patch_artist=True)
+    axes[i].set_title(f'Feature: {feat}')
 
-\paragraph{Kết quả thực nghiệm} \hfill \\
-Chúng ta tập trung tối ưu hóa Precision-Recall (PR). Random Forest với kỹ thuật Balanced Class Weight cho kết quả rất khả thi.
-
-\begin{table}[H]
-    \centering
-    \begin{tabular}{|l|c|c|c|c|}
-    \hline
-    \textbf{Mô hình} & \textbf{PR-AUC} & \textbf{ROC-AUC} & \textbf{Recall (Fraud)} & \textbf{Precision (Fraud)} \\ \hline
-    Logistic Reg (Bal) & 0.7189 & 0.9720 & 0.92 & 0.06 \\ \hline
-    \textbf{Random Forest} & \textbf{0.8653} & 0.9581 & 0.76 & \textbf{0.96} \\ \hline
-    \end{tabular}
-    \caption{Kết quả phát hiện gian lận (PR-AUC là chỉ số quan trọng nhất)}
-\end{table}
+plt.suptitle('Important Features Distribution: Normal vs Fraud', fontsize=14, fontweight='bold')
+plt.show()
+\end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chương_1/results/credit_fraud/04_pr_curve_confusion.png}
-    \caption{Đường cong Precision-Recall và Ma trận nhầm lẫn}
+    \includegraphics[width=1\linewidth]{Chương_1/results/credit_fraud/03_feature_boxplots.png}
+    \caption{Phân phối Boxplot của các biến ẩn danh V4, V11, V14, V12, V10, V17}
 \end{figure}
 
-Hình 1.8 biểu diễn đường cong Precision-Recall, một công cụ đánh giá chính xác hơn ROC trong điều kiện dữ liệu mất cân bằng. Random Forest duy trì được độ chính xác (Precision) cao ngay cả khi tăng độ bao phủ (Recall), giúp hệ thống hoạt động ổn định và tin cậy.
+Biểu đồ Boxplot trên minh chứng rõ rệt giá trị của các đặc trưng \texttt{V14}, \texttt{V12}, \texttt{V10}. Ở các biến này, phân phối của nhóm Fraud bị kéo lệch sâu xuống giá trị âm so với nhóm Normal, tạo ra các dấu hiệu nhận dạng mạnh mẽ cho thuật toán học máy học hỏi.
 
-Random Forest đạt Precision 0.96, nghĩa là cứ 100 lần báo động gian lận thì có 96 lần là đúng, giúp giảm thiểu đáng kể chi phí kiểm tra thủ công cho ngân hàng.
+\paragraph{Tiền xử lý và Cân bằng Trọng số (Class Weights)} \hfill \\
+
+Trong bài toán này, thay vì sử dụng SMOTE (sẽ rất tốn kém tài nguyên vì dữ liệu có gần $300,000$ dòng), ta sử dụng kỹ thuật cân bằng trọng số thuật toán (\texttt{class\_weight='balanced'}). Đồng thời, áp dụng \texttt{RobustScaler} thay vì StandardScaler cho \texttt{Time} và \texttt{Amount} nhằm giúp mô hình kháng lại các giá trị ngoại lai (outliers) cực lớn.
+
+\begin{lstlisting}[style=pythoncode, caption={Data preprocessing with RobustScaler and train-test split}]
+df_proc = df.copy()
+rob = RobustScaler()
+df_proc['scaled_amount'] = rob.fit_transform(df_proc['Amount'].values.reshape(-1,1))
+df_proc['scaled_time']   = rob.fit_transform(df_proc['Time'].values.reshape(-1,1))
+df_proc.drop(['Amount', 'Time'], axis=1, inplace=True)
+
+X = df_proc.drop('Class', axis=1)
+y = df_proc['Class']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=SEED, stratify=y)
+print(f'Train shape: {X_train.shape}, Fraud in test: {y_test.sum()}')
+\end{lstlisting}
+
+\paragraph{Huấn luyện Mô hình và Đánh giá (Modeling)} \hfill \\
+
+Hai thuật toán \texttt{LogisticRegression} và \texttt{RandomForestClassifier} được triển khai. \textbf{Mục tiêu tối thượng} ở đây là tối đa hóa chỉ số \texttt{PR-AUC} (Area Under the Precision-Recall Curve), bởi vì ROC-AUC thường cung cấp một bức tranh quá đỗi lạc quan trong các bộ dữ liệu siêu mất cân bằng.
+
+\begin{lstlisting}[style=pythoncode, caption={Train cost-sensitive models and calculate PR-AUC scores}]
+models = {
+    'Logistic Reg (Balanced)': LogisticRegression(class_weight='balanced', max_iter=1000),
+    'Random Forest (Balanced)': RandomForestClassifier(n_estimators=100, class_weight='balanced', random_state=SEED)
+}
+
+results = {}
+for name, mdl in models.items():
+    mdl.fit(X_train, y_train)
+    preds = mdl.predict(X_test)
+    proba = mdl.predict_proba(X_test)[:, 1]
     
+    pr_auc = average_precision_score(y_test, proba)
+    roc_auc = roc_auc_score(y_test, proba)
+    results[name] = {'preds': preds, 'proba': proba, 'PR-AUC': pr_auc, 'ROC-AUC': roc_auc}
+\end{lstlisting}
+
+\begin{lstlisting}[style=consoleoutput, caption={Báo cáo các chỉ số phân loại (Classification Report)}]
+Credit Card Fraud Detection Report
+==================================================
+
+[Logistic Reg (Balanced)]
+  PR-AUC  : 0.7189
+  ROC-AUC : 0.9720
+              precision    recall  f1-score   support
+      Normal       1.00      0.98      0.99     56864
+       Fraud       0.06      0.92      0.11        98
+
+[Random Forest (Balanced)]
+  PR-AUC  : 0.8653
+  ROC-AUC : 0.9581
+              precision    recall  f1-score   support
+      Normal       1.00      1.00      1.00     56864
+       Fraud       0.96      0.76      0.85        98
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Chương_1/results/credit_fraud/04_pr_curve_confusion.png}
+    \caption{Đường cong Precision-Recall và Ma trận nhầm lẫn của 2 mô hình}
+\end{figure}
+
+\textbf{Phân tích \& Đánh giá hiệu suất:}
+\begin{itemize}
+    \item \textbf{Cạm bẫy của ROC-AUC:} Nếu chỉ nhìn vào ROC-AUC (đều $>0.95$), ta có thể lầm tưởng Logistic Regression rất tốt. Tuy nhiên, nhìn vào \textit{Precision} của lớp Fraud trong Logistic Regression, nó chỉ đạt vỏn vẹn $6\%$. Tức là cứ $100$ giao dịch mà mô hình này cảnh báo là gian lận, thì thực chất có đến $94$ giao dịch là của khách hàng bình thường bị "khóa oan". Một hệ thống ngân hàng áp dụng mô hình này sẽ làm khách hàng giận dữ rời bỏ dịch vụ.
+    \item \textbf{Ưu việt của Random Forest:} Random Forest cân bằng rất xuất sắc. Dù Recall thấp hơn một chút (đạt $76\%$ - phát hiện được 74/98 giao dịch gian lận thực tế), nhưng Precision của nó đạt tới $96\%$. Điều này đảm bảo rằng hầu hết những giao dịch bị hệ thống chặn đều chắc chắn là gian lận.
+    \item \textbf{Chỉ số lõi PR-AUC:} Area under the Precision-Recall Curve (AP) của Random Forest đạt $0.865$, bỏ xa mô hình tuyến tính (0.719), biến nó trở thành lựa chọn an toàn và tối ưu nhất cho môi trường sản xuất thực tế.
+\end{itemize}
