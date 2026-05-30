@@ -1,0 +1,26 @@
+Telco Churn Classification Report (with SMOTE)
+==================================================
+
+[Logistic Regression]
+  Accuracy : 0.7949
+  ROC-AUC  : 0.8407
+              precision    recall  f1-score   support
+
+    No Churn       0.86      0.86      0.86      1035
+       Churn       0.61      0.61      0.61       374
+
+    accuracy                           0.79      1409
+   macro avg       0.74      0.74      0.74      1409
+weighted avg       0.79      0.79      0.79      1409
+
+[Random Forest]
+  Accuracy : 0.7786
+  ROC-AUC  : 0.8197
+              precision    recall  f1-score   support
+
+    No Churn       0.84      0.86      0.85      1035
+       Churn       0.59      0.55      0.57       374
+
+    accuracy                           0.78      1409
+   macro avg       0.71      0.70      0.71      1409
+weighted avg       0.77      0.78      0.78      1409

@@ -1,0 +1,13 @@
+Chest X-Ray Pneumonia Detection — ResNet50
+==================================================
+ROC-AUC: 0.9313
+Total Params: 24,113,537
+
+              precision    recall  f1-score   support
+
+      NORMAL       0.84      0.85      0.84       234
+   PNEUMONIA       0.91      0.90      0.90       390
+
+    accuracy                           0.88       624
+   macro avg       0.87      0.87      0.87       624
+weighted avg       0.88      0.88      0.88       624

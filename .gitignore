@@ -52,6 +52,7 @@ venv.bak/
 *.rar
 *.7z
 __MACOSX/
+glove*.txt
 
 # Model weights and Results
 *.h5
@@ -80,5 +81,4 @@ Thumbs.db
 *.toc
 *.out
 *.synctex.gz
-**
 

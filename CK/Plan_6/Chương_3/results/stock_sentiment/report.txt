@@ -1,0 +1,13 @@
+Stock Sentiment — Vanilla RNN
+==================================================
+Best Val Accuracy: 0.7411
+Total Params: 649,889
+
+              precision    recall  f1-score   support
+
+     Class 0       0.72      0.56      0.63       421
+     Class 1       0.78      0.88      0.82       738
+
+    accuracy                           0.76      1159
+   macro avg       0.75      0.72      0.73      1159
+weighted avg       0.76      0.76      0.75      1159

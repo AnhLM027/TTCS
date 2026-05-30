@@ -273,4 +273,219 @@
 \@writefile{lol}{\contentsline {lstlisting}{\numberline {125}Vector hóa câu văn thành chuỗi số nguyên (Token IDs)}{93}{lstlisting.125}\protected@file@percent }
 \@writefile{lol}{\contentsline {lstlisting}{\numberline {126}Output: Kiểm tra quá trình Zero-Padding}{94}{lstlisting.126}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{\numberline {4.1.6}Xây dựng Kiến trúc Bidirectional SimpleRNN}{94}{paragraph.3.4.1.6}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {1
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {127}Thiết kế kiến trúc RNN Đa chiều với SpatialDropout1D}{94}{lstlisting.127}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {128}Output: Tóm tắt thông số cấu trúc liên kết}{95}{lstlisting.128}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {4.1.7}Đánh giá Quá trình Huấn luyện và Biểu đồ Lịch sử}{95}{paragraph.3.4.1.7}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {129}Huấn luyện cùng với kỹ thuật bù trừ Class Weights}{95}{lstlisting.129}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {130}Trực quan hóa sự biến thiên của Loss và Accuracy}{95}{lstlisting.130}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {46}{\ignorespaces Biểu đồ lịch sử huấn luyện cho thấy bản chất Overfitting nội tại của SimpleRNN}}{96}{figure.46}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {4.1.8}Kết quả Confusion Matrix và Phân tích t-SNE Không gian Vector}{96}{paragraph.3.4.1.8}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {131}Xuất ma trận nhầm lẫn (Confusion Matrix)}{96}{lstlisting.131}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {47}{\ignorespaces Ma trận nhầm lẫn trên tập Test (1159 mẫu văn bản)}}{97}{figure.47}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {132}Output: Báo cáo hiệu năng Precision và Recall}{97}{lstlisting.132}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {133}Giảm chiều dữ liệu bằng t-SNE để vẽ Không gian nhúng từ vựng}{97}{lstlisting.133}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {48}{\ignorespaces Phân phối các từ vựng cốt lõi trên Không gian 2D sau khi bị nén bởi t-SNE}}{98}{figure.48}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2}Dataset 2: IMDB Movie Reviews (Bidirectional GRU)}{98}{subsubsection.3.4.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {134}Khởi tạo môi trường thư viện cho cấu trúc GRU}{99}{lstlisting.134}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {135}Tải bộ dữ liệu IMDB 50.000 mẫu}{99}{lstlisting.135}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {136}Output: Dữ liệu phân bổ cân bằng tuyệt đối}{100}{lstlisting.136}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {137}Tính toán và vẽ biểu đồ Thống kê Độ dài văn bản}{100}{lstlisting.137}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {49}{\ignorespaces Phân phối nhãn và phân phối độ dài văn bản của IMDB}}{101}{figure.49}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {138}Lọc nhiễu tài liệu đặc thù Điện ảnh}{101}{lstlisting.138}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {50}{\ignorespaces Trước khi lọc nhiễu: Tràn ngập từ \textit  {Movie}, \textit  {Film}}}{102}{figure.50}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {51}{\ignorespaces Sau khi lọc: Cảm xúc thật sự nổi bật rõ rệt}}{102}{figure.51}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {139}Sử dụng Tokenizer và Load ma trận GloVe}{102}{lstlisting.139}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {140}Output: Khớp từ vựng với GloVe}{103}{lstlisting.140}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {141}Xây dựng BiGRU 2 tầng với SpatialDropout1D}{103}{lstlisting.141}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {142}Output: Thời gian hội tụ nhanh chóng nhờ GloVe}{103}{lstlisting.142}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {143}Biểu diễn Learning Curve}{104}{lstlisting.143}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {52}{\ignorespaces Lịch sử huấn luyện BiGRU: Sự bám đuổi sát sao giữa Train và Validation}}{104}{figure.52}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {144}Đánh giá toàn diện Confusion Matrix và đường ROC}{104}{lstlisting.144}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {53}{\ignorespaces Ma trận nhầm lẫn và đường cong biểu diễn năng lực phân loại ROC Curve}}{105}{figure.53}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {145}Output: Báo cáo hiệu năng Precision và Recall}{105}{lstlisting.145}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {146}Output: Test Inference ngẫu nhiên}{105}{lstlisting.146}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5}So sánh và Đánh giá tổng hợp (Benchmarking)}{106}{subsection.3.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Bảng so sánh hiệu năng các mô hình RNN trong Chương 3}}{106}{table.8}\protected@file@percent }
+\newlabel{tab:rnn_comparison}{{8}{106}{Bảng so sánh hiệu năng các mô hình RNN trong Chương 3}{table.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6}Tổng kết Chương 3}{106}{subsection.3.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {IV}MẠNG LSTM VÀ CƠ CHẾ ATTENTION (LONG-TERM MEMORY)}{107}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1}Từ LSTM đến Cơ chế Chú ý (Attention)}{107}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2}Dự báo chuỗi thời gian (Time Series Forecasting)}{107}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3}Thực nghiệm chuyên sâu trên 5 Datasets \& 5 Models}{107}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1}Dataset 1: Beijing Air Quality (LSTM + Multi-variate)}{107}{subsubsection.4.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.1.1}Thực nghiệm: Dự báo Chất lượng Không khí (PM2.5) Đa biến với Mạng LSTM}{107}{paragraph.4.3.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.1.2}Khám phá Dữ liệu Chuỗi thời gian (Time Series EDA)}{107}{paragraph.4.3.1.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {147}Load dữ liệu PM2.5 và khởi tạo Datetime Index}{107}{lstlisting.147}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {54}{\ignorespaces Phân phối và Chu kỳ của nồng độ PM2.5 theo thời gian}}{108}{figure.54}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.1.3}Tương quan Đa biến (Multivariate Correlation)}{108}{paragraph.4.3.1.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {148}Vẽ Heatmap tương quan giữa các biến khí tượng và PM2.5}{108}{lstlisting.148}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {55}{\ignorespaces Ma trận tương quan giữa PM2.5 và các yếu tố thời tiết}}{109}{figure.55}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.1.4}Cấu trúc Cửa sổ Trượt (Sliding Window) và LSTM}{109}{paragraph.4.3.1.4}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {149}Khởi tạo tập dữ liệu đa biến và mô hình 2 tầng LSTM}{109}{lstlisting.149}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.1.5}Lịch sử Huấn luyện}{110}{paragraph.4.3.1.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {56}{\ignorespaces Đồ thị Training Loss và MAE}}{110}{figure.56}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.1.6}Trực quan hóa Kết quả Dự báo và Đánh giá}{110}{paragraph.4.3.1.6}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {150}Output: Các chỉ số hồi quy Regression Metrics}{110}{lstlisting.150}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {57}{\ignorespaces Dự báo so với thực tế và Phân phối Sai số (Error Distribution)}}{111}{figure.57}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {58}{\ignorespaces Biểu đồ phân tán Scatter giữa Actual và Predicted}}{111}{figure.58}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2}Dataset 2: Google Stock Price (Conv1D + LSTM)}{111}{subsubsection.4.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.2.1}Thực nghiệm: Dự báo Giá cổ phiếu Google với kiến trúc Hybrid Conv1D-LSTM}{111}{paragraph.4.3.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.2.2}Khai báo thư viện và Cấu hình ban đầu}{112}{paragraph.4.3.2.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {151}Khai báo thư viện và thiết lập thông số cơ bản}{112}{lstlisting.151}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {152}Output: Phiên bản TensorFlow}{112}{lstlisting.152}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.2.3}Tải và Làm sạch Dữ liệu (Data Preprocessing)}{112}{paragraph.4.3.2.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {153}Đọc dữ liệu và làm sạch cột số}{113}{lstlisting.153}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {154}Output: Thông tin tập dữ liệu}{113}{lstlisting.154}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.2.4}Phân tích Kỹ thuật và Biến động (Financial EDA)}{113}{paragraph.4.3.2.4}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {155}Tính toán chỉ báo MA, Bollinger Bands và trực quan hóa}{113}{lstlisting.155}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {156}Output: Biên độ giao động giá và lợi nhuận}{114}{lstlisting.156}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {59}{\ignorespaces Phân tích kỹ thuật giá đóng cửa và Tỷ suất sinh lời hàng ngày (Daily Returns)}}{115}{figure.59}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {157}Đánh giá sự phân phối của lợi nhuận hàng ngày}{115}{lstlisting.157}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {60}{\ignorespaces Phân phối của lợi nhuận hàng ngày (Daily Returns)}}{116}{figure.60}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {158}Phân tích chu kỳ biến động lăn (Rolling Volatility)}{116}{lstlisting.158}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {61}{\ignorespaces Độ biến động 30 ngày (Rolling Volatility)}}{116}{figure.61}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.2.5}Tái cấu trúc Chuỗi thời gian (Look-back Window)}{117}{paragraph.4.3.2.5}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {159}Trích xuất cửa sổ thời gian (Sliding Window)}{117}{lstlisting.159}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {160}Output: Kích thước Tensor đầu vào}{117}{lstlisting.160}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.2.6}Kiến trúc lai Hybrid Conv1D và LSTM}{117}{paragraph.4.3.2.6}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {161}Xây dựng mạng Conv1D kết hợp LSTM}{117}{lstlisting.161}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {162}Output: Cấu trúc tham số mạng Hybrid}{118}{lstlisting.162}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.2.7}Kết quả Huấn luyện và Đánh giá Mô hình}{118}{paragraph.4.3.2.7}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {163}Quá trình Fit mô hình với Callback}{118}{lstlisting.163}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {164}Output: Log quá trình huấn luyện (trích)}{119}{lstlisting.164}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {165}Trực quan hóa đồ thị Loss}{119}{lstlisting.165}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {62}{\ignorespaces Sự ổn định của Loss sau 50 Epochs}}{120}{figure.62}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {166}Dự báo và tính toán các thang đo sai số}{120}{lstlisting.166}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {167}Output: Báo cáo sai số tài chính}{120}{lstlisting.167}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {168}Đồ thị đánh giá dự báo trên toàn chuỗi thời gian}{120}{lstlisting.168}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {63}{\ignorespaces Toàn cảnh khả năng theo dấu biến động giá cổ phiếu dài hạn}}{121}{figure.63}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {169}Phóng to chi tiết dự báo trên Test Set}{121}{lstlisting.169}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {64}{\ignorespaces Đường dự báo bám sát Actual trên tập Test}}{122}{figure.64}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {170}Vẽ biểu đồ phân tán Scatter đo lường độ hội tụ}{122}{lstlisting.170}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {65}{\ignorespaces Biểu đồ phân tán Scatter giữa Actual và Predicted}}{123}{figure.65}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3}Dataset 3: Energy Consumption (LSTM + Attention)}{123}{subsubsection.4.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.3.1}Thực nghiệm: Dự báo Tiêu thụ Năng lượng (Energy Consumption) với kiến trúc LSTM và Cơ chế Chú ý (Attention Mechanism)}{123}{paragraph.4.3.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.3.2}Khai báo thư viện và Cấu hình ban đầu}{124}{paragraph.4.3.3.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {171}Khai báo thư viện và thiết lập môi trường}{124}{lstlisting.171}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {172}Output: Khởi tạo thư viện}{124}{lstlisting.172}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.3.3}Tiền xử lý và Khám phá Dữ liệu (EDA)}{124}{paragraph.4.3.3.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {173}Đọc dữ liệu và xử lý giá trị khuyết thiếu}{125}{lstlisting.173}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {174}Output: Dữ liệu tải lên}{125}{lstlisting.174}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {175}Lựa chọn biến mục tiêu (Target) và lấy mẫu (Sampling)}{126}{lstlisting.175}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {176}Output: Lựa chọn cột Target}{126}{lstlisting.176}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {177}Trực quan hóa diễn biến chuỗi thời gian}{126}{lstlisting.177}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {178}Output: Thống kê cơ bản}{127}{lstlisting.178}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {66}{\ignorespaces Chuỗi thời gian tổng thể, Rolling Mean 7 ngày và Zoom in 1 tuần}}{128}{figure.66}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {179}Phân phối và Tự tương quan (Autocorrelation)}{128}{lstlisting.179}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {67}{\ignorespaces Phân phối điện năng (Dạng hình chuông)}}{129}{figure.67}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {68}{\ignorespaces Hệ số Tự tương quan từ lag 1 đến 100}}{130}{figure.68}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.3.4}Chuẩn bị Dữ liệu Huấn luyện}{130}{paragraph.4.3.3.4}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {180}Scale dữ liệu và tạo chuỗi Data Window}{130}{lstlisting.180}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {181}Output: Kích thước tập dữ liệu}{131}{lstlisting.181}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.3.5}Xây dựng Kiến trúc Mô hình (LSTM + Attention)}{131}{paragraph.4.3.3.5}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {182}Định nghĩa Lớp Attention tự xây dựng (Custom Layer)}{131}{lstlisting.182}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {183}Output: Khởi tạo Lớp Attention}{131}{lstlisting.183}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {184}Kiến trúc Functional API ghép nối LSTM với Attention}{131}{lstlisting.184}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.3.6}Huấn luyện Mô hình}{132}{paragraph.4.3.3.6}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {185}Huấn luyện mô hình với Callbacks}{132}{lstlisting.185}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {186}Output: Quá trình Huấn luyện (Training Log)}{132}{lstlisting.186}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.3.7}Đánh giá Kết quả Dự báo}{133}{paragraph.4.3.3.7}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {187}Dự báo và tính toán các thang đo sai số hồi quy}{133}{lstlisting.187}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {188}Output: Các chỉ số hồi quy (Regression Metrics)}{133}{lstlisting.188}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {189}Trực quan hóa đường dự báo và phân phối sai số}{133}{lstlisting.189}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {69}{\ignorespaces Dự báo so với thực tế (trên) và Phân phối Sai số phần dư (dưới)}}{134}{figure.69}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.3.8}Khả năng Giải thích của Mô hình (Explainable AI - XAI)}{134}{paragraph.4.3.3.8}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {190}Trực quan hóa Bản đồ nhiệt (Heatmap) trọng số Attention}{134}{lstlisting.190}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {191}Tính toán phân bổ sự chú ý trung bình trên toàn bộ Test set}{135}{lstlisting.191}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {70}{\ignorespaces Heatmap trọng số Attention theo từng mẫu dự báo}}{136}{figure.70}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {71}{\ignorespaces Biểu đồ phân bổ sự chú ý trung bình (Mean Attention Weight)}}{136}{figure.71}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {192}Lưu báo cáo thực nghiệm}{137}{lstlisting.192}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {193}Output: Báo cáo thực nghiệm}{137}{lstlisting.193}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4}Dataset 4: Human Activity Recognition (BiGRU)}{137}{subsubsection.4.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.4.1}Thực nghiệm: Phân loại Hành động Con người (HAR) với Mạng Bidirectional GRU}{137}{paragraph.4.3.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.4.2}Khai báo thư viện và Cấu hình ban đầu}{137}{paragraph.4.3.4.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {194}Khai báo thư viện và thiết lập môi trường}{137}{lstlisting.194}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {195}Output: Khởi tạo thư viện}{138}{lstlisting.195}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.4.3}Tiền xử lý và Khám phá Dữ liệu (EDA)}{138}{paragraph.4.3.4.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {196}Đọc dữ liệu và mã hóa nhãn (Label Encoding)}{138}{lstlisting.196}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {197}Output: Thông tin tập dữ liệu}{139}{lstlisting.197}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {198}Trực quan hóa phân phối nhãn hành động}{139}{lstlisting.198}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {72}{\ignorespaces Phân phối số lượng mẫu (Sample Count)}}{140}{figure.72}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {73}{\ignorespaces Tỷ lệ phần trăm các hành động (Percentage)}}{140}{figure.73}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {199}Biểu diễn tín hiệu cảm biến trên các hành động khác nhau}{141}{lstlisting.199}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {74}{\ignorespaces Tín hiệu cảm biến dạng chuỗi tương ứng với 6 trạng thái hành động}}{142}{figure.74}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.4.4}Chuẩn bị Dữ liệu Huấn luyện (Data Preparation)}{142}{paragraph.4.3.4.4}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {200}Chuẩn hóa (Scale) dữ liệu và biến đổi Reshape 3D}{142}{lstlisting.200}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {201}Output: Kích thước dữ liệu đầu vào mô hình}{143}{lstlisting.201}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.4.5}Xây dựng Kiến trúc Mô hình (BiGRU - Bidirectional GRU)}{143}{paragraph.4.3.4.5}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {202}Khởi tạo mô hình BiGRU}{143}{lstlisting.202}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {203}Output: Cấu trúc mô hình BiGRU}{143}{lstlisting.203}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.4.6}Huấn luyện Mô hình}{144}{paragraph.4.3.4.6}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {204}Huấn luyện mạng với các thông số tối ưu}{144}{lstlisting.204}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {205}Output: Lịch sử Training Log}{144}{lstlisting.205}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {206}Trực quan hóa đồ thị Acccuracy và Loss}{144}{lstlisting.206}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {75}{\ignorespaces Đồ thị lịch sử Huấn luyện (Accuracy và Loss)}}{145}{figure.75}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.4.7}Đánh giá Mô hình và Phân tích Sự Nhầm lẫn}{145}{paragraph.4.3.4.7}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {207}Đánh giá mô hình trên tập Test}{145}{lstlisting.207}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {208}Output: Báo cáo phân loại Classification Report}{146}{lstlisting.208}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {209}Trực quan hóa Ma trận Nhầm lẫn và Per-class Accuracy}{146}{lstlisting.209}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {76}{\ignorespaces Ma trận nhầm lẫn chuẩn hóa (Confusion Matrix)}}{147}{figure.76}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {77}{\ignorespaces Độ chính xác của từng hành động riêng lẻ (Per-class)}}{148}{figure.77}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.4.8}Phân phối Độ tự tin (Confidence Distribution)}{148}{paragraph.4.3.4.8}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {210}Biểu đồ Histogram của Confidence Score}{148}{lstlisting.210}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {78}{\ignorespaces Phân phối Confidence Score (Độ tự tin của dự báo) của 6 hành động}}{149}{figure.78}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {211}Lưu báo cáo thực nghiệm}{149}{lstlisting.211}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {212}Output: Báo cáo thực nghiệm}{149}{lstlisting.212}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.5}Dataset 5: Phân tích Cảm xúc IMDB Reviews (BiLSTM)}{150}{subsubsection.4.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.5.1}Thực nghiệm: Phân tích Cảm xúc Đánh giá Phim (IMDB) với Mạng Bidirectional LSTM}{150}{paragraph.4.3.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.5.2}Khai báo thư viện và Cấu hình ban đầu}{150}{paragraph.4.3.5.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {213}Khai báo thư viện và thiết lập siêu tham số}{150}{lstlisting.213}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {214}Output: Phiên bản TensorFlow}{151}{lstlisting.214}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.5.3}Tải dữ liệu và Khám phá ban đầu (EDA)}{151}{paragraph.4.3.5.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {215}Đọc dữ liệu IMDB và phân phối nhãn}{151}{lstlisting.215}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {216}Output: Thông tin tập dữ liệu IMDB}{151}{lstlisting.216}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {217}Trực quan hóa EDA - phân phối nhãn và độ dài review}{152}{lstlisting.217}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {79}{\ignorespaces Tổng quan dữ liệu IMDB: Phân phối nhãn, Phân phối độ dài review và Phân vị (Percentile)}}{153}{figure.79}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.5.4}Phân tích WordCloud theo Cảm xúc}{153}{paragraph.4.3.5.4}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {218}Tiền xử lý văn bản và WordCloud theo cảm xúc}{153}{lstlisting.218}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {80}{\ignorespaces WordCloud phân biệt tập từ đặc trưng: Đánh giá Tiêu cực (trái) vs Tích cực (phải)}}{154}{figure.80}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.5.5}Tokenization và Padding chuỗi văn bản}{154}{paragraph.4.3.5.5}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {219}Tokenize và Padding chuẩn hóa độ dài chuỗi}{154}{lstlisting.219}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {220}Output: Kích thước dữ liệu sau Padding}{155}{lstlisting.220}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.5.6}Xây dựng Kiến trúc Mô hình (Bidirectional LSTM)}{155}{paragraph.4.3.5.6}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {221}Kiến trúc BiLSTM 2 tầng xếp chồng}{155}{lstlisting.221}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {222}Output: Cấu trúc mô hình BiLSTM IMDB}{156}{lstlisting.222}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.5.7}Huấn luyện Mô hình}{156}{paragraph.4.3.5.7}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {223}Huấn luyện BiLSTM với EarlyStopping}{156}{lstlisting.223}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {224}Output: Training Log (trích)}{156}{lstlisting.224}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {225}Vẽ đồ thị Accuracy và Loss}{157}{lstlisting.225}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {81}{\ignorespaces Lịch sử huấn luyện BiLSTM: Accuracy và Loss theo từng Epoch}}{157}{figure.81}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.5.8}Đánh giá Mô hình và Ma trận Nhầm lẫn}{158}{paragraph.4.3.5.8}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {226}Dự báo và xây dựng Ma trận Nhầm lẫn}{158}{lstlisting.226}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {227}Output: Classification Report}{158}{lstlisting.227}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {82}{\ignorespaces Ma trận Nhầm lẫn: Số lượng thực (trái) và Tỷ lệ chuẩn hóa (phải)}}{159}{figure.82}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.5.9}Kiểm tra Suy luận Thực tế (Inference Demo)}{159}{paragraph.4.3.5.9}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {228}Thử nghiệm suy luận với 3 đoạn văn bản thực tế}{159}{lstlisting.228}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {229}Output: Kết quả suy luận cảm xúc}{159}{lstlisting.229}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {230}Lưu báo cáo thực nghiệm}{160}{lstlisting.230}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {231}Output: Hoàn thành thực nghiệm}{160}{lstlisting.231}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {3.5.10}So sánh và Đánh giá 3 kiến trúc học sâu trên tập dữ liệu IMDB}{160}{paragraph.4.3.5.10}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Bảng so sánh hiệu năng của 3 mô hình học sâu trên tập IMDB Reviews}}{160}{table.9}\protected@file@percent }
+\newlabel{tab:imdb_comparison}{{9}{160}{Bảng so sánh hiệu năng của 3 mô hình học sâu trên tập IMDB Reviews}{table.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4}So sánh và Đánh giá tổng hợp (Benchmarking)}{161}{subsection.4.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Bảng so sánh hiệu năng các mô hình trong Chương 4}}{161}{table.10}\protected@file@percent }
+\newlabel{tab:lstm_comparison}{{10}{161}{Bảng so sánh hiệu năng các mô hình trong Chương 4}{table.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5}Tổng kết Chương 4}{161}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{KẾT LUẬN}{162}{section*.1}\protected@file@percent }
+\bibcite{goodfellow2016}{1}
+\bibcite{lecun1998}{2}
+\bibcite{hochreiter1997}{3}
+\bibcite{cho2014}{4}
+\bibcite{bahdanau2014}{5}
+\bibcite{chollet2018}{6}
+\bibcite{tfdocs}{7}
+\bibcite{imdb}{8}
+\bibcite{kaggle}{9}
+\bibcite{uci}{10}
+\@writefile{toc}{\contentsline {section}{TÀI LIỆU THAM KHẢO}{163}{section*.2}\protected@file@percent }
+\gdef \@abspage@last{164}

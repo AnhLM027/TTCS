@@ -1,0 +1,8 @@
+Energy Consumption - LSTM + Attention
+==================================================
+LOOK_BACK : 48 steps
+Params    : 126,978
+
+Test RMSE : 92.3765 MW
+Test MAE  : 72.6136 MW
+Test R²   : 0.9888

@@ -1,9 +1,9 @@
 # Fdb version 4
-["pdflatex"] 1780148331.03396 "/home/llm/AnhLM/TTCS/CK/Plan_6/docs_main.tex" "docs_main.pdf" "docs_main" 1780148341.06364 0
+["pdflatex"] 1780148356.849 "/home/llm/AnhLM/TTCS/CK/Plan_6/docs_main.tex" "docs_main.pdf" "docs_main" 1780148366.84147 0
   "/etc/texmf/web2c/texmf.cnf" 1777530834.8712 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/home/llm/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/tcbx1200.600pk" 1778334711.69127 15056 47227a24f8adcead456a0592a55eec1c ""
   "/home/llm/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1200.600pk" 1777530871.28863 14040 e31b2f1b60df60cdb11fed3d8eef7d3a ""
-  "/home/llm/AnhLM/TTCS/CK/Plan_6/docs_main.tex" 1780148330.32231 8460 f0c3948a2d6c5b00350d7540cae6d68a ""
+  "/home/llm/AnhLM/TTCS/CK/Plan_6/docs_main.tex" 1780148356.35357 8450 fc61aeab85e9a894053acdfeeeffd639 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/tcbx1200.tfm" 1136768653 1536 c09172c8f235393e6235bb4758357c41 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/tcrm1200.tfm" 1136768653 1536 74b7293ec3713bb7fdca8dd1bd1f469c ""
@@ -287,10 +287,10 @@
   "Chương_4/results/imdb_stacked_bilstm/02_wordclouds.png" 1780137640.91571 492467 aff68614e7fbfa98def6fe1bb4b36be3 ""
   "Chương_4/results/imdb_stacked_bilstm/03_training_history.png" 1780137778.2925 88495 93560aaa3acc6fc8d916175ca986f572 ""
   "Chương_4/results/imdb_stacked_bilstm/04_confusion_matrix.png" 1780137784.66664 59382 a00ea37535597fd98b5ca45a15bdedc2 ""
-  "docs_main.aux" 1780148340.9594 78873 fed01be985e24d7adadb5d78694dc3a8 "pdflatex"
-  "docs_main.out" 1780148340.96261 46043 cd78583373b07a7b4caa89b2c7d7370a "pdflatex"
-  "docs_main.tex" 1780148330.32231 8460 f0c3948a2d6c5b00350d7540cae6d68a ""
-  "docs_main.toc" 1780148340.96296 17149 634ecb0d97d52a26e8a9412232ff52c0 "pdflatex"
+  "docs_main.aux" 1780148366.73463 78873 fed01be985e24d7adadb5d78694dc3a8 "pdflatex"
+  "docs_main.out" 1780148366.73825 46043 cd78583373b07a7b4caa89b2c7d7370a "pdflatex"
+  "docs_main.tex" 1780148356.35357 8450 fc61aeab85e9a894053acdfeeeffd639 ""
+  "docs_main.toc" 1780148366.73858 17149 634ecb0d97d52a26e8a9412232ff52c0 "pdflatex"
   "images/logo.png" 1778250810.78393 502689 e13d48d6d8946c3be14c6473f0d3a158 ""
   (generated)
   "docs_main.aux"

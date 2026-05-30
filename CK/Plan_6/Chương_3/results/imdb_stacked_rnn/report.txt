@@ -1,0 +1,13 @@
+IMDB Reviews — Stacked RNN
+==================================================
+Best Val Accuracy: 0.7258
+Total Params: 2,676,225
+
+              precision    recall  f1-score   support
+
+    Negative       0.68      0.67      0.68      5000
+    Positive       0.68      0.68      0.68      5000
+
+    accuracy                           0.68     10000
+   macro avg       0.68      0.68      0.68     10000
+weighted avg       0.68      0.68      0.68     10000

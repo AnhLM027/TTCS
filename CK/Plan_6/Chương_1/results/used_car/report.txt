@@ -1,0 +1,19 @@
+Used Car Price Regression Report
+==================================================
+
+[Linear Regression]
+  R2   : 0.7943
+  MAE  : 115,372.51
+  RMSE : 150,171.58
+
+[Ridge Regression]
+  R2   : 0.7945
+  MAE  : 115,337.67
+  RMSE : 150,078.95
+
+[Random Forest]
+  R2   : 0.9326
+  MAE  : 54,902.10
+  RMSE : 85,968.88
+
+Best Model: Random Forest (R2=0.9326)

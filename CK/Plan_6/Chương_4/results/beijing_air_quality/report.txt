@@ -1,0 +1,9 @@
+Beijing Air Quality — Multivariate LSTM
+==================================================
+LOOK_BACK     : 24 hours
+Features      : ['pm2.5', 'DEWP', 'TEMP', 'PRES', 'Iws', 'Is', 'Ir']
+Total Params  : 121,665
+
+Test RMSE     : 22.7316 µg/m³
+Test MAE      : 13.8820 µg/m³
+Test R²       : 0.9373

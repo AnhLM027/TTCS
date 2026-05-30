@@ -1,0 +1,15 @@
+IMDB Reviews — Bidirectional GRU
+==================================================
+GloVe: True
+Best Val Accuracy: 0.8972
+ROC-AUC: 0.9626
+Total Params: 2,099,073
+
+              precision    recall  f1-score   support
+
+    Negative       0.91      0.87      0.89      5000
+    Positive       0.88      0.91      0.90      5000
+
+    accuracy                           0.89     10000
+   macro avg       0.89      0.89      0.89     10000
+weighted avg       0.89      0.89      0.89     10000
