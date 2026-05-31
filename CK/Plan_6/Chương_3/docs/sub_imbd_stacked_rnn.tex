@@ -2,6 +2,10 @@
 
 Để tăng cường khả năng học các biểu diễn phức tạp và trừu tượng (Hierarchical Features), một kỹ thuật phổ biến trong Deep Learning là xếp chồng (Stack) nhiều lớp ẩn lên nhau. Ở thực nghiệm này, chúng ta sẽ xây dựng kiến trúc \textbf{Stacked Bidirectional RNN}, gồm 2 lớp SimpleRNN hai chiều nối tiếp nhau, đồng thời sử dụng lớp nhúng từ (Embedding Layer) tự học từ đầu thay vì mượn trọng số GloVe như bài trước.
 
+\begin{center}
+    \textbf{Nguồn dữ liệu:} \url{https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews}
+\end{center}
+
 \paragraph{Tiền xử lý Dữ liệu} \hfill\mbox{}
 
 Tương tự như thực nghiệm trước, bộ dữ liệu IMDB gồm 50.000 mẫu hoàn toàn cân bằng (25.000 Tích cực, 25.000 Tiêu cực). Chúng ta áp dụng kỹ thuật loại bỏ Tạp âm miền (như các từ \textit{movie}, \textit{film}) và chuẩn hóa chiều dài câu ở mức 500 từ.

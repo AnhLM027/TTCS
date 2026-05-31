@@ -2,6 +2,10 @@
 
 Xử lý Ngôn ngữ Tự nhiên (NLP) trên văn bản tài chính đặt ra nhiều thách thức đặc thù so với văn bản thông thường. Bộ dữ liệu **Stock Sentiment** gồm các dòng trạng thái (tweets) hoặc tiêu đề tin tức ngắn liên quan đến chứng khoán, mang theo lượng lớn các thuật ngữ chuyên ngành (tickers) và từ lóng tài chính. Trong phần này, chúng ta sẽ áp dụng kiến trúc mạng Nơ-ron Hồi quy cơ bản (Vanilla RNN / SimpleRNN) với cơ chế đa chiều (Bidirectional) để đánh giá khả năng trích xuất cảm xúc (Tích cực / Tiêu cực).
 
+\begin{center}
+    \textbf{Nguồn dữ liệu:} \url{https://www.kaggle.com/datasets/yash612/stockmarket-sentiment-dataset}
+\end{center}
+
 \paragraph{Thiết lập Môi trường và Load dữ liệu} \hfill \\
 
 \begin{lstlisting}[style=pythoncode, caption={Khởi tạo môi trường thư viện cho bài toán NLP}]

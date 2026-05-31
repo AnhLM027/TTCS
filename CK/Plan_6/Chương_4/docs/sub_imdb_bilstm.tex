@@ -2,6 +2,10 @@
 
 Phân tích cảm xúc (Sentiment Analysis) là bài toán phân loại văn bản theo quan điểm tích cực/tiêu cực. Dữ liệu IMDB Reviews gồm 50,000 đánh giá phim từ người dùng thực tế, đây là benchmark cổ điển và thách thức nhất trong lĩnh vực Xử lý Ngôn ngữ Tự nhiên (NLP). Ngôn ngữ đánh giá rất đa dạng, từ văn xuôi dài dòng đến sarcasm, ẩn dụ và biểu đạt cảm xúc phức tạp --- đòi hỏi mô hình phải \textbf{nắm bắt ngữ nghĩa ngữ cảnh theo cả hai chiều}. Chính vì vậy, ta sử dụng kiến trúc \textbf{Bidirectional LSTM (BiLSTM)} xếp chồng 2 tầng, kết hợp với lớp Embedding và kỹ thuật tiền xử lý văn bản chuẩn NLP.
 
+\begin{center}
+    \textbf{Nguồn dữ liệu:} \url{https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews}
+\end{center}
+
 \paragraph{Khai báo thư viện và Cấu hình ban đầu} \hfill\mbox{}
 
 Ngoài các thư viện Deep Learning thông thường, ta sử dụng thêm \texttt{wordcloud} để trực quan hóa từ điển cảm xúc và \texttt{nltk} để lọc Stop-words tiêu chuẩn tiếng Anh. Các siêu tham số quan trọng gồm: kích thước từ điển \texttt{VOCAB\_SIZE=20000}, độ dài chuỗi \texttt{MAX\_LEN=500} và chiều Embedding \texttt{EMBED\_DIM=128}.

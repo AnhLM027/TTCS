@@ -2,6 +2,10 @@
 
 Bài toán dự báo phụ tải điện năng (Energy Load Forecasting) đòi hỏi hệ thống phải nắm bắt được tính mùa vụ mạnh mẽ của điện năng (chu kỳ sinh hoạt theo giờ, ngày, tuần). Mạng LSTM truyền thống tuy giải quyết tốt chuỗi thời gian nhưng thường bị suy giảm bộ nhớ khi chuỗi quá dài. Để khắc phục, chúng ta nâng cấp mạng LSTM bằng cách tích hợp \textbf{Cơ chế Chú ý (Attention Mechanism)}. Cơ chế này cho phép mô hình tự động phân bổ trọng số (attention weights), từ đó tập trung vào những mốc thời gian quá khứ có sức ảnh hưởng lớn nhất đối với giá trị tương lai.
 
+\begin{center}
+    \textbf{Nguồn dữ liệu:} \url{https://www.kaggle.com/datasets/robikscube/hourly-energy-consumption}
+\end{center}
+
 \paragraph{Khai báo thư viện và Cấu hình ban đầu} \hfill\mbox{}
 
 Đầu tiên, quá trình phân tích yêu cầu sử dụng các thư viện như Pandas, NumPy để tính toán, Matplotlib, Seaborn để trực quan hóa, và TensorFlow/Keras để xây dựng mô hình Deep Learning. Việc cố định seed giúp đảm bảo tính tái lập (reproducibility) cho kết quả thực nghiệm.

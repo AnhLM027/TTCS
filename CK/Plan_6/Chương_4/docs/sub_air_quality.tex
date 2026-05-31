@@ -2,6 +2,10 @@
 
 Chuỗi thời gian thực tế thường hiếm khi đứng độc lập mà chịu sự chi phối của hàng loạt các yếu tố môi trường (Đa biến - Multivariate). Trong bài toán này, chúng ta sẽ dự báo nồng độ bụi mịn PM2.5 tại Bắc Kinh dựa trên lịch sử của chính nó kết hợp với các biến số khí tượng học như Nhiệt độ, Áp suất, Điểm sương, và Tốc độ gió. Mạng \textbf{Long Short-Term Memory (LSTM)} với cơ chế Memory Cell (Tế bào ghi nhớ) sẽ được sử dụng để bắt lấy các mẫu hình (patterns) thay đổi theo mùa và ngày.
 
+\begin{center}
+    \textbf{Nguồn dữ liệu:} \url{https://www.kaggle.com/datasets/rupakroy/lstm-datasets-multivariate-univariate}
+\end{center}
+
 \paragraph{Khám phá Dữ liệu Chuỗi thời gian (Time Series EDA)} \hfill \\
 
 \begin{lstlisting}[style=pythoncode, caption={Load dữ liệu PM2.5 và khởi tạo Datetime Index}]

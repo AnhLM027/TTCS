@@ -2,6 +2,10 @@
 
 Bài toán Nhận diện Hành động Con người (Human Activity Recognition - HAR) dựa trên dữ liệu cảm biến (Gia tốc kế, Con quay hồi chuyển) thu thập từ điện thoại di động là một trong những bài toán kinh điển của Học máy. Dữ liệu cảm biến là dạng chuỗi thời gian liên tục (Time-series), do đó, việc ứng dụng các mạng nơ-ron hồi quy như GRU (Gated Recurrent Unit) tỏ ra vô cùng phù hợp. Hơn thế nữa, để nắm bắt ngữ cảnh từ cả hai chiều (quá khứ và tương lai), chúng ta sẽ thiết kế một kiến trúc \textbf{BiGRU (Bidirectional GRU)}, giúp mô hình có góc nhìn toàn diện hơn về chuỗi tín hiệu.
 
+\begin{center}
+    \textbf{Nguồn dữ liệu:} \url{https://www.kaggle.com/datasets/uciml/human-activity-recognition-with-smartphones}
+\end{center}
+
 \paragraph{Khai báo thư viện và Cấu hình ban đầu} \hfill\mbox{}
 
 Quá trình phân tích cần các thư viện tính toán cơ bản và \texttt{tensorflow.keras} để xây dựng kiến trúc Deep Learning. Việc thiết lập \texttt{SEED = 42} giúp cố định trạng thái ngẫu nhiên, đảm bảo các kết quả thực nghiệm có thể tái lập (reproducible).

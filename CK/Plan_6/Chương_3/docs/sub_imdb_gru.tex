@@ -2,6 +2,10 @@
 
 Trái ngược với văn bản ngắn gọn như tin tức chứng khoán, các bài đánh giá phim trên IMDB thường có độ dài rất lớn, cấu trúc phức tạp và ẩn chứa nhiều cảm xúc lồng ghép. Mạng SimpleRNN truyền thống không thể nhớ được những từ quan trọng ở đầu câu khi đọc đến cuối câu (hiện tượng Vanishing Gradient). Để giải quyết triệt để, chúng tôi áp dụng kiến trúc \textbf{Gated Recurrent Unit (GRU)} tích hợp hai chiều (Bidirectional) kết hợp cùng kỹ thuật nhúng từ vựng được huấn luyện trước \textbf{GloVe (Global Vectors for Word Representation)}.
 
+\begin{center}
+    \textbf{Nguồn dữ liệu:} \url{https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews}
+\end{center}
+
 \paragraph{Thiết lập Môi trường và Đọc Dữ liệu} \hfill\mbox{}
 
 \begin{lstlisting}[style=pythoncode, caption={Khởi tạo môi trường thư viện cho cấu trúc GRU}]

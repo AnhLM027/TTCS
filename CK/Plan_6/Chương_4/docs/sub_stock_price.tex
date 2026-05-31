@@ -2,6 +2,10 @@
 
 Dự báo giá cổ phiếu là một trong những bài toán hóc búa nhất của lĩnh vực dự báo chuỗi thời gian, bởi thị trường tài chính chứa đựng mức độ nhiễu (noise) cực kỳ lớn và tuân theo giả thuyết bước đi ngẫu nhiên (Random Walk). Để đối phó với sự phức tạp này, chúng ta sẽ kết hợp sức mạnh của 2 mạng nơ-ron tiêu biểu: \textbf{Conv1D} (để trích xuất các đặc trưng vi mô cục bộ như xu hướng tăng/giảm ngắn hạn) và \textbf{LSTM} (để ghi nhớ chu kỳ thời gian dài hạn).
 
+\begin{center}
+    \textbf{Nguồn dữ liệu:} \url{https://www.kaggle.com/datasets/shreenivasrao07/google-stock-price-historical-data}
+\end{center}
+
 \paragraph{Khai báo thư viện và Cấu hình ban đầu} \hfill\mbox{}
 
 Chúng ta bắt đầu bằng việc khai báo các thư viện thiết yếu như Pandas, NumPy cho thao tác dữ liệu, Matplotlib cho trực quan hóa, và TensorFlow/Keras để xây dựng mô hình Deep Learning. Việc cố định SEED giúp đảm bảo tính tái lập của kết quả.
